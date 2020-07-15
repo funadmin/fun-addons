@@ -3,8 +3,8 @@
     "license": "mit",
     "authors": [
         {
-            "name": "yue909",
-            "email": "994927909@qq.com"
+            "name": "speed",
+            "email": "speed@qq.com"
         }
     ],
      "autoload": {
@@ -24,9 +24,9 @@
     },
      "require": {
         "php": ">=7.1.0",
-        "topthink/framework": "^6.0",
+        "topthink/framework": "6.0.*-dev",
         "topthink/think-view": "^1.0",
-        "topthink/think-helper": "^3.0.0"
+        "topthink/think-helper": "^3.1"
     },
      "scripts" : {
         "post-install-cmd": [

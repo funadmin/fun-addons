@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace speed\addons;
 
 use speed\helper\FileHelper;
+use think\Console;
 use think\Exception;
+use think\facade\View;
 use think\Route;
 use think\helper\Str;
 use think\facade\Config;
@@ -27,6 +29,16 @@ class Service extends \think\Service
     public function register()
     {
         $this->addons_path = $this->getAddonsPath();
+        // 自动载入插件
+        $this->loadRoutes();
+        //加载语言
+        $this->loadLang();
+        //挂载插件的自定义路由
+        $this->autoload();
+        // 加载插件事件
+        $this->loadEvent();
+        // 加载插件系统服务
+        $this->loadService();
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
             $execute = '\\speed\\addons\\Route::execute';
@@ -82,16 +94,7 @@ class Service extends \think\Service
 
     public function boot()
     {
-        // 自动载入插件
-        $this->loadRoutes();
-        //加载语言
-        $this->loadLang();
-        //挂载插件的自定义路由
-        $this->autoload();
-        // 加载插件事件
-        $this->loadEvent();
-        // 加载插件系统服务
-        $this->loadService();
+
 
     }
 
@@ -114,13 +117,22 @@ class Service extends \think\Service
             if (in_array($dir, ['.', '..'])) {
                 continue;
             }
-            $addons_route_dir = $this->addons_path . $dir . DIRECTORY_SEPARATOR . 'route' . DIRECTORY_SEPARATOR;
-            if (is_dir($addons_route_dir)) {
-                $files = glob($addons_route_dir . '*.php');
-                foreach ($files as $file) {
-                    include $file;
+            $module_dir = $this->addons_path.$dir.DIRECTORY_SEPARATOR;
+            foreach (scandir($module_dir) as $mdir){
+                if (in_array($mdir, ['.', '..'])) {
+                    continue;
+                }
+                $addons_route_dir = $this->addons_path . $dir .DIRECTORY_SEPARATOR .$this->addons_name. DIRECTORY_SEPARATOR .$mdir.DIRECTORY_SEPARATOR.'route' . DIRECTORY_SEPARATOR;
+                if (is_dir($addons_route_dir)) {
+                    $files = glob($addons_route_dir . '*.php');
+                    foreach ($files as $file) {
+                        include_once $file;
+                    }
                 }
             }
+
+
+
         }
     }
     /**
@@ -184,6 +196,7 @@ class Service extends \think\Service
                 continue;
             }
             $info = parse_ini_file($service_file, true, INI_SCANNER_TYPED) ?: [];
+
             $bind = array_merge($bind, $info);
         }
         $this->app->bind($bind);
@@ -210,6 +223,7 @@ class Service extends \think\Service
         }
         $basePath = $this->addons_path.$this->addons_name;
         $configPath = $this->app->getConfigPath();
+        //配置文件
         $files = [];
         if (is_dir($basePath . 'config')) {
             $files = array_merge($files, glob($basePath . 'config' . DIRECTORY_SEPARATOR . '*' . $this->app->getConfigExt()));
@@ -225,6 +239,7 @@ class Service extends \think\Service
         if (is_file($basePath . 'provider.php')) {
             $this->app->bind(include $basePath . 'provider.php');
         }
+
         $config = Config::get('addons');
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\speed\\Addons");

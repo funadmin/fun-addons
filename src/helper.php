@@ -59,7 +59,6 @@ if (!function_exists('hook')) {
     function hook($event, $params = null, bool $once = false)
     {
         $result = Event::trigger($event, $params, $once);
-
         return join('', $result);
     }
 }
@@ -126,7 +125,8 @@ if (!function_exists('get_addons_class')) {
         }
         switch ($type) {
             case 'controller':
-                $namespace = '\\addons\\' . $name . '\\controller\\' .$module.'\\'. $class;
+//                $namespace = '\\addons\\' . $name . '\\controller\\' .$module.'\\'. $class;
+                 $namespace = '\\addons\\' . $name.'\\'  .$module. '\\controller\\' .$class;
                 break;
             default:
                 $namespace = '\\addons\\' . $name . '\\Plugin';
