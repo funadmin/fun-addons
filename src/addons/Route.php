@@ -26,20 +26,27 @@ class Route
         if (is_file($app->addons->getAddonsPath() . 'middleware.php')) {
             $app->middleware->import(include $app->addons->getAddonsPath() . 'middleware.php', 'route');
         }
+        if (is_file($app->addons->getAddonsPath() . 'provider.php')) {
+            $app->bind(include $basePath . 'provider.php');
+        }
+        $module_path  = $app->addons->getAddonsPath() . $addon . DIRECTORY_SEPARATOR .$module.DIRECTORY_SEPARATOR;
+       
         //注册路由配置
         $addonsRouteConfig = [];
-        if (is_file($app->addons->getAddonsPath() . $addon . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'route.php')) {
-            $addonsRouteConfig = include($app->addons->getAddonsPath() . $addon . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'route.php');
+        if (is_file($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php')) {
+            $addonsRouteConfig = include($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php');
         }
         if (isset($addonsRouteConfig['url_route_must']) && $addonsRouteConfig['url_route_must']) {
             throw new HttpException(400, lang("插件{$addon}：已开启强制路由"));
         }
         // 是否自动转换控制器和操作名
         $convert = $addonsRouteConfig['url_convert']??Config::get('route.url_convert');
+
         $filter = $convert ? 'strtolower' : 'trim';
         $addon = $addon ? trim(call_user_func($filter, $addon)) : '';
         $controller = $controller ? trim(call_user_func($filter, $controller)) :$app->route->config('default_action');
         $action = $action ? trim(call_user_func($filter, $action)) : $app->route->config('default_action');
+
         Event::trigger('addons_begin', $request);
         if (empty($addon) || empty($controller) || empty($action)) {
             throw new HttpException(500, lang('addon can not be empty'));

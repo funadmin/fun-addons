@@ -4,9 +4,12 @@ declare(strict_types=1);
 namespace speed\addons;
 
 use speed\helper\FileHelper;
+use think\App;
 use think\Console;
+use think\Db;
 use think\Exception;
 use think\facade\View;
+use think\facade\Request;
 use think\Route;
 use think\helper\Str;
 use think\facade\Config;
@@ -16,6 +19,7 @@ use think\facade\Event;
 use speed\addons\middleware\Addons;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+
 /**
  * 插件服务
  * Class Service
@@ -25,10 +29,30 @@ class Service extends \think\Service
 {
     protected $addons_path;
     protected $addons_name;
+    protected $module_name;
 
     public function register()
     {
         $this->addons_path = $this->getAddonsPath();
+        // 自动载入插件
+        $this->loadRoutes();
+        //加载语言
+        $this->loadLang();
+        //挂载插件的自定义路由
+        $this->autoload();
+
+        $this->loadConfig();
+        // 加载插件事件
+        $this->loadEvent();
+        // 加载插件系统服务
+        $this->loadService();
+        // 绑定插件容器
+        $this->app->bind('addons', Service::class);
+
+    }
+
+    public function boot()
+    {
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
             $execute = '\\speed\\addons\\Route::execute';
@@ -36,7 +60,7 @@ class Service extends \think\Service
             $route->rule("addons/:addon/[:module]/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
             // 自定义路由
-            $routes = (array) Config::get('addons.route', []);
+            $routes = (array)Config::get('addons.route', []);
             foreach ($routes as $key => $val) {
                 if (!$val) {
                     continue;
@@ -45,13 +69,13 @@ class Service extends \think\Service
                     $domain = $val['domain'];
                     $rules = [];
                     foreach ($val['rule'] as $k => $rule) {
-                        list($module,$addon, $controller, $action) = explode('/', $rule);
+                        list($module, $addon, $controller, $action) = explode('/', $rule);
                         $rules[$k] = [
-                            'module'        => $module,
-                            'addon'        => $addon,
-                            'controller'    => $controller,
-                            'action'        => $action,
-                            'indomain'      => 1,
+                            'module' => $module,
+                            'addon' => $addon,
+                            'controller' => $controller,
+                            'action' => $action,
+                            'indomain' => 1,
                         ];
                     }
                     $route->domain($domain, function () use ($rules, $route, $execute) {
@@ -64,7 +88,7 @@ class Service extends \think\Service
                         }
                     });
                 } else {
-                    list($module,$addon, $controller, $action) = explode('/', $val);
+                    list($module, $addon, $controller, $action) = explode('/', $val);
                     $route->rule($key, $execute)
                         ->name($key)
                         ->completeMatch(true)
@@ -78,28 +102,12 @@ class Service extends \think\Service
             }
         });
 
-        // 绑定插件容器
-        $this->app->bind('addons', Service::class);
 
     }
 
-    public function boot()
+
+    private function loadLang()
     {
-        // 自动载入插件
-        $this->loadRoutes();
-        //加载语言
-        $this->loadLang();
-        //挂载插件的自定义路由
-        $this->autoload();
-        // 加载插件事件
-        $this->loadEvent();
-        // 加载插件系统服务
-        $this->loadService();
-
-    }
-
-
-    private function loadLang(){
         // 加载系统语言包
         Lang::load([
             $this->app->getRootPath() . '/vendor/speed/speed-addons/src/lang/zh-cn.php'
@@ -107,31 +115,41 @@ class Service extends \think\Service
         // 加载应用默认语言包
         $this->app->loadLangPack($this->app->lang->defaultLangSet());
     }
+
     /**
      *  加载插件自定义路由文件
      */
     private function loadRoutes()
     {
+        //配置
         $addons_route_dir = scandir($this->addons_path);
         foreach ($addons_route_dir as $dir) {
             if (in_array($dir, ['.', '..'])) {
                 continue;
             }
-            $module_dir = $this->addons_path.$dir.DIRECTORY_SEPARATOR;
-            foreach (scandir($module_dir) as $mdir){
+            $common = glob($dir . 'common.php');
+            if (!empty($common) && is_file($common[0])) {
+                include_once $common[0];
+            }
+            $module_dir = $this->addons_path . $dir . DIRECTORY_SEPARATOR;
+            foreach (scandir($module_dir) as $mdir) {
                 if (in_array($mdir, ['.', '..'])) {
                     continue;
                 }
-                $addons_route_dir = $this->addons_path . $dir .DIRECTORY_SEPARATOR .$this->addons_name .$mdir.DIRECTORY_SEPARATOR.'route' . DIRECTORY_SEPARATOR;
+                //路由配置文件
+                $addons_route_dir = $this->addons_path . $dir . DIRECTORY_SEPARATOR . $this->addons_name . $mdir . DIRECTORY_SEPARATOR . 'route' . DIRECTORY_SEPARATOR;
                 if (is_dir($addons_route_dir)) {
                     $files = glob($addons_route_dir . '*.php');
                     foreach ($files as $file) {
-                        include_once $file;
+                        if (file_exists($file)) {
+                            $this->loadRoutesFrom($file);;
+                        }
                     }
                 }
             }
         }
     }
+
     /**
      * 插件事件
      */
@@ -142,13 +160,13 @@ class Service extends \think\Service
         }
         $hooks = $this->app->isDebug() ? [] : Cache::get('hooks', []);
         if (empty($hooks)) {
-            $hooks = (array) Config::get('addons.hooks', []);
+            $hooks = (array)Config::get('addons.hooks', []);
             // 初始化钩子
             foreach ($hooks as $key => $values) {
                 if (is_string($values)) {
                     $values = explode(',', $values);
                 } else {
-                    $values = (array) $values;
+                    $values = (array)$values;
                 }
                 $hooks[$key] = array_filter(array_map(function ($v) use ($key) {
                     return [get_addons_class($v), $key];
@@ -166,11 +184,14 @@ class Service extends \think\Service
         Event::listenEvents($hooks);
     }
 
+
     /**
      * 挂载插件服务
      */
     private function loadService()
     {
+
+
         $results = scandir($this->addons_path);
         $bind = [];
         foreach ($results as $name) {
@@ -184,7 +205,7 @@ class Service extends \think\Service
             if (!is_dir($addonDir)) {
                 continue;
             }
-            if (!is_file($addonDir .  'Plugin.php')) {
+            if (!is_file($addonDir . 'Plugin.php')) {
                 continue;
             }
             $service_file = $addonDir . 'Plugin.ini';
@@ -197,6 +218,40 @@ class Service extends \think\Service
         $this->app->bind($bind);
     }
 
+    private function loadConfig()
+    {
+        if (!$this->addons_name) {
+            return false;
+        }
+        $module_dir = scandir($this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name);
+        foreach (scandir($module_dir) as $mdir) {
+            if (in_array($mdir, ['.', '..'])) {
+                continue;
+            }
+            //配置文件
+            $addons_config_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name . DIRECTORY_SEPARATOR . $mdir . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
+            if (is_dir($addons_config_dir)) {
+                $files = glob($addons_config_dir . '*.php');
+                foreach ($files as $file) {
+                    if (file_exists($file)) {
+                        $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+                    }
+                }
+
+            }
+            //语言文件
+            $addons_lang_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name . DIRECTORY_SEPARATOR . $mdir .DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR;
+            if (is_dir($addons_route_dir)) {
+                $files = glob($addons_lang_dir . $this->app->lang->defaultLangSet() . '.php');
+                foreach ($files as $file) {
+                    if (file_exists($file)) {
+                        Lang::load([$file]);
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * 自动载入插件
      * @return bool
@@ -207,46 +262,41 @@ class Service extends \think\Service
         if (!Config::get('addons.autoload', true)) {
             return true;
         }
-        $param = $this->app->request->param();
-        $route =  array_keys($this->app->route->getName());
-        if(empty($param)){
-            if(empty($route)){
-                return true;
-            }
-            if(strpos($route[0],'addons')===false){
-                return true;
-            }
-            $route = explode('@',$route[0]);
-            $param['action'] = $route[1];
-            [
-                $param['addons'],
-                $param['addon'],
-                $param['module'],
-                $param['controllers'],
-                $param['controller'],
-            ] = explode('\\',$route[0]);
-            $param['controller'] = $param['controller']. (isset(explode('\\',$route[0])[5])? DIRECTORY_SEPARATOR.explode('\\',$route[0])[5]:'');
+        $url = $this->app->request->url();
+        $param = $this->app->request->server();
+        //var_dump($param);die;
+//      $route = $this->app->route;
+//        if (empty($param)) {
+////            $route_list = $this->app->route->path();
+//            $route = $this->app->request;
+//            if(empty($route)){
+//                return false;
+//            }
+//            if(strpos($route[0],'addons')===false){
+//                return true;
+//            }
+//            $route = explode('@',$route[0]);
+//            $param['action'] = $route[1];
+//            [
+//                $param['addons'],
+//                $param['addon'],
+//                $param['module'],
+//                $param['controllers'],
+//                $param['controller'],
+//            ] = explode('\\',$route[0]);
+//            $param['controller'] = $param['controller']. (isset(explode('\\',$route[0])[5])? DIRECTORY_SEPARATOR.explode('\\',$route[0])[5]:'');
+//        }
+        if (!isset($param['addon'])) {
+            return false;
         }
         $this->addons_name = $param['addon'];
-        $basePath = $this->addons_path.$this->addons_name;
-        $configPath = $this->app->getConfigPath();
-        //配置文件
-        $files = [];
-        if (is_dir($basePath . 'config')) {
-            $files = array_merge($files, glob($basePath . 'config' . DIRECTORY_SEPARATOR . '*' . $this->app->getConfigExt()));
-        } elseif (is_dir($configPath . $this->addons_name)) {
-            $files = array_merge($files, glob($configPath .$this->addons_name . DIRECTORY_SEPARATOR . '*' . $this->app->getConfigExt()));
-        }
-        foreach ($files as $file) {
-            $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
-        }
+        $basePath = $this->addons_path . $this->addons_name . DIRECTORY_SEPARATOR;
         if (is_file($basePath . 'middleware.php')) {
             $this->app->middleware->import(include $basePath . 'middleware.php', 'app');
         }
         if (is_file($basePath . 'provider.php')) {
             $this->app->bind(include $basePath . 'provider.php');
         }
-        
         $config = Config::get('addons');
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\speed\\Addons");
@@ -295,7 +345,7 @@ class Service extends \think\Service
 
         return $addons_path;
     }
-   
+
     /**
      * 获取插件的配置信息
      * @param string $name
@@ -322,7 +372,7 @@ class Service extends \think\Service
     {
         return app()->getRootPath() . 'addons/' . $name . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR;
     }
-    
+
     /**
      * 获取插件目标资源文件夹
      * @param string $name 插件名称
@@ -339,9 +389,10 @@ class Service extends \think\Service
 
 
     //获取插件目录
-    public static function getAddonsNamePath($name){
+    public static function getAddonsNamePath($name)
+    {
 
-        return app()->getRootPath().'addons'.DIRECTORY_SEPARATOR.$name.DIRECTORY_SEPARATOR;
+        return app()->getRootPath() . 'addons' . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR;
     }
 
 
@@ -358,11 +409,11 @@ class Service extends \think\Service
 
     /**
      * 获取插件在全局的文件
-     * @param   int $onlyconflict 冲突
-     * @param   string $name 插件名称
+     * @param int $onlyconflict 冲突
+     * @param string $name 插件名称
      * @return  array
      */
-    public  static function getGlobalAddonsFiles($name, $onlyconflict = false)
+    public static function getGlobalAddonsFiles($name, $onlyconflict = false)
     {
         $list = [];
         $addonDir = self::getAddonsNamePath($name);
@@ -399,10 +450,9 @@ class Service extends \think\Service
     }
 
 
-
-
     //更新addons 文件；
-    public static function updateAdddonsConfig(){
+    public static function updateAdddonsConfig()
+    {
         $config = get_addons_autoload_config(true);
         if ($config['autoload'])
             return '';
@@ -419,12 +469,14 @@ class Service extends \think\Service
         }
         return true;
     }
+
     //更新插件状态
-    public static function updateAddonsInfo($name,$state=1){
-        $addonslist  = get_addons_list();
-        $addonslist[$name]['status'] =$state;
-        Cache::set('addonslist',$addonslist);
+    public static function updateAddonsInfo($name, $state = 1)
+    {
+        $addonslist = get_addons_list();
+        $addonslist[$name]['status'] = $state;
+        Cache::set('addonslist', $addonslist);
 
     }
-    
+
 }
