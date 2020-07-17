@@ -58,7 +58,7 @@ class Controller extends Base
         // 处理路由参数
         $this->param = $param = app()->request->param();
         $route = app()->request->rule()->getName();
-        if(empty($param)){
+        if(empty($param) || !isset($param['addon'])){
             $route = explode('@',$route);
             $param['action'] = $route[1];
             [

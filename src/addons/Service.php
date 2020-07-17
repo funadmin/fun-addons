@@ -35,17 +35,17 @@ class Service extends \think\Service
     {
         $this->addons_path = $this->getAddonsPath();
         // 自动载入插件
+        $this->autoload();
+        //挂载插件的自定义路由
         $this->loadRoutes();
         //加载语言
         $this->loadLang();
-        //挂载插件的自定义路由
-        $this->autoload();
-
-        $this->loadConfig();
         // 加载插件事件
         $this->loadEvent();
         // 加载插件系统服务
         $this->loadService();
+        //加载配置
+        $this->loadConfig();
         // 绑定插件容器
         $this->app->bind('addons', Service::class);
 
@@ -102,7 +102,6 @@ class Service extends \think\Service
             }
         });
 
-
     }
 
 
@@ -122,8 +121,8 @@ class Service extends \think\Service
     private function loadRoutes()
     {
         //配置
-        $addons_route_dir = scandir($this->addons_path);
-        foreach ($addons_route_dir as $dir) {
+        $addons_dir = scandir($this->addons_path);
+        foreach ($addons_dir as $dir) {
             if (in_array($dir, ['.', '..'])) {
                 continue;
             }
@@ -190,8 +189,6 @@ class Service extends \think\Service
      */
     private function loadService()
     {
-
-
         $results = scandir($this->addons_path);
         $bind = [];
         foreach ($results as $name) {
@@ -220,50 +217,12 @@ class Service extends \think\Service
 
     private function loadConfig()
     {
-        if (!$this->addons_name) {
-            return false;
-        }
-        $module_dir = scandir($this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name);
-        foreach (scandir($module_dir) as $mdir) {
-            if (in_array($mdir, ['.', '..'])) {
-                continue;
-            }
-            //配置文件
-            $addons_config_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name . DIRECTORY_SEPARATOR . $mdir . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
-            if (is_dir($addons_config_dir)) {
-                $files = glob($addons_config_dir . '*.php');
-                foreach ($files as $file) {
-                    if (file_exists($file)) {
-                        $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
-                    }
-                }
-
-            }
-            //语言文件
-            $addons_lang_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name . DIRECTORY_SEPARATOR . $mdir .DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR;
-            if (is_dir($addons_route_dir)) {
-                $files = glob($addons_lang_dir . $this->app->lang->defaultLangSet() . '.php');
-                foreach ($files as $file) {
-                    if (file_exists($file)) {
-                        Lang::load([$file]);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * 自动载入插件
-     * @return bool
-     */
-    private function autoload()
-    {
-        // 是否处理自动载入
-        if (!Config::get('addons.autoload', true)) {
-            return true;
-        }
-        $url = $this->app->request->url();
-        $param = $this->app->request->server();
+        $param['addon'] = 'database';
+        $param['addon'] = 'database';
+        $param['module'] = 'backend';
+        
+//        var_dump();
+        //        var_dump($this->app->route);
         //var_dump($param);die;
 //      $route = $this->app->route;
 //        if (empty($param)) {
@@ -290,12 +249,57 @@ class Service extends \think\Service
             return false;
         }
         $this->addons_name = $param['addon'];
+        $this->module_name = $param['module'];
         $basePath = $this->addons_path . $this->addons_name . DIRECTORY_SEPARATOR;
         if (is_file($basePath . 'middleware.php')) {
             $this->app->middleware->import(include $basePath . 'middleware.php', 'app');
         }
         if (is_file($basePath . 'provider.php')) {
             $this->app->bind(include $basePath . 'provider.php');
+        }
+
+
+
+        if (!$this->addons_name) {
+            return false;
+        }
+        $module_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name;
+        foreach (scandir($module_dir) as $mdir) {
+            if (in_array($mdir, ['.', '..'])) {
+                continue;
+            }
+            //配置文件
+            $addons_config_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name  . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
+            if (is_dir($addons_config_dir)) {
+                $files = glob($addons_config_dir . '*.php');
+                foreach ($files as $file) {
+                    if (file_exists($file)) {
+                        $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+                    }
+                }
+            }
+            //语言文件
+            $addons_lang_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name . DIRECTORY_SEPARATOR . $mdir .DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR;
+            if (is_dir($addons_lang_dir)) {
+                $files = glob($addons_lang_dir . $this->app->lang->defaultLangSet() . '.php');
+                foreach ($files as $file) {
+                    if (file_exists($file)) {
+                        Lang::load([$file]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 自动载入插件
+     * @return bool
+     */
+    private function autoload()
+    {
+        // 是否处理自动载入
+        if (!Config::get('addons.autoload', true)) {
+            return true;
         }
         $config = Config::get('addons');
         // 读取插件目录及钩子列表

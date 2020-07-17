@@ -30,18 +30,17 @@ class Route
             $app->bind(include $basePath . 'provider.php');
         }
         $module_path  = $app->addons->getAddonsPath() . $addon . DIRECTORY_SEPARATOR .$module.DIRECTORY_SEPARATOR;
-       
         //注册路由配置
         $addonsRouteConfig = [];
         if (is_file($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php')) {
             $addonsRouteConfig = include($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php');
+            $app->config->load($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php', pathinfo($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php', PATHINFO_FILENAME));
         }
         if (isset($addonsRouteConfig['url_route_must']) && $addonsRouteConfig['url_route_must']) {
-            throw new HttpException(400, lang("插件{$addon}：已开启强制路由"));
+            throw new HttpException(400, lang("addon {$addon}：已开启强制路由"));
         }
         // 是否自动转换控制器和操作名
         $convert = $addonsRouteConfig['url_convert']??Config::get('route.url_convert');
-
         $filter = $convert ? 'strtolower' : 'trim';
         $addon = $addon ? trim(call_user_func($filter, $addon)) : '';
         $controller = $controller ? trim(call_user_func($filter, $controller)) :$app->route->config('default_action');
