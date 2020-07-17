@@ -483,4 +483,53 @@ class Service extends \think\Service
 
     }
 
+
+    public static function conflict($name)
+    {
+        // 检测冲突文件
+        $list = self::getGlobalFiles($name, true);
+        if ($list) {
+            //发现冲突文件，抛出异常
+            throw new Exception("发现冲突文件", 402, ['conflictlist' => $list]);
+        }
+        return true;
+    }
+
+
+    private  function getGlobalFiles($name, $onlyconflict = false)
+    {
+        $list = [];
+        $addonDir = $this->addons_path . $name . DIRECTORY_SEPARATOR;
+        // 扫描插件目录是否有覆盖的文件
+        foreach (self::getCheckDirs() as $k => $dir) {
+            $checkDir = app()->getRootPath(). DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR;
+            if (!is_dir($checkDir))
+                continue;
+            //检测到存在插件外目录
+            if (is_dir($addonDir . $dir)) {
+                //匹配出所有的文件
+                $files = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($addonDir . $dir, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST
+                );
+
+                foreach ($files as $fileinfo) {
+                    if ($fileinfo->isFile()) {
+                        $filePath = $fileinfo->getPathName();
+                        $path = str_replace($addonDir, '', $filePath);
+                        if ($onlyconflict) {
+                            $destPath = app()->getRootPath() . $path;
+                            if (is_file($destPath)) {
+                                if (filesize($filePath) != filesize($destPath) || md5_file($filePath) != md5_file($destPath)) {
+                                    $list[] = $path;
+                                }
+                            }
+                        } else {
+                            $list[] = $path;
+                        }
+                    }
+                }
+            }
+        }
+        return $list;
+    }
 }
