@@ -88,7 +88,7 @@ class Service extends \think\Service
                         }
                     });
                 } else {
-                    list($addon,$module, $controller, $action) = explode('/', $rule);
+                    list($addon,$module, $controller, $action) = explode('/', $val);
                     $route->rule($key, $execute)
                         ->name($key)
                         ->completeMatch(true)
