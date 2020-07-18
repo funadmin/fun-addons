@@ -28,8 +28,8 @@ use RecursiveIteratorIterator;
 class Service extends \think\Service
 {
     protected $addons_path;
-    protected $addons_name;
-    protected $module_name;
+//    protected $addons_name;
+//    protected $module_name;
 
     public function register()
     {
@@ -69,7 +69,7 @@ class Service extends \think\Service
                     $domain = $val['domain'];
                     $rules = [];
                     foreach ($val['rule'] as $k => $rule) {
-                        list($module, $addon, $controller, $action) = explode('/', $rule);
+                        list($addon,$module, $controller, $action) = explode('/', $rule);
                         $rules[$k] = [
                             'module' => $module,
                             'addon' => $addon,
@@ -88,7 +88,7 @@ class Service extends \think\Service
                         }
                     });
                 } else {
-                    list($module, $addon, $controller, $action) = explode('/', $val);
+                    list($addon,$module, $controller, $action) = explode('/', $rule);
                     $route->rule($key, $execute)
                         ->name($key)
                         ->completeMatch(true)
@@ -122,21 +122,21 @@ class Service extends \think\Service
     {
         //配置
         $addons_dir = scandir($this->addons_path);
-        foreach ($addons_dir as $dir) {
-            if (in_array($dir, ['.', '..'])) {
+        foreach ($addons_dir as $name) {
+            if (in_array($name, ['.', '..'])) {
                 continue;
             }
-            $common = glob($dir . 'common.php');
+            $common = glob($name . 'common.php');
             if (!empty($common) && is_file($common[0])) {
                 include_once $common[0];
             }
-            $module_dir = $this->addons_path . $dir . DIRECTORY_SEPARATOR;
+            $module_dir = $this->addons_path . $name . DS;
             foreach (scandir($module_dir) as $mdir) {
                 if (in_array($mdir, ['.', '..'])) {
                     continue;
                 }
                 //路由配置文件
-                $addons_route_dir = $this->addons_path . $dir . DIRECTORY_SEPARATOR . $this->addons_name . $mdir . DIRECTORY_SEPARATOR . 'route' . DIRECTORY_SEPARATOR;
+                $addons_route_dir = $this->addons_path . $name . DS . $mdir . DS . 'route' . DS;
                 if (is_dir($addons_route_dir)) {
                     $files = glob($addons_route_dir . '*.php');
                     foreach ($files as $file) {
@@ -154,9 +154,6 @@ class Service extends \think\Service
      */
     private function loadEvent()
     {
-        if (is_file($this->getAddonsPath() . 'event.php')) {
-            $this->app->loadEvent(include $this->getAddonsPath() . 'event.php');
-        }
         $hooks = $this->app->isDebug() ? [] : Cache::get('hooks', []);
         if (empty($hooks)) {
             $hooks = (array)Config::get('addons.hooks', []);
@@ -192,13 +189,13 @@ class Service extends \think\Service
         $results = scandir($this->addons_path);
         $bind = [];
         foreach ($results as $name) {
-            if ($name === '.' or $name === '..') {
+            if (in_array($name, ['.', '..'])) {
                 continue;
             }
             if (is_file($this->addons_path . $name)) {
                 continue;
             }
-            $addonDir = $this->addons_path . $name . DIRECTORY_SEPARATOR;
+            $addonDir = $this->addons_path . $name . DS;
             if (!is_dir($addonDir)) {
                 continue;
             }
@@ -215,80 +212,65 @@ class Service extends \think\Service
         $this->app->bind($bind);
     }
 
+    /**
+     * 加载配置，路由，语言，中间件等
+     */
     private function loadConfig()
     {
-        $param['addon'] = 'database';
-        $param['addon'] = 'database';
-        $param['module'] = 'backend';
-        
-//        var_dump();
-        //        var_dump($this->app->route);
-        //var_dump($param);die;
-//      $route = $this->app->route;
-//        if (empty($param)) {
-////            $route_list = $this->app->route->path();
-//            $route = $this->app->request;
-//            if(empty($route)){
-//                return false;
-//            }
-//            if(strpos($route[0],'addons')===false){
-//                return true;
-//            }
-//            $route = explode('@',$route[0]);
-//            $param['action'] = $route[1];
-//            [
-//                $param['addons'],
-//                $param['addon'],
-//                $param['module'],
-//                $param['controllers'],
-//                $param['controller'],
-//            ] = explode('\\',$route[0]);
-//            $param['controller'] = $param['controller']. (isset(explode('\\',$route[0])[5])? DIRECTORY_SEPARATOR.explode('\\',$route[0])[5]:'');
-//        }
-        if (!isset($param['addon'])) {
-            return false;
-        }
-        $this->addons_name = $param['addon'];
-        $this->module_name = $param['module'];
-        $basePath = $this->addons_path . $this->addons_name . DIRECTORY_SEPARATOR;
-        if (is_file($basePath . 'middleware.php')) {
-            $this->app->middleware->import(include $basePath . 'middleware.php', 'app');
-        }
-        if (is_file($basePath . 'provider.php')) {
-            $this->app->bind(include $basePath . 'provider.php');
-        }
-
-
-
-        if (!$this->addons_name) {
-            return false;
-        }
-        $module_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name;
-        foreach (scandir($module_dir) as $mdir) {
-            if (in_array($mdir, ['.', '..'])) {
+        $results = scandir($this->addons_path);
+        foreach ($results as $name){
+            if (in_array($name, ['.', '..'])) {
                 continue;
             }
-            //配置文件
-            $addons_config_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name  . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
-            if (is_dir($addons_config_dir)) {
-                $files = glob($addons_config_dir . '*.php');
-                foreach ($files as $file) {
-                    if (file_exists($file)) {
-                        $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+            foreach (scandir($this->addons_path.$name) as $childname){
+                $basePath = $this->addons_path . $name . DS;
+                if (is_file($basePath . 'middleware.php')) {
+                    $this->app->middleware->import(include $basePath . 'middleware.php', 'app');
+                }
+                if (is_file($basePath . 'provider.php')) {
+                    $this->app->bind(include $basePath . 'provider.php');
+                }
+                //事件
+                if (is_file($this->addons_path .$name.DS. 'event.php')) {
+                    $this->app->loadEvent(include $this->addons_path .$name .DS. 'event.php');
+                }
+                if (in_array($childname, ['.', '..','public','view'])) {
+                    continue;
+                }
+                $module_dir = $this->addons_path . $name.DS.$childname;
+                if(is_dir($module_dir)){
+                    foreach (scandir($module_dir) as $mdir) {
+                        if (in_array($mdir, ['.', '..'])) {
+                            continue;
+                        }
+                        //配置文件
+                        $addons_config_dir = $this->addons_path . $name.DS.$childname  . DS . 'config' . DS;
+                        if (is_dir($addons_config_dir)) {
+                            $files = glob($addons_config_dir . '*.php');
+                            foreach ($files as $file) {
+                                if (file_exists($file)) {
+                                    $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+                                }
+                            }
+                        }
+                        //语言文件
+                        $addons_lang_dir = $this->addons_path . $name.DS.$childname  .DS . 'lang' . DS;
+                        if (is_dir($addons_lang_dir)) {
+                            $files = glob($addons_lang_dir . $this->app->lang->defaultLangSet() . '.php');
+                            foreach ($files as $file) {
+                                if (file_exists($file)) {
+                                    Lang::load([$file]);
+                                }
+                            }
+                        }
                     }
+
                 }
             }
-            //语言文件
-            $addons_lang_dir = $this->addons_path . $this->addons_name.DIRECTORY_SEPARATOR.$this->module_name . DIRECTORY_SEPARATOR . $mdir .DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR;
-            if (is_dir($addons_lang_dir)) {
-                $files = glob($addons_lang_dir . $this->app->lang->defaultLangSet() . '.php');
-                foreach ($files as $file) {
-                    if (file_exists($file)) {
-                        Lang::load([$file]);
-                    }
-                }
-            }
+
         }
+
+
     }
 
     /**
@@ -341,7 +323,7 @@ class Service extends \think\Service
     public function getAddonsPath()
     {
         // 初始化插件目录
-        $addons_path = $this->app->getRootPath() . 'addons' . DIRECTORY_SEPARATOR;
+        $addons_path = $this->app->getRootPath() . 'addons' . DS;
         // 如果插件目录不存在则创建
         if (!is_dir($addons_path)) {
             @mkdir($addons_path, 0755, true);
@@ -374,7 +356,7 @@ class Service extends \think\Service
      */
     public static function getSourceAssetsDir($name)
     {
-        return app()->getRootPath() . 'addons/' . $name . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR;
+        return app()->getRootPath() . 'addons/' . $name . DS . 'public' . DS;
     }
 
     /**
@@ -384,7 +366,7 @@ class Service extends \think\Service
      */
     public static function getDestAssetsDir($name)
     {
-        $assetsDir = app()->getRootPath() . str_replace("/", DIRECTORY_SEPARATOR, "public/static/addons/{$name}");
+        $assetsDir = app()->getRootPath() . str_replace("/", DS, "public/static/addons/{$name}");
         if (!is_dir($assetsDir)) {
             mkdir($assetsDir, 0755, true);
         }
@@ -396,7 +378,7 @@ class Service extends \think\Service
     public static function getAddonsNamePath($name)
     {
 
-        return app()->getRootPath() . 'addons' . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR;
+        return app()->getRootPath() . 'addons' . DS . $name . DS;
     }
 
 
@@ -407,7 +389,7 @@ class Service extends \think\Service
     public static function getCheckDirs()
     {
         return [
-            'app',
+            'public'
         ];
     }
 
@@ -422,15 +404,15 @@ class Service extends \think\Service
         $list = [];
         $addonDir = self::getAddonsNamePath($name);
         // 扫描插件目录是否有覆盖的文件
-        foreach (self::getCheckDirs() as $k => $dir) {
-            $checkDir = app()->getRootPath() . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR;
+        foreach (self::getCheckDirs() as $k => $name) {
+            $checkDir = app()->getRootPath() . DS . $name . DS;
             if (!is_dir($checkDir))
                 continue;
             //检测到存在插件外目录
-            if (is_dir($addonDir . $dir)) {
+            if (is_dir($addonDir . $name)) {
                 //匹配出所有的文件
                 $files = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($addonDir . $dir, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST
+                    new RecursiveDirectoryIterator($addonDir . $name, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST
                 );
                 foreach ($files as $fileinfo) {
                     if ($fileinfo->isFile()) {
@@ -460,7 +442,7 @@ class Service extends \think\Service
         $config = get_addons_autoload_config(true);
         if ($config['autoload'])
             return '';
-        $file = app()->getRootPath() . 'config' . DIRECTORY_SEPARATOR . 'addons.php';
+        $file = app()->getRootPath() . 'config' . DS . 'addons.php';
         if (!FileHelper::isWritable($file)) {
             throw new \Exception("addons.php文件没有写入权限");
         }
@@ -499,17 +481,17 @@ class Service extends \think\Service
     private  function getGlobalFiles($name, $onlyconflict = false)
     {
         $list = [];
-        $addonDir = $this->addons_path . $name . DIRECTORY_SEPARATOR;
+        $addonDir = $this->addons_path . $name . DS;
         // 扫描插件目录是否有覆盖的文件
-        foreach (self::getCheckDirs() as $k => $dir) {
-            $checkDir = app()->getRootPath(). DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR;
+        foreach (self::getCheckDirs() as $k => $name) {
+            $checkDir = app()->getRootPath(). DS . $name . DS;
             if (!is_dir($checkDir))
                 continue;
             //检测到存在插件外目录
-            if (is_dir($addonDir . $dir)) {
+            if (is_dir($addonDir . $name)) {
                 //匹配出所有的文件
                 $files = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($addonDir . $dir, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST
+                    new RecursiveDirectoryIterator($addonDir . $name, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST
                 );
 
                 foreach ($files as $fileinfo) {

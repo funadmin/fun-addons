@@ -65,7 +65,7 @@ class Route
         Event::trigger('addon_module_init', $request);
         $class = get_addons_class($addon, 'controller', $controller,$module);
         if (!$class) {
-            throw new HttpException(404, lang('addon controller %s not found', [Str::studly($controller)]));
+            throw new HttpException(404, lang('addon controller %s not found', [Str::studly($module.DIRECTORY_SEPARATOR.$controller)]));
         }
         // 重写视图基础路径
         $config = Config::get('view');

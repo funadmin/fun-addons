@@ -12,6 +12,8 @@ use think\helper\{
     Str, Arr
 };
 
+define('DS',DIRECTORY_SEPARATOR);
+
 \think\Console::starting(function (\think\Console $console) {
     $console->addCommands([
         'addons:config' => '\\speed\\addons\\command\\SendConfig'
@@ -218,7 +220,7 @@ if (!function_exists('get_addons_list')) {
                     continue;
                 if (is_file($addons_path . $name))
                     continue;
-                $addonDir = $addons_path . $name . DIRECTORY_SEPARATOR;
+                $addonDir = $addons_path . $name . DS;
                 if (!is_dir($addonDir))
                     continue;
 
@@ -318,7 +320,7 @@ if (!function_exists('importsql')) {
     {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath(); // 插件列表
-        $sqlFile = $addons_path. $name . DIRECTORY_SEPARATOR . 'install.sql';
+        $sqlFile = $addons_path. $name . DS . 'install.sql';
         if (is_file($sqlFile)) {
             $lines = file($sqlFile);
             $templine = '';
@@ -359,7 +361,7 @@ if (!function_exists('uninstallsql')) {
     {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath(); // 插件列表
-        $sqlFile = $addons_path. $name . DIRECTORY_SEPARATOR . 'uninstall.sql';
+        $sqlFile = $addons_path. $name . DS . 'uninstall.sql';
         if (is_file($sqlFile)) {
             $lines = file($sqlFile);
             $templine = '';
