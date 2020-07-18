@@ -68,7 +68,7 @@ class Controller extends Base
                 $param['controllers'],
                 $param['controller'],
             ] = explode('\\',$route[0]);
-            $param['controller'] = $param['controller']. (isset(explode('\\',$route[0])[5])? DIRECTORY_SEPARATOR.explode('\\',$route[0])[5]:'');
+            $param['controller'] = $param['controller']. (isset(explode('\\',$route[0])[5])? DS.explode('\\',$route[0])[5]:'');
         }
         $addon = isset($param['addon']) ? $param['addon'] : '';
         $module = isset($param['module']) ? $param['module'] : 'index';
@@ -76,7 +76,7 @@ class Controller extends Base
         $action = isset($param['action']) ? $param['action'] : app()->request->action();
         $this->addon = $addon ? call_user_func($filter, $addon) : '';
         $this->module = $module ? call_user_func($filter, $module) : '';
-        $this->addon_path = $app->addons->getAddonsPath() . $this->addon . DIRECTORY_SEPARATOR;
+        $this->addon_path = $app->addons->getAddonsPath() . $this->addon . DS;
         $this->controller = $controller ? call_user_func($filter, $controller) : 'index';
         $this->action = $action ? call_user_func($filter, $action) : 'index';
         // 父类的调用必须放在设置模板路径之后
@@ -90,21 +90,21 @@ class Controller extends Base
          // 渲染配置到视图中
         if($this->param){
             View::engine('Think')->config([
-                'view_path' => $this->addon_path .'view' .DIRECTORY_SEPARATOR
+                'view_path' => $this->addon_path .'view' .DS
             ]);
         }else{
             View::engine('Think')->config([
-                'view_path' => $this->addon_path .'view'.DIRECTORY_SEPARATOR.$this->module.DIRECTORY_SEPARATOR.str_replace('.','/',$this->controller) .DIRECTORY_SEPARATOR
+                'view_path' => $this->addon_path .'view'.DS.$this->module.DS.str_replace('.','/',$this->controller) .DS
             ]);
         }
         // 如果有使用模板布局
-        $this->layout && app()->view->engine()->layout($this->module.DIRECTORY_SEPARATOR.trim($this->layout,'/'));
+        $this->layout && app()->view->engine()->layout($this->module.DS.trim($this->layout,'/'));
 
         $config = get_addons_config($this->addon);
         View::assign(['config'=>$config]);
         // 加载系统语言包
         Lang::load([
-            $this->addon_path . 'lang' . DIRECTORY_SEPARATOR . Lang::getLangset() . '.php',
+            $this->addon_path . 'lang' . DS . Lang::getLangset() . '.php',
         ]);
         parent::initialize();
 

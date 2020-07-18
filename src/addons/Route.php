@@ -29,12 +29,12 @@ class Route
         if (is_file($app->addons->getAddonsPath() . 'provider.php')) {
             $app->bind(include $basePath . 'provider.php');
         }
-        $module_path  = $app->addons->getAddonsPath() . $addon . DIRECTORY_SEPARATOR .$module.DIRECTORY_SEPARATOR;
+        $module_path  = $app->addons->getAddonsPath() . $addon . DS .$module.DS;
         //注册路由配置
         $addonsRouteConfig = [];
-        if (is_file($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php')) {
-            $addonsRouteConfig = include($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php');
-            $app->config->load($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php', pathinfo($module_path. 'config' . DIRECTORY_SEPARATOR . 'route.php', PATHINFO_FILENAME));
+        if (is_file($module_path. 'config' . DS . 'route.php')) {
+            $addonsRouteConfig = include($module_path. 'config' . DS . 'route.php');
+            $app->config->load($module_path. 'config' . DS . 'route.php', pathinfo($module_path. 'config' . DS . 'route.php', PATHINFO_FILENAME));
         }
         if (isset($addonsRouteConfig['url_route_must']) && $addonsRouteConfig['url_route_must']) {
             throw new HttpException(400, lang("addon {$addon}：已开启强制路由"));
@@ -65,11 +65,11 @@ class Route
         Event::trigger('addon_module_init', $request);
         $class = get_addons_class($addon, 'controller', $controller,$module);
         if (!$class) {
-            throw new HttpException(404, lang('addon controller %s not found', [Str::studly($module.DIRECTORY_SEPARATOR.$controller)]));
+            throw new HttpException(404, lang('addon controller %s not found', [Str::studly($module.DS.$controller)]));
         }
         // 重写视图基础路径
         $config = Config::get('view');
-        $config['view_path'] = $app->addons->getAddonsPath() . $addon . DIRECTORY_SEPARATOR.$module .DIRECTORY_SEPARATOR. 'view' . DIRECTORY_SEPARATOR;
+        $config['view_path'] = $app->addons->getAddonsPath() . $addon . DS.$module .DS. 'view' . DS;
         Config::set($config, 'view');
         // 生成控制器对象
         $instance = new $class($app);
