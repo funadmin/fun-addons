@@ -2,16 +2,16 @@
 
 namespace speed\addons;
 
+use app\BaseController;
 use think\App;
 use think\facade\Lang;
 use think\facade\View;
 use think\facade\Config;
-use app\common\controller\Base;
 
 /**
  * 插件基类控制器.
  */
-class Controller extends Base
+class Controller extends BaseController
 {
     // 当前插件操作
     protected $addon = null;
@@ -19,8 +19,7 @@ class Controller extends Base
     protected $addon_path = null;
     protected $controller = null;
     protected $action = null;
-    // 当前template
-    protected $template;
+    protected $module = null;
     protected $param;
 
     /**
@@ -88,7 +87,7 @@ class Controller extends Base
     {   
 
          // 渲染配置到视图中
-        if($this->param){
+        if(isset($this->param['addon'])){
             View::engine('Think')->config([
                 'view_path' => $this->addon_path .'view' .DS
             ]);

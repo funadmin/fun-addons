@@ -243,13 +243,23 @@ class Service extends \think\Service
                         if (in_array($mdir, ['.', '..'])) {
                             continue;
                         }
+                        //加载插件自定义命令行
+                        $addons_command_dir = $this->addons_path . $name. DS .$childname  . DS . 'command' . DS;
+
+                        $commands = [];
                         //配置文件
                         $addons_config_dir = $this->addons_path . $name.DS.$childname  . DS . 'config' . DS;
                         if (is_dir($addons_config_dir)) {
                             $files = glob($addons_config_dir . '*.php');
                             foreach ($files as $file) {
                                 if (file_exists($file)) {
-                                    $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+                                    if(substr($file,-11) =='console.php'){
+                                        $commands_config = include_once $file;
+                                        isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
+                                        !empty($commands) && $this->commands($commands);
+                                    }else{
+                                        $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+                                    }
                                 }
                             }
                         }
