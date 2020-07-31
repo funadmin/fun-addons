@@ -12,6 +12,8 @@ use think\helper\{
     Str, Arr
 };
 
+//define('DS',DIRECTORY_SEPARATOR);
+
 \think\Console::starting(function (\think\Console $console) {
     $console->addCommands([
         'addons:config' => '\\speed\\addons\\command\\SendConfig'
@@ -80,6 +82,46 @@ if (!function_exists('get_addons_info')) {
     }
 }
 
+/**
+ * 设置基础配置信息
+ * @param string $name  插件名
+ * @param array  $array 配置数据
+ * @return boolean
+ * @throws Exception
+ */
+if (!function_exists('set_addons_info')) {
+
+    function set_addons_info($name, $array)
+    {
+        $service = new Service(App::instance()); // 获取service 服务
+        $addons_path = $service->getAddonsPath();
+        // 插件列表
+        $file = $addons_path. $name . DIRECTORY_SEPARATOR . 'info.ini';
+        $addon = get_addon_instance($name);
+        $array = $addon->setInfo($name, $array);
+        if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
+            throw new Exception("插件配置写入失败");
+        }
+        $res = array();
+        foreach ($array as $key => $val) {
+            if (is_array($val)) {
+                $res[] = "[$key]";
+                foreach ($val as $skey => $sval)
+                    $res[] = "$skey = " . (is_numeric($sval) ? $sval : $sval);
+            } else
+                $res[] = "$key = " . (is_numeric($val) ? $val : $val);
+        }
+        if ($handle = fopen($file, 'w')) {
+            fwrite($handle, implode("\n", $res) . "\n");
+            fclose($handle);
+            //清空当前配置缓存
+            Config::set($name, NULL, 'addoninfo');
+        } else {
+            throw new Exception("文件没有写入权限");
+        }
+        return true;
+    }
+}
 if (!function_exists('get_addons_instance')) {
     /**
      * 获取插件的单例
@@ -382,3 +424,4 @@ if (!function_exists('uninstallsql')) {
         return true;
     }
 }
+
