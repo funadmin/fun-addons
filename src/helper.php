@@ -12,8 +12,6 @@ use think\helper\{
     Str, Arr
 };
 
-define('DS',DIRECTORY_SEPARATOR);
-
 \think\Console::starting(function (\think\Console $console) {
     $console->addCommands([
         'addons:config' => '\\speed\\addons\\command\\SendConfig'
