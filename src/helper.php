@@ -12,7 +12,7 @@ use think\helper\{
     Str, Arr
 };
 
-//define('DS',DIRECTORY_SEPARATOR);
+define('DS',DIRECTORY_SEPARATOR);
 
 \think\Console::starting(function (\think\Console $console) {
     $console->addCommands([
