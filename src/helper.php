@@ -73,12 +73,13 @@ if (!function_exists('get_addons_info')) {
      */
     function get_addons_info($name)
     {
+        $service = new Service(App::instance()); // 获取service 服务
+        $addons_path = $service->getAddonsPath();
+        // 插件列表
+        $file = $addons_path. $name . DIRECTORY_SEPARATOR . 'Plugin.ini';
         $addon = get_addons_instance($name);
-        if (!$addon) {
-            return [];
-        }
-
-        return $addon->getInfo();
+        $array = $addon->getInfo($name);
+        return $array;
     }
 }
 
@@ -96,7 +97,7 @@ if (!function_exists('set_addons_info')) {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath();
         // 插件列表
-        $file = $addons_path. $name . DIRECTORY_SEPARATOR . 'info.ini';
+        $file = $addons_path. $name . DIRECTORY_SEPARATOR . 'Plugin.ini';
         $addon = get_addon_instance($name);
         $array = $addon->setInfo($name, $array);
         if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
@@ -216,6 +217,7 @@ if (!function_exists('addons_url')) {
             $action = $request->action();
         } else {
             $url = Str::studly($url);
+
             $url = parse_url($url);
             if (isset($url['scheme'])) {
                 $addons = strtolower($url['scheme']);
@@ -249,7 +251,7 @@ if (!function_exists('get_addons_list')) {
 
     function get_addons_list()
     {   
-        if(! Cache::get('addonslist')){
+        if(!Cache::get('addonslist')){
             $service = new Service(App::instance()); // 获取service 服务
             $addons_path = $service->getAddonsPath(); // 插件列表
             $results = scandir($addons_path);
@@ -270,7 +272,7 @@ if (!function_exists('get_addons_list')) {
                 $info = $addon->getInfo($name);
                 if (!isset($info['name']))
                     continue;
-                $info['url'] = (string)addons_url();
+//                $info['url'] = (string)addons_url();
                 $list[$name] = $info;
                 Cache::set('addonslist',$list);
             }
