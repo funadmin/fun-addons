@@ -358,7 +358,6 @@ class Service extends \think\Service
         return $addon->getConfig();
     }
 
-
     /**
      * 获取插件源资源文件夹
      * @param string $name 插件名称
@@ -402,7 +401,6 @@ class Service extends \think\Service
             'public'
         ];
     }
-
     /**
      * 获取插件在全局的文件
      * @param int $onlyconflict 冲突
@@ -475,53 +473,4 @@ class Service extends \think\Service
 
     }
 
-
-    public static function conflict($name)
-    {
-        // 检测冲突文件
-        $list = self::getGlobalFiles($name, true);
-        if ($list) {
-            //发现冲突文件，抛出异常
-            throw new Exception("发现冲突文件", 402, ['conflictlist' => $list]);
-        }
-        return true;
-    }
-
-
-    private  function getGlobalFiles($name, $onlyconflict = false)
-    {
-        $list = [];
-        $addonDir = $this->addons_path . $name . DS;
-        // 扫描插件目录是否有覆盖的文件
-        foreach (self::getCheckDirs() as $k => $name) {
-            $checkDir = app()->getRootPath(). DS . $name . DS;
-            if (!is_dir($checkDir))
-                continue;
-            //检测到存在插件外目录
-            if (is_dir($addonDir . $name)) {
-                //匹配出所有的文件
-                $files = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($addonDir . $name, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST
-                );
-
-                foreach ($files as $fileinfo) {
-                    if ($fileinfo->isFile()) {
-                        $filePath = $fileinfo->getPathName();
-                        $path = str_replace($addonDir, '', $filePath);
-                        if ($onlyconflict) {
-                            $destPath = app()->getRootPath() . $path;
-                            if (is_file($destPath)) {
-                                if (filesize($filePath) != filesize($destPath) || md5_file($filePath) != md5_file($destPath)) {
-                                    $list[] = $path;
-                                }
-                            }
-                        } else {
-                            $list[] = $path;
-                        }
-                    }
-                }
-            }
-        }
-        return $list;
-    }
 }

@@ -70,7 +70,7 @@ class Controller extends BaseController
             $param['controller'] = $param['controller']. (isset(explode('\\',$route[0])[5])? DS.explode('\\',$route[0])[5]:'');
         }
         $addon = isset($param['addon']) ? $param['addon'] : '';
-        $module = isset($param['module']) ? $param['module'] : 'index';
+        $module = isset($param['module']) ? $param['module'] : 'frontend';
         $controller = isset($param['controller']) ? $param['controller'] : app()->request->controller();
         $action = isset($param['action']) ? $param['action'] : app()->request->action();
         $this->addon = $addon ? call_user_func($filter, $addon) : '';

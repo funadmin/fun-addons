@@ -18,7 +18,7 @@ class Route
      * @param null $action
      * @return mixed
      */
-    public static function execute($module=null,$addon = null, $controller = null, $action = null)
+    public static function execute($module='frontend',$addon = null, $controller = null, $action = null)
     {
         $app = app();
         $request = $app->request;

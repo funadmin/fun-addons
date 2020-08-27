@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use speed\addons\middleware\Addons;
 use speed\addons\Service;
 use think\facade\Db;
 use think\facade\App;
@@ -207,28 +208,24 @@ if (!function_exists('addons_url')) {
      */
     function addons_url($url = '', $param = [], $suffix = true, $domain = false)
     {
+        $url = 'ueditor/frontend/index/index';
         $request = app('request');
         if (empty($url)) {
             // 生成 url 模板变量
             $addons = $request->addon;
+            $module = $request->modulename;
             $controller = $request->controller();
             $controller = str_replace('/', '.', $controller);
             $action = $request->action();
         } else {
             $url = Str::studly($url);
             $url = parse_url($url);
-            if (isset($url['scheme'])) {
-                $addons = strtolower($url['scheme']);
-                $controller = $url['host'];
-                $action = trim($url['path'], '/');
-            } else {
-                $route = explode('/', $url['path']);
-                $addons = $request->addon;
-                $action = array_pop($route);
-                $controller = array_pop($route) ?: $request->controller();
-            }
+            $route = explode('/', $url['path']);
+            $addons = $request->addon;
+            $action = array_pop($route);
+            $controller = array_pop($route) ?: $request->controller();
+            $module = array_pop($route) ?: $request->param['module'];
             $controller = Str::snake((string)$controller);
-
             /* 解析URL带的参数 */
             if (isset($url['query'])) {
                 parse_str($url['query'], $query);
@@ -236,7 +233,8 @@ if (!function_exists('addons_url')) {
             }
         }
 
-        return Route::buildUrl("@addons/{$addons}/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
+        // 注册控制器路由
+        return Route::buildUrl("addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
     }
 }
 
@@ -249,7 +247,7 @@ if (!function_exists('get_addons_list')) {
 
     function get_addons_list()
     {   
-        if(! Cache::get('addonslist')){
+        if(!Cache::get('addonslist')){
             $service = new Service(App::instance()); // 获取service 服务
             $addons_path = $service->getAddonsPath(); // 插件列表
             $results = scandir($addons_path);
@@ -348,6 +346,57 @@ if (!function_exists('get_addons_autoload_config')) {
         return $config;
     }
 }
+
+/**
+ * 刷新插件缓存文件
+ *
+ * @return  boolean
+ * @throws  Exception
+ */
+if (!function_exists('refreshaddonsjs')) {
+    function refreshaddonsjs()
+    {
+        //刷新addons.js
+        $addons = get_addons_list();
+        $jsArr = [];
+        foreach ($addons as $name => $addon) {
+            $jsArrFile = app()->getRootPath().'addons'.DS . $name . DS . 'plugin.js';
+            if ($addon['status'] && is_file($jsArrFile)) {
+                $jsArr[] = file_get_contents($jsArrFile);
+            }
+        }
+        $addonsjsFile =     app()->getRootPath()."public/static/require-addons.js";
+        if ($file = fopen($addonsjsFile, 'w')) {
+            $tpl = <<<SP
+define([], function () {
+    {__ADDONJS__}
+});
+SP;
+            fwrite($file, str_replace("{__ADDONJS__}", implode("\n", $jsArr), $tpl));
+            fclose($file);
+        } else {
+            throw new Exception("addons.js文件没有写入权限");
+        }
+
+        $file = app()->getRootPath() . 'config' . DS . 'addons.php';
+
+        $config = get_addons_autoload_config(true);
+        if ($config['autoload'])
+            return;
+
+        if (!is_really_writable($file)) {
+            throw new Exception("addons.php文件没有写入权限");
+        }
+
+        if ($handle = fopen($file, 'w')) {
+            fwrite($handle, "<?php\n\n" . "return " . var_export($config, TRUE) . ";");
+            fclose($handle);
+        } else {
+            throw new Exception("文件没有写入权限");
+        }
+        return true;
+    }
+}
 /**
  * 导入SQL
  *
@@ -367,13 +416,12 @@ if (!function_exists('importsql')) {
             foreach ($lines as $line) {
                 if (substr($line, 0, 2) == '--' || $line == '' || substr($line, 0, 2) == '/*')
                     continue;
-
                 $templine .= $line;
                 if (substr(trim($line), -1, 1) == ';') {
                     $templine = str_ireplace('__PREFIX__', config('database.connections.mysql.prefix'), $templine);
                     $templine = str_ireplace('INSERT INTO ', 'INSERT IGNORE INTO ', $templine);
                     try {
-                        Db::query($templine);
+                        Db::execute($templine);
                     } catch (\PDOException $e) {
                         throw new PDOException($e->getMessage());
 
