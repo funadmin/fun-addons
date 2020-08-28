@@ -381,7 +381,7 @@ SP;
         $file = app()->getRootPath() . 'config' . DS . 'addons.php';
 
         $config = get_addons_autoload_config(true);
-        if ($config['autoload']) return ;
+        if (!$config['autoload']) return ;
         if (!is_really_writable($file)) {
             throw new Exception(lang("addons.js File does not have write permission"));
         }
