@@ -53,6 +53,7 @@ class Service extends \think\Service
 
     public function boot()
     {
+
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
             $execute = '\\speed\\addons\\Route::execute';
@@ -61,44 +62,47 @@ class Service extends \think\Service
                 ->middleware(Addons::class);
             // 自定义路由
             $routes = (array)Config::get('addons.route', []);
-            foreach ($routes as $key => $val) {
-                if (!$val) {
-                    continue;
-                }
-                if (is_array($val)) {
-                    $domain = $val['domain'];
-                    $rules = [];
-                    foreach ($val['rule'] as $k => $rule) {
-                        list($addon,$module, $controller, $action) = explode('/', $rule);
-                        $rules[$k] = [
-                            'module' => $module,
-                            'addon' => $addon,
-                            'controller' => $controller,
-                            'action' => $action,
-                            'indomain' => 1,
-                        ];
+            if(Config::get('addons.autoload',true)){
+                foreach ($routes as $key => $val) {
+                    if (!$val) {
+                        continue;
                     }
-                    $route->domain($domain, function () use ($rules, $route, $execute) {
-                        // 动态注册域名的路由规则
-                        foreach ($rules as $k => $rule) {
-                            $route->rule($k, $execute)
-                                ->name($k)
-                                ->completeMatch(true)
-                                ->append($rule);
+                    if (is_array($val)) {
+                        $domain = $val['domain'];
+                        $rules = [];
+                        foreach ($val['rule'] as $k => $rule) {
+                            list($addon,$module, $controller, $action) = explode('/', $rule);
+                            $rules[$k] = [
+                                'module' => $module,
+                                'addon' => $addon,
+                                'controller' => $controller,
+                                'action' => $action,
+                                'indomain' => 1,
+                            ];
                         }
-                    });
-                } else {
-                    list($addon,$module, $controller, $action) = explode('/', $val);
-                    $route->rule($key, $execute)
-                        ->name($key)
-                        ->completeMatch(true)
-                        ->append([
-                            'module' => $module,
-                            'addon' => $addon,
-                            'controller' => $controller,
-                            'action' => $action
-                        ]);
+                        $route->domain($domain, function () use ($rules, $route, $execute) {
+                            // 动态注册域名的路由规则
+                            foreach ($rules as $k => $rule) {
+                                $route->rule($k, $execute)
+                                    ->name($k)
+                                    ->completeMatch(true)
+                                    ->append($rule);
+                            }
+                        });
+                    } else {
+                        list($addon,$module, $controller, $action) = explode('/', $val);
+                        $route->rule($key, $execute)
+                            ->name($key)
+                            ->completeMatch(true)
+                            ->append([
+                                'module' => $module,
+                                'addon' => $addon,
+                                'controller' => $controller,
+                                'action' => $action
+                            ]);
+                    }
                 }
+
             }
         });
 
@@ -284,7 +288,7 @@ class Service extends \think\Service
     }
 
     /**
-     * 自动载入插件
+     * 自动载入钩子插件
      * @return bool
      */
     private function autoload()
@@ -452,14 +456,14 @@ class Service extends \think\Service
             return '';
         $file = app()->getRootPath() . 'config' . DS . 'addons.php';
         if (!FileHelper::isWritable($file)) {
-            throw new \Exception("addons.php文件没有写入权限");
+            throw new \Exception(lang("addons.php File does not have write permission"));
         }
 
         if ($handle = fopen($file, 'w')) {
             fwrite($handle, "<?php\n\n" . "return " . var_export($config, TRUE) . ";");
             fclose($handle);
         } else {
-            throw new Exception("文件没有写入权限");
+            throw new Exception(lang("File does not have write permission"));
         }
         return true;
     }

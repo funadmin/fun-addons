@@ -101,24 +101,26 @@ if (!function_exists('set_addons_info')) {
         $addon = get_addons_instance($name);
         $array = $addon->setInfo($name, $array);
         if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
-            throw new Exception("插件配置写入失败");
+            throw new Exception("Failed to write plugin config");
         }
         $res = array();
         foreach ($array as $key => $val) {
             if (is_array($val)) {
                 $res[] = "[$key]";
-                foreach ($val as $skey => $sval)
-                    $res[] = "$skey = " . (is_numeric($sval) ? $sval : $sval);
+                foreach ($val as $k => $v)
+                    $res[] = "$k = " . (is_numeric($v) ? $v : $v);
             } else
                 $res[] = "$key = " . (is_numeric($val) ? $val : $val);
         }
+        
         if ($handle = fopen($file, 'w')) {
             fwrite($handle, implode("\n", $res) . "\n");
             fclose($handle);
             //清空当前配置缓存
-            Config::set($name, NULL, 'addoninfo');
+            Config::set([],$name);
+            Cache::delete('addonslist');
         } else {
-            throw new Exception("文件没有写入权限");
+            throw new Exception("File does not have write permission");
         }
         return true;
     }
@@ -168,7 +170,6 @@ if (!function_exists('get_addons_class')) {
         }
         switch ($type) {
             case 'controller':
-//                $namespace = '\\addons\\' . $name . '\\controller\\' .$module.'\\'. $class;
                  $namespace = '\\addons\\' . $name.'\\'  .$module. '\\controller\\' .$class;
                 break;
             default:
@@ -200,7 +201,7 @@ if (!function_exists('get_addons_config')) {
 if (!function_exists('addons_url')) {
     /**
      * 插件显示内容里生成访问插件的url
-     * @param $url
+     * @param string $url    地址 格式：插件名/模块/控制器/方法
      * @param array $param
      * @param bool|string $suffix 生成的URL后缀
      * @param bool|string $domain 域名
@@ -208,7 +209,6 @@ if (!function_exists('addons_url')) {
      */
     function addons_url($url = '', $param = [], $suffix = true, $domain = false)
     {
-        $url = 'ueditor/frontend/index/index';
         $request = app('request');
         if (empty($url)) {
             // 生成 url 模板变量
@@ -234,7 +234,7 @@ if (!function_exists('addons_url')) {
         }
 
         // 注册控制器路由
-        return Route::buildUrl("addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
+        return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
     }
 }
 
@@ -353,8 +353,8 @@ if (!function_exists('get_addons_autoload_config')) {
  * @return  boolean
  * @throws  Exception
  */
-if (!function_exists('refreshaddonsjs')) {
-    function refreshaddonsjs()
+if (!function_exists('refreshaddons')) {
+    function refreshaddons()
     {
         //刷新addons.js
         $addons = get_addons_list();
@@ -375,24 +375,22 @@ SP;
             fwrite($file, str_replace("{__ADDONJS__}", implode("\n", $jsArr), $tpl));
             fclose($file);
         } else {
-            throw new Exception("addons.js文件没有写入权限");
+            throw new Exception(lang("addons.js File does not have write permission"));
         }
 
         $file = app()->getRootPath() . 'config' . DS . 'addons.php';
 
         $config = get_addons_autoload_config(true);
-        if ($config['autoload'])
-            return;
-
+        if ($config['autoload']) return ;
         if (!is_really_writable($file)) {
-            throw new Exception("addons.php文件没有写入权限");
+            throw new Exception(lang("addons.js File does not have write permission"));
         }
 
         if ($handle = fopen($file, 'w')) {
             fwrite($handle, "<?php\n\n" . "return " . var_export($config, TRUE) . ";");
             fclose($handle);
         } else {
-            throw new Exception("文件没有写入权限");
+            throw new Exception(lang('File does not have write permission'));
         }
         return true;
     }
