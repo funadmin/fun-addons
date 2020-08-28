@@ -3,7 +3,7 @@ The ThinkPHP 6 Addons Package
 感谢 zzstudio/think-addons 
 
 ## 安装
-> composer require yuege/think-addons
+> composer require speed/speed-addons
 
 ## 配置
 
@@ -129,7 +129,7 @@ return [
     'display' => [
         'title' => '是否显示:',
         'type' => 'radio',
-        'options' => [
+        'content' => [
             '1' => '显示',
             '0' => '不显示'
         ],

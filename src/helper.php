@@ -25,7 +25,6 @@ define('DS',DIRECTORY_SEPARATOR);
 spl_autoload_register(function ($class) {
 
     $class = ltrim($class, '\\');
-a
     $dir = app()->getRootPath();
     $namespace = 'addons';
 
