@@ -25,7 +25,10 @@
     "think": {
       "services": [
         "speed\\addons\\Service"
-      ]
+      ],
+      "config":{
+        "addons": "src/config.php"
+      }
     }
   },
   "scripts": {
