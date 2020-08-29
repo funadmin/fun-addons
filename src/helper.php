@@ -98,7 +98,10 @@ if (!function_exists('set_addons_info')) {
         // 插件列表
         $file = $addons_path. $name . DIRECTORY_SEPARATOR . 'Plugin.ini';
         $addon = get_addons_instance($name);
+//        echo '------------------1----------';
         $array = $addon->setInfo($name, $array);
+//        echo '------------2-----------';
+        $array['status']?$addon->enabled():$addon->disabled();
         if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
             throw new Exception("Failed to write plugin config");
         }
@@ -116,7 +119,7 @@ if (!function_exists('set_addons_info')) {
             fwrite($handle, implode("\n", $res) . "\n");
             fclose($handle);
             //清空当前配置缓存
-            Config::set([],$name);
+            Config::set($array,"addon_{$name}_info");
             Cache::delete('addonslist');
         } else {
             throw new Exception("File does not have write permission");
@@ -245,14 +248,13 @@ if (!function_exists('addons_url')) {
 if (!function_exists('get_addons_list')) {
 
     function get_addons_list()
-    {   
+    {
         if(!Cache::get('addonslist')){
             $service = new Service(App::instance()); // 获取service 服务
             $addons_path = $service->getAddonsPath(); // 插件列表
             $results = scandir($addons_path);
             $list = [];
             foreach ($results as $name) {
-
                 if ($name === '.' or $name === '..')
                     continue;
                 if (is_file($addons_path . $name))
@@ -263,8 +265,7 @@ if (!function_exists('get_addons_list')) {
 
                 if (!is_file($addonDir . 'Plugin' . '.php'))
                     continue;
-                $addon = get_addons_instance($name);
-                $info = $addon->getInfo($name);
+                $info = get_addons_info($name);
                 if (!isset($info['name']))
                     continue;
                 $info['url'] = (string)addons_url();
@@ -356,7 +357,9 @@ if (!function_exists('refreshaddons')) {
     function refreshaddons()
     {
         //刷新addons.js
+//        echo '<3>';
         $addons = get_addons_list();
+//        echo '<4>';
         $jsArr = [];
         foreach ($addons as $name => $addon) {
             $jsArrFile = app()->getRootPath().'addons'.DS . $name . DS . 'plugin.js';
@@ -376,11 +379,11 @@ SP;
         } else {
             throw new Exception(lang("addons.js File does not have write permission"));
         }
-
         $file = app()->getRootPath() . 'config' . DS . 'addons.php';
 
         $config = get_addons_autoload_config(true);
         if (!$config['autoload']) return ;
+
         if (!is_really_writable($file)) {
             throw new Exception(lang("addons.js File does not have write permission"));
         }
