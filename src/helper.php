@@ -394,6 +394,22 @@ SP;
         return true;
     }
 }
+
+/**
+ * 判断文件或目录是否有写的权限
+ */
+function is_really_writable($file)
+{
+    if (DIRECTORY_SEPARATOR == '/' AND @ ini_get("safe_mode") == false) {
+        return is_writable($file);
+    }
+    if (!is_file($file) OR ($fp = @fopen($file, "r+")) === false) {
+        return false;
+    }
+    fclose($fp);
+    return true;
+}
+
 /**
  * 导入SQL
  *
