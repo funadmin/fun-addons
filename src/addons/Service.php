@@ -473,6 +473,7 @@ class Service extends \think\Service
     {
         $addonslist = get_addons_list();
         $addonslist[$name]['status'] = $state;
+        set_addons_info($name,['status'=>$state]);
         Cache::set('addonslist', $addonslist);
 
     }
