@@ -469,12 +469,13 @@ class Service extends \think\Service
     }
 
     //更新插件状态
-    public static function updateAddonsInfo($name, $state = 1)
+    public static function updateAddonsInfo($name, $state = 1,$install=1)
     {
         $addonslist = get_addons_list();
         $addonslist[$name]['status'] = $state;
-        set_addons_info($name,['status'=>$state]);
+        $addonslist[$name]['install'] = $install;
         Cache::set('addonslist', $addonslist);
+        set_addons_info($name,['status'=>$state,'install'=>$install]);
 
     }
 

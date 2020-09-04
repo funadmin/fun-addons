@@ -273,7 +273,7 @@ if (!function_exists('get_addons_list')) {
                 Cache::set('addonslist',$list);
             }
         }else{
-            $list = Cache::get('addonslist')  ;
+            $list =  Cache::get('addonslist')  ;
         }
         
         return $list;
@@ -357,13 +357,11 @@ if (!function_exists('refreshaddons')) {
     function refreshaddons()
     {
         //刷新addons.js
-//        echo '<3>';
         $addons = get_addons_list();
-//        echo '<4>';
         $jsArr = [];
         foreach ($addons as $name => $addon) {
             $jsArrFile = app()->getRootPath().'addons'.DS . $name . DS . 'plugin.js';
-            if ($addon['status'] && is_file($jsArrFile)) {
+            if ($addon['status'] && $addon['install'] && is_file($jsArrFile)) {
                 $jsArr[] = file_get_contents($jsArrFile);
             }
         }
