@@ -1,6 +1,3 @@
-think-addons
-The ThinkPHP 6 Addons Package
-感谢 zzstudio/think-addons 
 
 ## 安装
 > composer require heek/heek-addons
@@ -234,4 +231,8 @@ function importsql($name)
 
 
 ```
+
+think-addons
+The ThinkPHP 6 Addons Package
+感谢 zzstudio/think-addons 
 
