@@ -1,10 +1,10 @@
 {
-  "name": "heek/heek-addons",
+  "name": "fun/fun-addons",
   "license": "mit",
   "authors": [
     {
-      "name": "heek",
-      "email": "heek@qq.com"
+      "name": "fun",
+      "email": "fun@qq.com"
     }
   ],
   "require": {
@@ -15,7 +15,7 @@
   },
   "autoload": {
     "psr-4": {
-      "heek\\": "src/"
+      "fun\\": "src/"
     },
     "files": [
       "src/helper.php"
@@ -24,7 +24,7 @@
   "extra": {
     "think": {
       "services": [
-        "heek\\addons\\Service"
+        "fun\\addons\\Service"
       ],
       "config":{
         "addons": "src/config.php"

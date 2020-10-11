@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace heek;
+namespace fun;
 
 use think\App;
 use think\helper\Str;

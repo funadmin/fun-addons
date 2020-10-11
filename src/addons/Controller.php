@@ -1,6 +1,6 @@
 <?php
 
-namespace heek\addons;
+namespace fun\addons;
 
 use app\BaseController;
 use think\App;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace heek\addons\middleware;
+namespace fun\addons\middleware;
 
 use think\App;
 

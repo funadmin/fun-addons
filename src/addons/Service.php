@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace heek\addons;
+namespace fun\addons;
 
-use heek\helper\FileHelper;
+use fun\helper\FileHelper;
 use think\App;
 use think\Console;
 use think\Db;
@@ -16,14 +16,14 @@ use think\facade\Config;
 use think\facade\Lang;
 use think\facade\Cache;
 use think\facade\Event;
-use heek\addons\middleware\Addons;
+use fun\addons\middleware\Addons;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
  * 插件服务
  * Class Service
- * @package heek\addons
+ * @package fun\addons
  */
 class Service extends \think\Service
 {
@@ -56,7 +56,7 @@ class Service extends \think\Service
 
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
-            $execute = '\\heek\\addons\\Route::execute';
+            $execute = '\\fun\\addons\\Route::execute';
             // 注册控制器路由
             $route->rule("addons/:addon/[:module]/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
@@ -119,7 +119,7 @@ class Service extends \think\Service
     {
         // 加载系统语言包
         Lang::load([
-            $this->app->getRootPath() . '/vendor/heek/heek-addons/src/lang/zh-cn.php'
+            $this->app->getRootPath() . '/vendor/fun/fun-addons/src/lang/zh-cn.php'
         ]);
         // 加载应用默认语言包
         $this->app->loadLangPack($this->app->lang->defaultLangSet());
@@ -305,7 +305,7 @@ class Service extends \think\Service
         }
         $config = Config::get('addons');
         // 读取插件目录及钩子列表
-        $base = get_class_methods("\\heek\\Addons");
+        $base = get_class_methods("\\fun\\Addons");
         // 读取插件目录中的php文件
         foreach (glob($this->getAddonsPath() . '*/*.php') as $addons_file) {
             // 格式化路径信息

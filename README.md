@@ -1,6 +1,6 @@
 
 ## 安装
-> composer require heek/heek-addons
+> composer require fun/fun-addons
 
 ## 配置
 
