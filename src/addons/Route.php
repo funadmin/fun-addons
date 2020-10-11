@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace speed\addons;
+namespace heek\addons;
 
 use think\helper\Str;
 use think\facade\Event;

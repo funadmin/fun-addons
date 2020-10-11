@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace speed\addons;
+namespace heek\addons;
 
-use speed\helper\FileHelper;
+use heek\helper\FileHelper;
 use think\App;
 use think\Console;
 use think\Db;
@@ -16,14 +16,14 @@ use think\facade\Config;
 use think\facade\Lang;
 use think\facade\Cache;
 use think\facade\Event;
-use speed\addons\middleware\Addons;
+use heek\addons\middleware\Addons;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
  * 插件服务
  * Class Service
- * @package speed\addons
+ * @package heek\addons
  */
 class Service extends \think\Service
 {
@@ -56,7 +56,7 @@ class Service extends \think\Service
 
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
-            $execute = '\\speed\\addons\\Route::execute';
+            $execute = '\\heek\\addons\\Route::execute';
             // 注册控制器路由
             $route->rule("addons/:addon/[:module]/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
@@ -68,28 +68,34 @@ class Service extends \think\Service
                         continue;
                     }
                     if (is_array($val)) {
-                        $domain = $val['domain'];
-                        $rules = [];
-                        foreach ($val['rule'] as $k => $rule) {
-                            list($addon,$module, $controller, $action) = explode('/', $rule);
-                            $rules[$k] = [
-                                'module' => $module,
-                                'addon' => $addon,
-                                'controller' => $controller,
-                                'action' => $action,
-                                'indomain' => 1,
-                            ];
-                        }
-                        $route->domain($domain, function () use ($rules, $route, $execute) {
-                            // 动态注册域名的路由规则
-                            foreach ($rules as $k => $rule) {
-                                $route->rule($k, $execute)
-                                    ->name($k)
-                                    ->completeMatch(true)
-                                    ->append($rule);
+                        if(isset($val['rule']) && isset($val['domain'])){
+                            $domain = $val['domain'];
+                            $rules = [];
+                            foreach ($val['rule'] as $k => $rule) {
+                                $rule = rtrim($rule,'/');
+                                list($addon,$module, $controller, $action) = explode('/', $rule);
+                                $rules[$k] = [
+                                    'module' => $module,
+                                    'addon' => $addon,
+                                    'controller' => $controller,
+                                    'action' => $action,
+                                    'indomain' => 1,
+                                ];
                             }
-                        });
+                            $route->domain($domain, function () use ($rules, $route, $execute) {
+                                // 动态注册域名的路由规则
+                                foreach ($rules as $k => $rule) {
+                                    $route->rule($k, $execute)
+                                        ->name($k)
+                                        ->completeMatch(true)
+                                        ->append($rule);
+                                }
+                            });
+                        }
+
+
                     } else {
+                        $val = rtrim($val,'/');
                         list($addon,$module, $controller, $action) = explode('/', $val);
                         $route->rule($key, $execute)
                             ->name($key)
@@ -113,7 +119,7 @@ class Service extends \think\Service
     {
         // 加载系统语言包
         Lang::load([
-            $this->app->getRootPath() . '/vendor/speed/speed-addons/src/lang/zh-cn.php'
+            $this->app->getRootPath() . '/vendor/heek/heek-addons/src/lang/zh-cn.php'
         ]);
         // 加载应用默认语言包
         $this->app->loadLangPack($this->app->lang->defaultLangSet());
@@ -299,7 +305,7 @@ class Service extends \think\Service
         }
         $config = Config::get('addons');
         // 读取插件目录及钩子列表
-        $base = get_class_methods("\\speed\\Addons");
+        $base = get_class_methods("\\heek\\Addons");
         // 读取插件目录中的php文件
         foreach (glob($this->getAddonsPath() . '*/*.php') as $addons_file) {
             // 格式化路径信息

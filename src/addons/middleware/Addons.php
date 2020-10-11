@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace speed\addons\middleware;
+namespace heek\addons\middleware;
 
 use think\App;
 

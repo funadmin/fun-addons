@@ -1,10 +1,10 @@
 {
-  "name": "speed/speed-addons",
+  "name": "heek/heek-addons",
   "license": "mit",
   "authors": [
     {
-      "name": "speed",
-      "email": "speed@qq.com"
+      "name": "heek",
+      "email": "heek@qq.com"
     }
   ],
   "require": {
@@ -15,7 +15,7 @@
   },
   "autoload": {
     "psr-4": {
-      "speed\\": "src/"
+      "heek\\": "src/"
     },
     "files": [
       "src/helper.php"
@@ -24,7 +24,7 @@
   "extra": {
     "think": {
       "services": [
-        "speed\\addons\\Service"
+        "heek\\addons\\Service"
       ],
       "config":{
         "addons": "src/config.php"

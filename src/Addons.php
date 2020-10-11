@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace speed;
+namespace heek;
 
 use think\App;
 use think\helper\Str;

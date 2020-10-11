@@ -1,6 +1,6 @@
 <?php
 
-namespace speed\addons;
+namespace heek\addons;
 
 use app\BaseController;
 use think\App;

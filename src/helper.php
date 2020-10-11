@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-use speed\addons\middleware\Addons;
-use speed\addons\Service;
+use heek\addons\middleware\Addons;
+use heek\addons\Service;
 use think\facade\Db;
 use think\facade\App;
 use think\facade\Config;
@@ -17,7 +17,7 @@ define('DS',DIRECTORY_SEPARATOR);
 
 \think\Console::starting(function (\think\Console $console) {
     $console->addCommands([
-        'addons:config' => '\\speed\\addons\\command\\SendConfig'
+        'addons:config' => '\\heek\\addons\\command\\SendConfig'
     ]);
 });
 
@@ -299,7 +299,7 @@ if (!function_exists('get_addons_autoload_config')) {
         }
         $route = [];
         // 读取插件目录及钩子列表
-        $base = get_class_methods("\\speed\\Addons");
+        $base = get_class_methods("\\heek\\Addons");
         $base = array_merge($base, ['install', 'uninstall', 'enabled', 'disabled']);
 
         $url_domain_deploy = Config::get('route.url_domain_deploy');

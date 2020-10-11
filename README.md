@@ -3,7 +3,7 @@ The ThinkPHP 6 Addons Package
 感谢 zzstudio/think-addons 
 
 ## 安装
-> composer require speed/speed-addons
+> composer require heek/heek-addons
 
 ## 配置
 
