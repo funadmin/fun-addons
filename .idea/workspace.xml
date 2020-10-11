@@ -3,15 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="33b08888-8d87-4377-a29e-1245fd1ac0ba" name="默认的" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Addons.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Addons.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/addons/Controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/addons/Controller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/addons/Route.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/addons/Route.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/addons/Service.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/addons/Service.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/addons/command/SendConfig.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/addons/command/SendConfig.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/addons/middleware/Addons.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/addons/middleware/Addons.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/helper.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/helper.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +37,7 @@
       <updated>1602338375821</updated>
       <workItem from="1602338376950" duration="703000" />
       <workItem from="1602384965006" duration="1849000" />
-      <workItem from="1602395548879" duration="85000" />
+      <workItem from="1602395548879" duration="557000" />
     </task>
     <servers />
   </component>
