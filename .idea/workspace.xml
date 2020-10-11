@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="33b08888-8d87-4377-a29e-1245fd1ac0ba" name="默认的" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
-    </list>
+    <list default="true" id="33b08888-8d87-4377-a29e-1245fd1ac0ba" name="默认的" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,7 +34,7 @@
       <updated>1602338375821</updated>
       <workItem from="1602338376950" duration="703000" />
       <workItem from="1602384965006" duration="1849000" />
-      <workItem from="1602395548879" duration="557000" />
+      <workItem from="1602395548879" duration="714000" />
     </task>
     <servers />
   </component>

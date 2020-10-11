@@ -136,7 +136,7 @@ class Service extends \think\Service
             if (in_array($name, ['.', '..'])) {
                 continue;
             }
-            $common = glob($name . 'common.php');
+            $common = glob($this->addons_path . $name  .DS. 'common.php');
             if (!empty($common) && is_file($common[0])) {
                 include_once $common[0];
             }
