@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace fun\addons;
 
+use think\facade\Lang;
 use think\helper\Str;
 use think\facade\Event;
 use think\facade\Config;
@@ -18,16 +19,19 @@ class Route
      * @param null $action
      * @return mixed
      */
+    public static $addons_path;
+    public static $app;
     public static function execute($module='frontend',$addon = null, $controller = null, $action = null)
     {
         $app = app();
         $request = $app->request;
+        self::$app = $app;
         // 注册插件公共中间件
         if (is_file($app->addons->getAddonsPath() . 'middleware.php')) {
             $app->middleware->import(include $app->addons->getAddonsPath() . 'middleware.php', 'route');
         }
         if (is_file($app->addons->getAddonsPath() . 'provider.php')) {
-            $app->bind(include $basePath . 'provider.php');
+            $app->bind(include $app->addons->getAddonsPath() . 'provider.php');
         }
         $module_path  = $app->addons->getAddonsPath() . $addon . DS .$module.DS;
         //注册路由配置
@@ -50,6 +54,7 @@ class Route
         if (empty($addon) || empty($controller) || empty($action)) {
             throw new HttpException(500, lang('addon can not be empty'));
         }
+        self::$addons_path = Service::getAddonsNamePath($addon);
         $request->addon = $addon;
         // 设置当前请求的控制器、操作
         $request->setController("{$module}.{$controller}")->setAction($action);
@@ -71,6 +76,8 @@ class Route
         $config = Config::get('view');
         $config['view_path'] = $app->addons->getAddonsPath() . $addon . DS.$module .DS. 'view' . DS;
         Config::set($config, 'view');
+        //加载app配置
+        self::loadApp();
         // 生成控制器对象
         $instance = new $class($app);
         $vars = [];
@@ -89,4 +96,71 @@ class Route
 
         return call_user_func_array($call, $vars);
     }
+
+    /**
+     * 加载配置，路由，语言，中间件等
+     */
+    private static function loadApp($addon = null)
+    {
+        $results = scandir(self::$addons_path);
+
+        foreach ($results as $childname){
+            if (in_array($childname, ['.', '..','public','view'])) {
+                continue;
+            }
+            if (is_file(self::$addons_path . 'middleware.php')) {
+                self::$app->middleware->import(include self::$addons_path . 'middleware.php', 'app');
+            }
+            if (is_file(self::$addons_path . 'provider.php')) {
+                self::$app->bind(include self::$addons_path . 'provider.php');
+            }
+            //事件
+            if (is_file(self::$addons_path. 'event.php')) {
+                self::$app->loadEvent(include self::$addons_path . 'event.php');
+            }
+            $module_dir = self::$addons_path.$childname;
+            if(is_dir($module_dir)){
+                foreach (scandir($module_dir) as $mdir) {
+                    if (in_array($mdir, ['.', '..'])) {
+                        continue;
+                    }
+                    $commands = [];
+                    //配置文件
+                    $addons_config_dir = self::$addons_path .$childname  . DS . 'config' . DS;
+                    if (is_dir($addons_config_dir)) {
+                        $files = glob($addons_config_dir . '*.php');
+                        foreach ($files as $file) {
+                            if (file_exists($file)) {
+                                if(substr($file,-11) =='console.php'){
+
+                                    $commands_config = include_once $file;
+                                    isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
+                                    !empty($commands) &&
+                                    \think\Console::starting(function (\think\Console $console) {$console->addCommands($commands);});
+                                }else{
+                                    self::$app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+                                }
+                            }
+                        }
+                    }
+                    //语言文件
+                    $addons_lang_dir = self::$addons_path .$childname  .DS . 'lang' . DS;
+                    if (is_dir($addons_lang_dir)) {
+                        $files = glob($addons_lang_dir . self::$app->lang->defaultLangSet() . '.php');
+                        foreach ($files as $file) {
+                            if (file_exists($file)) {
+                                Lang::load([$file]);
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+
+
+    }
+
+
 }

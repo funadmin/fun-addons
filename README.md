@@ -1,6 +1,6 @@
 
 ## 安装
-> composer require fun/fun-addons
+> composer require funadmin/fun-addons
 
 ## 配置
 
@@ -64,13 +64,13 @@ return [
 <?php
 namespace addons\test;  // 注意命名空间规范
 
-use think\Addons;
+use fun\Addon;
 
 /**
  * 插件测试
  * @author byron sampson
  */
-class Plugin extends Addons // 需继承think\Addons类
+class Plugin extends Addons // 需继承fun\Addon类
 {
     // 该插件的基础信息
     public $info = [

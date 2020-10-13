@@ -28,7 +28,7 @@ use RecursiveIteratorIterator;
 class Service extends \think\Service
 {
     protected $addons_path;
-//    protected $addons_name;
+    protected $appName;
 //    protected $module_name;
 
     public function register()
@@ -45,7 +45,7 @@ class Service extends \think\Service
         // 加载插件系统服务
         $this->loadService();
         //加载配置
-        $this->loadConfig();
+        $this->loadApp();
         // 绑定插件容器
         $this->app->bind('addons', Service::class);
 
@@ -60,6 +60,7 @@ class Service extends \think\Service
             // 注册控制器路由
             $route->rule("addons/:addon/[:module]/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
+//            $this->appName =
             // 自定义路由
             $routes = (array)Config::get('addons.route', []);
             if(Config::get('addons.autoload',true)){
@@ -136,10 +137,7 @@ class Service extends \think\Service
             if (in_array($name, ['.', '..'])) {
                 continue;
             }
-            $common = glob($this->addons_path . $name  .DS. 'common.php');
-            if (!empty($common) && is_file($common[0])) {
-                include_once $common[0];
-            }
+
             $module_dir = $this->addons_path . $name . DS;
             foreach (scandir($module_dir) as $mdir) {
                 if (in_array($mdir, ['.', '..'])) {
@@ -225,25 +223,13 @@ class Service extends \think\Service
     /**
      * 加载配置，路由，语言，中间件等
      */
-    private function loadConfig()
+    private function loadApp()
     {
         $results = scandir($this->addons_path);
         foreach ($results as $name){
-            if (in_array($name, ['.', '..'])) {
-                continue;
-            }
+            if (in_array($name, ['.', '..']))  continue;
+            if(!is_dir($this->addons_path.$name)) continue;
             foreach (scandir($this->addons_path.$name) as $childname){
-                $basePath = $this->addons_path . $name . DS;
-                if (is_file($basePath . 'middleware.php')) {
-                    $this->app->middleware->import(include $basePath . 'middleware.php', 'app');
-                }
-                if (is_file($basePath . 'provider.php')) {
-                    $this->app->bind(include $basePath . 'provider.php');
-                }
-                //事件
-                if (is_file($this->addons_path .$name.DS. 'event.php')) {
-                    $this->app->loadEvent(include $this->addons_path .$name .DS. 'event.php');
-                }
                 if (in_array($childname, ['.', '..','public','view'])) {
                     continue;
                 }
@@ -253,12 +239,9 @@ class Service extends \think\Service
                         if (in_array($mdir, ['.', '..'])) {
                             continue;
                         }
-                        //加载插件自定义命令行
-                        $addons_command_dir = $this->addons_path . $name. DS .$childname  . DS . 'command' . DS;
-
-                        $commands = [];
+                       $commands = [];
                         //配置文件
-                        $addons_config_dir = $this->addons_path . $name.DS.$childname  . DS . 'config' . DS;
+                        $addons_config_dir = $this->addons_path . $name. DS . $childname  . DS . 'config' . DS;
                         if (is_dir($addons_config_dir)) {
                             $files = glob($addons_config_dir . '*.php');
                             foreach ($files as $file) {
@@ -267,19 +250,7 @@ class Service extends \think\Service
                                         $commands_config = include_once $file;
                                         isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
                                         !empty($commands) && $this->commands($commands);
-                                    }else{
-                                        $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
                                     }
-                                }
-                            }
-                        }
-                        //语言文件
-                        $addons_lang_dir = $this->addons_path . $name.DS.$childname  .DS . 'lang' . DS;
-                        if (is_dir($addons_lang_dir)) {
-                            $files = glob($addons_lang_dir . $this->app->lang->defaultLangSet() . '.php');
-                            foreach ($files as $file) {
-                                if (file_exists($file)) {
-                                    Lang::load([$file]);
                                 }
                             }
                         }
@@ -289,7 +260,6 @@ class Service extends \think\Service
             }
 
         }
-
 
     }
 
