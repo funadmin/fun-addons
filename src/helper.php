@@ -367,11 +367,11 @@ if (!function_exists('refreshaddons')) {
         }
         $addonsjsFile =     app()->getRootPath()."public/static/require-addons.js";
         if ($file = fopen($addonsjsFile, 'w')) {
-            $tpl = <<<SP
+            $tpl = <<<EOF
 define([], function () {
     {__ADDONJS__}
 });
-SP;
+EOF;
             fwrite($file, str_replace("{__ADDONJS__}", implode("\n", $jsArr), $tpl));
             fclose($file);
         } else {
