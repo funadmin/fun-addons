@@ -128,17 +128,19 @@ class Route
                     //配置文件
                     $addons_config_dir = self::$addons_path .$childname  . DS . 'config' . DS;
                     if (is_dir($addons_config_dir)) {
-                        $files = glob($addons_config_dir . '*.php');
-                        foreach ($files as $file) {
-                            if (file_exists($file)) {
-                                if(substr($file,-11) =='console.php'){
-
-                                    $commands_config = include_once $file;
-                                    isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
-                                    !empty($commands) &&
-                                    \think\Console::starting(function (\think\Console $console) {$console->addCommands($commands);});
-                                }else{
-                                    self::$app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+                        $files = [];
+                        $files = array_merge($files, glob($addons_config_dir . '*' . self::$app->getConfigExt()));
+                        if($files){
+                            foreach ($files as $file) {
+                                if (file_exists($file)) {
+                                    if(substr($file,-11) =='console.php'){
+                                        $commands_config = include_once $file;
+                                        isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
+                                        !empty($commands) &&
+                                        \think\Console::starting(function (\think\Console $console) {$console->addCommands($commands);});
+                                    }else{
+                                        self::$app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+                                    }
                                 }
                             }
                         }

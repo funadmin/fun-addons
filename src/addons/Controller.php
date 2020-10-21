@@ -79,12 +79,12 @@ class Controller extends BaseController
         $this->controller = $controller ? call_user_func($filter, $controller) : 'index';
         $this->action = $action ? call_user_func($filter, $action) : 'index';
         // 父类的调用必须放在设置模板路径之后
-        $this->_initialize();
+        $this->initialize();
         parent::__construct($app);
     }
 
-    protected function _initialize()
-    {   
+    protected function initialize()
+    {
 
          // 渲染配置到视图中
         if(isset($this->param['addon'])){
@@ -100,7 +100,7 @@ class Controller extends BaseController
         $this->layout && app()->view->engine()->layout($this->module.DS.trim($this->layout,'/'));
 
         $config = get_addons_config($this->addon);
-        View::assign(['config'=>$config]);
+        View::assign(['addons_config'=>$config]);
         // 加载系统语言包
         Lang::load([
             $this->addon_path . 'lang' . DS . Lang::getLangset() . '.php',
