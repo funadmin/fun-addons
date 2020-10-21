@@ -79,28 +79,26 @@ class Controller extends BaseController
         $this->controller = $controller ? call_user_func($filter, $controller) : 'index';
         $this->action = $action ? call_user_func($filter, $action) : 'index';
         // 父类的调用必须放在设置模板路径之后
-        $this->initialize();
+        $this->_initialize();
         parent::__construct($app);
     }
 
-    protected function initialize()
+    protected function _initialize()
     {
-
+        $view_config = Config::get('view');
          // 渲染配置到视图中
         if(isset($this->param['addon'])){
-            View::engine('Think')->config([
-                'view_path' => $this->addon_path .'view' .DS
-            ]);
+            $view_config = array_merge($view_config,['view_path' => $this->addon_path .'view' .DS],);
+            View::engine('Think')->config($view_config);
         }else{
-            View::engine('Think')->config([
-                'view_path' => $this->addon_path .'view'.DS.$this->module.DS.str_replace('.','/',$this->controller) .DS
-            ]);
+            $view_config = array_merge($view_config,['view_path' => $this->addon_path .'view'.DS.$this->module.DS.str_replace('.','/',$this->controller) .DS]);
+            View::engine('Think')->config($view_config);
         }
         // 如果有使用模板布局
         $this->layout && app()->view->engine()->layout($this->module.DS.trim($this->layout,'/'));
 
         $config = get_addons_config($this->addon);
-        View::assign(['addons_config'=>$config]);
+        View::assign(['config'=>$config]);
         // 加载系统语言包
         Lang::load([
             $this->addon_path . 'lang' . DS . Lang::getLangset() . '.php',
