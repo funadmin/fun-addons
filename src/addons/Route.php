@@ -77,7 +77,7 @@ class Route
         $config['view_path'] = $app->addons->getAddonsPath() . $addon . DS.$module .DS. 'view' . DS;
         Config::set($config, 'view');
         //加载app配置
-        self::loadApp();
+        self::loadApp($addon,$module);
         // 生成控制器对象
         $instance = new $class($app);
         $vars = [];
@@ -100,9 +100,9 @@ class Route
     /**
      * 加载配置，路由，语言，中间件等
      */
-    private static function loadApp($addon = null)
+    private static function loadApp($addon = null,$module=null)
     {
-        $results = scandir(self::$addons_path);
+        $results = scandir(self::$addons_path.$module);
 
         foreach ($results as $childname){
             if (in_array($childname, ['.', '..','public','view'])) {
