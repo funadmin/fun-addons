@@ -97,8 +97,8 @@ class Controller extends BaseController
         // 如果有使用模板布局
         $this->layout && app()->view->engine()->layout($this->module.DS.trim($this->layout,'/'));
 
-        $config = get_addons_config($this->addon);
-        View::assign(['config'=>$config]);
+        $addon_config = get_addons_config($this->addon);
+        View::assign(['addon_config'=>$addon_config]);
         // 加载系统语言包
         Lang::load([
             $this->addon_path . 'lang' . DS . Lang::getLangset() . '.php',
