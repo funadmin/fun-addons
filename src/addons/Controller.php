@@ -94,8 +94,14 @@ class Controller extends BaseController
             $view_config = array_merge($view_config,['view_path' => $this->addon_path .'view'.DS.$this->module.DS.str_replace('.','/',$this->controller) .DS]);
             View::engine('Think')->config($view_config);
         }
-        // 如果有使用模板布局
-        $this->layout && app()->view->engine()->layout($this->module.DS.trim($this->layout,'/'));
+        // 如果有使用模板布局 可以更换布局
+        if($this->layout=='layout/main'){
+            $this->layout && app()->view->engine()->layout($this->module.DS.trim($this->layout,'/'));
+
+        }else{
+            $this->layout && app()->view->engine()->layout(trim($this->layout,'/'));
+
+        }
 
         $addon_config = get_addons_config($this->addon);
         View::assign(['addon_config'=>$addon_config]);
