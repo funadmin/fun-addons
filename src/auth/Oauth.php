@@ -23,19 +23,6 @@ use think\facade\Cache;
 class Oauth
 {
     use Send;
-    /**
-     * accessToken存储前缀
-     *
-     * @var string
-     */
-    public static $accessTokenPrefix = 'accessToken_';
-
-    /**
-     * 过期时间秒数
-     *
-     * @var int
-     */
-    public static $expires = 7200;
 
     /**
      * 认证授权 通过用户信息和路由
@@ -58,7 +45,8 @@ class Oauth
     {   
         //获取头部信息
         try {
-            $authorization = Request::header('authentication'); //获取请求中的authentication字段，值形式为USERID asdsajh..这种形式
+            $authorization = config('api.auth.authentication');
+            $authorization = Request::header($authorization); //获取请求中的authentication字段，值形式为USERID asdsajh..这种形式
             $authorization = explode(" ", $authorization);//explode分割，获取后面一窜base64加密数据
             $authorizationInfo  = explode(":", base64_decode($authorization[1]));  //对base_64解密，获取到用:拼接的自字符串，然后分割，可获取appid、accesstoken、uid这三个参数
             $clientInfo['uid'] = $authorizationInfo[2];
@@ -76,6 +64,7 @@ class Oauth
      */
     public static function certification($data = []){
 
+        
         $getCacheAccessToken = Cache::get(self::$accessTokenPrefix . $data['access-token']);  //获取缓存access-token
         if(!$getCacheAccessToken){
             self::error('access-token不存在或为空','',401);

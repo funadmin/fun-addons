@@ -13,6 +13,7 @@
 
 namespace fun\auth;
 
+use app\common\service\PredisService;
 use think\facade\Request;
 use fun\auth\Send;
 use fun\auth\Oauth;
@@ -27,15 +28,6 @@ use think\Lang;
 class Token
 {
     use Send;
-
-    /**
-     * 请求时间差
-     */
-    public static $timeDif = 10000;
-    public static $accessTokenPrefix = 'accessToken_';
-    public static $refreshAccessTokenPrefix = 'refreshAccessToken_';
-    public static $expires = 7200;
-    public static $refreshExpires = 3600 * 24 * 30;   //刷新token过期时间
     /**
      * 测试appid，正式请数据库进行相关验证
      */
@@ -159,7 +151,7 @@ class Token
     }
 
     /**
-     * 刷新用的token检测是否还有效
+     * 获取刷新用的token检测是否还有效
      */
     public static function getRefreshToken($appid = '')
     {
@@ -184,8 +176,8 @@ class Token
      * @param $accessTokenInfo
      */
     protected static function saveAccessToken($accessToken, $accessTokenInfo)
-    {
-        //存储accessToken
+    {   
+        $token_type = config('api.auth.token_type');
         cache(self::$accessTokenPrefix . $accessToken, $accessTokenInfo, self::$expires);
     }
 

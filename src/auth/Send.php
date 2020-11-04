@@ -17,8 +17,13 @@ use think\Response;
 
 trait Send
 {
-
+    public static $timeDif = 10000;
+    public static $accessTokenPrefix = 'accessToken_';
+    public static $refreshAccessTokenPrefix = 'refreshAccessToken_';
+    public static $refreshExpires = 3600 * 24 * 30;   //刷新token过期时间
+    public static $expires = 7200;
     public static $responseType = 'json';
+
     /**
      * 操作成功返回的数据
      * @param string $msg 提示信息
