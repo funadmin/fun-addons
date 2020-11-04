@@ -11,13 +11,12 @@
  * Date: 2019/10/3
  */
 
-namespace fun\api;
+namespace fun\auth;
 
 use think\facade\Request;
-use fun\api\Send;
-use fun\api\Oauth;
+use fun\auth\Send;
+use fun\auth\Oauth;
 use think\facade\Cache;
-use fun\api\util\wxBizDataCrypt;
 use app\common\model\WxFans;
 use think\facade\Db;
 use think\Lang;
@@ -78,71 +77,21 @@ class Token
     public function accessToken(Request $request)
     {
         //参数验证
-        $validate = new \fun\api\validate\Token;
+        $validate = new \fun\auth\validate\Token;
         if (!$validate->check(Request::post())) {
             self::error($validate->getError());
         }
         self::checkParams(Request::post());  //参数校验
         //数据库已经有一个用户,这里需要根据input('mobile')去数据库查找有没有这个用户
-        $userInfo = self::getUser(Request::post('username'), Request::post('password'));
+        $memberInfo = self::getMember(Request::post('username'), Request::post('password'));
         //虚拟一个uid返回给调用方
         try {
-            $accessToken = self::setAccessToken(array_merge($userInfo, Request::post()));  //传入参数应该是根据手机号查询改用户的数据
+            $accessToken = self::setAccessToken(array_merge($memberInfo, Request::post()));  //传入参数应该是根据手机号查询改用户的数据
             self::success('success', $accessToken);
         } catch (\Exception $e) {
             self::error($e, 'fail', 500);
         }
     }
-
-//    /** 小程序
-//     * @param string $code
-//     * @param string $encryptedData
-//     * @param string $iv
-//     * @param array $appInfo
-//     */
-//	public function getOpenId($code = '',$encryptedData = '',$iv = '',$appInfo = [])
-//	{
-//        $result = json_decode(file_get_contents("https://api.weixin.qq.com/sns/jscode2session?appid=" . $appInfo['wx_appid'] . "&secret=" . $appInfo['wx_appsecret'] . "&js_code=" . $code . "&grant_type=authorization_code"), true);
-//		if(empty($result['session_key'])){
-//           $this->returnmsg('获取token失败!'.$result['errmsg'],'',401);
-//		}else{
-//            $pc = new wxBizDataCrypt($appInfo['wx_appid'], $result['session_key']);
-//            $data = $pc->decryptData($encryptedData, $iv); //解密用户基础信息
-//            $data = json_decode($data, true);
-//            if (!empty($data['openId'])) {
-//                if (isset($data['unionId'])) { //含有unionid
-//                    $is_unionid['is_unionid'] = true;
-//                    $userInfo = WxFans::get(['unionid' => $data['unionId']]); //按照unionid查找
-//                    if(empty($userInfo)){
-//                        $userInfo = WxFans::get(['openid' => $data['openId']]); //按照openid查找
-//                    }
-//                } else {
-//                    $is_unionid['is_unionid'] = false;
-//                    $userInfo = WxFans::get(['openid' => $data['openId']]); //按照openid查找
-//                }
-//                $userAdd['openid']     = $data['openId'];
-//                $userAdd['unionid']    = isset($data['unionId']) ? $data['unionId'] : '';
-//                $userAdd['nickname']   = $data['nickName'];
-//                $userAdd['headimgurl']     = $data['avatarUrl'];
-//                $userAdd['sex']        = $data['gender'];
-//                $userAdd['province']   = $data['province'];
-//                $userAdd['country']    = $data['country'];
-//				if(empty($userInfo)){   //用户没有在fans表里面
-//                    $userAdd['subscribe_scene'] = 'WEIXIN';
-//                    $userAdd['source'] = 2;
-//                    WxFans::create($userAdd);  //插入到粉丝表
-//				}else{
-//                    $userAdd['update_time'] = time();
-//                    WxFans::where('fans_id',$userInfo['fans_id'])->update($userAdd);
-//                    $userAdd['uid'] = $userInfo['id'];
-//				}
-//				return $userAdd;
-//			}else{
-//				return $this->returnmsg(401,'获取token失败!解析数据失败');
-//			}
-//		}
-//
-//	}
 
     /**
      * token 过期 刷新token
@@ -251,15 +200,15 @@ class Token
         cache(self::$refreshAccessTokenPrefix . $appid, $refresh_token, self::$refreshExpires);
     }
 
-    protected static function getUser($username, $password)
+    protected static function getMember($membername, $password)
     {
-        $user = Db::name('user')->where('username', $username)
-            ->whereOr('mobile', $username)
-            ->whereOr('email', $username)->find();
-        if ($user) {
-            if (password_verify($password, $user['password'])) {
-                $user['uid'] = $user['id'];
-                return $user;
+        $member = Db::name('member')->where('username', $membername)
+            ->whereOr('mobile', $membername)
+            ->whereOr('email', $membername)->find();
+        if ($member) {
+            if (password_verify($password, $member['password'])) {
+                $member['uid'] = $member['id'];
+                return $member;
             } else {
                  self::error(lang('Password is not right'),'',401 );
 

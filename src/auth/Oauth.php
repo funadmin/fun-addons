@@ -10,9 +10,9 @@
  * Author: yuege
  * Date: 2019/9/22
  */
-namespace fun\api;
+namespace fun\auth;
 
-use fun\api\Send;
+use fun\auth\Send;
 use think\Exception;
 use think\facade\Request;
 use think\facade\Cache;

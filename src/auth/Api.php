@@ -1,15 +1,15 @@
 <?php
 
-namespace fun\api;
+namespace fun\auth;
 
 use think\exception\HttpResponseException;
 use think\facade\Request;
-use fun\api\Send;
-use fun\api\Oauth;
+use fun\auth\Send;
+use fun\auth\Oauth;
 use think\Response;
 
 /**
- * api 入口文件基类，需要控制权限的控制器都应该继承该类
+ * auth 入口文件基类，需要控制权限的控制器都应该继承该类
  */
 class Api
 {

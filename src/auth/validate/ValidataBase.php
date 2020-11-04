@@ -10,13 +10,13 @@
  * Author: yuege
  * Date: 2017/8/2
  */
-namespace fun\api\validate;
-use fun\api\Send;
+namespace fun\auth\validate;
+use fun\auth\Send;
 
 /**
  * 公共验证码方法
  * Class Common
- * @package app\api\validate
+ * @package app\auth\validate
  */
 class ValidataBase
 {
