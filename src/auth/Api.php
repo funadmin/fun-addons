@@ -9,7 +9,7 @@ use fun\auth\Oauth;
 use think\Response;
 
 /**
- * auth 入口文件基类，需要控制权限的控制器都应该继承该类
+ * api 入口文件基类，需要控制权限的控制器都应该继承该类
  */
 class Api
 {
@@ -39,7 +39,9 @@ class Api
         $this->request = Request::instance();
         $this->request->filter('trim,strip_tags,htmlspecialchars');
         $this->init();
-        $this->uid = $this->clientInfo['uid'];
+        if($this->clientInfo){
+            $this->uid = $this->clientInfo['uid'];
+        }
     }
 
     /**
