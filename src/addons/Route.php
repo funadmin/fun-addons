@@ -9,6 +9,7 @@ use think\helper\Str;
 use think\facade\Event;
 use think\facade\Config;
 use think\exception\HttpException;
+use think\validate\ValidateRule;
 
 class Route
 {
@@ -72,12 +73,12 @@ class Route
         if (!$class) {
             throw new HttpException(404, lang('addon controller %s not found', [Str::studly($module.DS.$controller)]));
         }
+        //加载app配置
+        self::loadApp($addon,$module);
         // 重写视图基础路径
         $config = Config::get('view');
         $config['view_path'] = $app->addons->getAddonsPath() . $addon . DS.$module .DS. 'view' . DS;
         Config::set($config, 'view');
-        //加载app配置
-        self::loadApp($addon,$module);
         // 生成控制器对象
         $instance = new $class($app);
         $vars = [];
@@ -118,7 +119,7 @@ class Route
             if (is_file(self::$addons_path. 'event.php')) {
                 self::$app->loadEvent(include self::$addons_path . 'event.php');
             }
-            $module_dir = self::$addons_path.$childname;
+            $module_dir = self::$addons_path.$module.DS.$childname;
             if(is_dir($module_dir)){
                 foreach (scandir($module_dir) as $mdir) {
                     if (in_array($mdir, ['.', '..'])) {
@@ -126,7 +127,7 @@ class Route
                     }
                     $commands = [];
                     //配置文件
-                    $addons_config_dir = self::$addons_path .$childname  . DS . 'config' . DS;
+                    $addons_config_dir = self::$addons_path .$module . DS . 'config' . DS;
                     if (is_dir($addons_config_dir)) {
                         $files = [];
                         $files = array_merge($files, glob($addons_config_dir . '*' . self::$app->getConfigExt()));
