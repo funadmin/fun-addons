@@ -45,13 +45,13 @@ class Oauth
     {   
         //获取头部信息
         try {
-            $authorization = config('api.auth.authentication');
+            $authorization = config('api.authentication')?config('api.authentication'):'authentication';
             $authorization = Request::header($authorization); //获取请求中的authentication字段，值形式为USERID asdsajh..这种形式
             $authorization = explode(" ", $authorization);//explode分割，获取后面一窜base64加密数据
             $authorizationInfo  = explode(":", base64_decode($authorization[1]));  //对base_64解密，获取到用:拼接的自字符串，然后分割，可获取appid、accesstoken、uid这三个参数
-            $clientInfo['uid'] = $authorizationInfo[2];
             $clientInfo['appid'] = $authorizationInfo[0];
             $clientInfo['access-token'] = $authorizationInfo[1];
+            $clientInfo['uid'] = $authorizationInfo[2];
             return $clientInfo;
         } catch (Exception $e) {
             self::error('Invalid authorization credentials','',401,'',Request::header(''));
