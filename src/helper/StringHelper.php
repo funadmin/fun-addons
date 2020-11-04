@@ -1,8 +1,14 @@
 <?php
 /**
- * @link http://www.tpframe.com/
- * @copyright Copyright (c) 2017 TPFrame Software LLC
- * @author 510974211@qq.com
+ * FunAdmin
+ * ============================================================================
+ * 版权所有 2017-2028 FunAdmin，并保留所有权利。
+ * 网站地址: https://www.FunAdmin.com
+ * ----------------------------------------------------------------------------
+ * 采用最新Thinkphp6实现
+ * ============================================================================
+ * Author: yuege
+ * Date: 2019/9/22
  */
 namespace fun\helper;
 use Ramsey\Uuid\Uuid;
