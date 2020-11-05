@@ -28,12 +28,13 @@ class FormHelper
     {
         $label = isset($options['label'])?$options['label']:$name;
         $tips = isset($options['tips'])?$options['tips']:$label;
+        $placeholder = isset($options['ptips'])?$options['ptips']:$tips;
         $value = !empty($value)? 'value="'.$value.'"' :'';
         $str = '<div class="layui-form-item"> 
         <label class="layui-form-label '.self::labelRequire($options).'">'.lang(Str::title($label)).'</label>
         <div class="layui-input-block">
          <input type="' . $type . '" name="' . $name. '"  ' . self::verify($options) . self::filter($options) . self::readonlyOrdisabled($options) . ' autocomplete="off"
-         placeholder="' . $tips. '" class="layui-input"'. $value.'>
+         placeholder="' . $placeholder. '" class="layui-input"'. $value.'>
          ' . self::tips($options) . '
          </div></div>';
 
