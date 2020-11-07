@@ -203,7 +203,7 @@ if (!function_exists('get_addons_config')) {
 if (!function_exists('addons_url')) {
     /**
      * 插件显示内容里生成访问插件的url
-     * @param string $url    地址 格式：插件名/模块/控制器/方法
+     * @param string $url    地址 格式：插件名/模块/控制器/方法 或者只有方法
      * @param array $param
      * @param bool|string $suffix 生成的URL后缀
      * @param bool|string $domain 域名
@@ -223,10 +223,10 @@ if (!function_exists('addons_url')) {
             $url = Str::studly($url);
             $url = parse_url($url);
             $route = explode('/', $url['path']);
-            $addons = $request->addon;
             $action = array_pop($route);
-            $controller = array_pop($route) ?: $request->controller();
-            $module = array_pop($route) ?: $request->param['module'];
+            $addons =  count($route)==3 ? $route[0]:$request->addon;
+            $controller = (array_pop($route))?: $request->param('controller') ;
+            $module = (array_pop($route))?: $request->param('module');
             $controller = Str::snake((string)$controller);
             /* 解析URL带的参数 */
             if (isset($url['query'])) {
