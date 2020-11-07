@@ -50,26 +50,26 @@ class FormHelper
      * @param array $options
      * @return string
      */
-    public static function radio($name=null, $list = null, $options = [])
+    public static function radio($name=null, $radiolist = null, $options = [], $value)
     {
-        if (is_null($list)) {
-            $list = $name;
+        if (is_null($radiolist)) {
+            $radiolist = $name;
         }
         $label = isset($options['label'])?$options['label']:$name;
         $input = '';
-        if(is_string($list) && strpos($list,"\n")!==false) $list = explode("\n",$list);
-        if (is_array($list)) {
-            foreach ($list as $k=>$v) {
+        if(is_string($radiolist) && strpos($radiolist,"\n")!==false) $radiolist = explode("\n",$radiolist);
+        if (is_array($radiolist)) {
+            foreach ($radiolist as $k=>$v) {
                 if(is_string($v) && strpos($v,':')!==false){
                     $v = explode(":",$v);
-                    $input .= '<input type="radio"'.self::selectedOrchecked($options,$v[0],2).' name="' . $name . '" ' . self::verify($options) . self::filter($options) .  self::readonlyOrdisabled($options) .' value="' . $v[0] . '" title="' . lang($v[1]) . '" >';
+                    $input .= '<input type="radio"'.self::selectedOrchecked($value,$v[0],2).' name="' . $name . '" ' . self::verify($options) . self::filter($options) .  self::readonlyOrdisabled($options) .' value="' . $v[0] . '" title="' . lang($v[1]) . '" >';
                 }else{
-                    $input .= '<input type="radio"'.self::selectedOrchecked($options,$k,2).' name="' . $name . '" ' . self::verify($options) . self::filter($options) .  self::readonlyOrdisabled($options) . ' value="' . $k . '" title="' . lang($v) . '" >';
+                    $input .= '<input type="radio"'.self::selectedOrchecked($value,$k,2).' name="' . $name . '" ' . self::verify($options) . self::filter($options) .  self::readonlyOrdisabled($options) . ' value="' . $k . '" title="' . lang($v) . '" >';
 
                 }
             }
         } else {
-            $input .= '<input type="radio" name="' . $name . '" ' . self::verify($options) . self::filter($options) . ' value="' . $list . '" title="' . lang($list) . '" >';
+            $input .= '<input type="radio" name="' . $name . '" ' . self::verify($options) . self::filter($options) . ' value="' . $radiolist . '" title="' . lang($radiolist) . '" >';
         }
 
         $str = ' <div class="layui-form-item">
@@ -91,16 +91,14 @@ class FormHelper
      * switch是关键字不能用
      */
 
-    public static function switchs($name=null, $value, $options = [])
+    public static function switchs($name=null, $switch, $options = [], $value)
     {
 
-        if (is_array($value)) {
-            if(is_string($value) && strpos($value,'|')) $value = implode('|', $value);
-        }
+        if(is_string($switch) && strpos($switch,'|')) $switch = implode('|', $switch);
         $str = '<div class="layui-form-item">
         <label class="layui-form-label '.self::labelRequire($options).'">' . lang(Str::title($name)) . '</label>
         <div class="layui-input-block">
-        <input type="checkbox" checked="" name="' . $name . '" ' . self::verify($options) . self::filter($options) .  self::readonlyOrdisabled($options)  .' lay-skin="switch"   lay-text="' . lang($value) . '">
+        <input type="checkbox" value="'.$value.'" checked="" name="' . $name . '" ' . self::verify($options) . self::filter($options) .  self::readonlyOrdisabled($options)  .' lay-skin="switch"   lay-text="' . lang($value) . '">
         ' . self::tips($options) . '
         </div>
         </div>';
@@ -109,7 +107,7 @@ class FormHelper
     }
 
 
-    public static function checkbox($name=null,$value=null,$list = [], $options=[])
+    public static function checkbox($name=null,$list = [], $options=[],$value=null)
     {
         if (empty($value)) {
             $value = $name;
@@ -549,11 +547,11 @@ class FormHelper
      * @return string
      * 是否选中
      */
-    protected static function selectedOrchecked($options,$val,$type=1){
-        if (!isset($options['select']))  {
+    protected static function selectedOrchecked($select,$val,$type=1){
+        if ($select)  {
            return '';
         }else{
-            if($options['select']==$val){
+            if($select==$val){
                 if($type==1) return 'selected';
                 return 'checked';
             }else{

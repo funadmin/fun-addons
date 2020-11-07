@@ -17,9 +17,9 @@ if (!function_exists('form_radio')) {
      * @param $name
      * @return string
      */
-    function form_radio($name,$value,$option)
+    function form_radio($name,$radiolist,$option=[],$value='')
     {
-        return FormHelper::radio($name,$value,$option);
+        return FormHelper::radio($name,$radiolist,$option,$value);
     }
 }
 
@@ -27,11 +27,14 @@ if (!function_exists('form_switch')) {
     /**
      * @param $id
      * @param $name
+     * @param $switch
+     * @param $option
+     * @param $value
      * @return string
      */
-    function form_switch($name,$value , $option)
+    function form_switch($name,$switch=[] , $option=[],$value=1)
     {
-        return FormHelper::switchs($name,$value , $option);
+        return FormHelper::switchs($name,$switch , $option,$value);
     }
 }
 if (!function_exists('form_checkbox')) {
@@ -40,9 +43,9 @@ if (!function_exists('form_checkbox')) {
      * @param $name
      * @return string
      */
-    function form_checkbox($name, $value,$list, $option)
+    function form_checkbox($name,$list, $option, $value)
     {
-        return FormHelper::checkbox($name, $value,$list, $option);
+        return FormHelper::checkbox($name,$list, $option, $value);
     }
 }
 
