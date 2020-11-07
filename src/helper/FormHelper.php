@@ -107,7 +107,7 @@ class FormHelper
     }
 
 
-    public static function checkbox($name=null,$list = [], $options=[],$value=null)
+    public static function checkbox($name=null,$list = [], $options=[],$value)
     {
         if (empty($value)) {
             $value = $name;
@@ -153,7 +153,7 @@ class FormHelper
         return $str;
     }
 
-    public static function textarea($name=null, $value = null, $options=[])
+    public static function textarea($name=null, $options=[],$value)
     {
         $label = isset($options['label'])?$options['label']:$name;
         $tips = isset($options['tips'])?$options['tips']:$name;
@@ -220,7 +220,7 @@ class FormHelper
      * @return string
      * 颜色选择
      */
-    public static function color($id,$name,$value,$options=[]){
+    public static function color($id,$name,$options=[],$value){
 
         $str = '<div class="layui-form-item">
                     <label class="layui-form-label '.self::labelRequire($options).'">'.lang('Icon').'</label>
@@ -240,7 +240,7 @@ class FormHelper
      * @return string
      * 图标，有点小问题
      */
-    public static function icon($name,$value,$options=[]){
+    public static function icon($name,$options=[],$value){
         $name = $name?$name:'icon';
         $value = $value?$value:'layui-icon-rate';
         $id = isset($options['id'])?$options['id']:'iconPicker';
@@ -261,7 +261,7 @@ class FormHelper
      * @return string
      * 日期
      */
-    public static function date($name=null, $options=[])
+    public static function date($name=null,$options=[], $value)
     {
         $op = '';
         if (isset($options['type'])) {
@@ -278,7 +278,7 @@ class FormHelper
         $str = '<div class="layui-form-item">
          <label class="layui-form-label '.self::labelRequire($options).'">' . lang('Select Date') . '</label>
          <div class="layui-input-block">
-         <input  type="text" name="' . $name . '" class="layui-input" lay-date ' . $op . ' placeholder="yyyy-MM-dd HH:mm:ss">
+         <input  type="text" name="' . $name . '" value="'.$value.'" class="layui-input" lay-date ' . $op . ' placeholder="yyyy-MM-dd HH:mm:ss">
          </div>
         </div>';
         return $str;

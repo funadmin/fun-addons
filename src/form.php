@@ -32,7 +32,7 @@ if (!function_exists('form_switch')) {
      * @param $value
      * @return string
      */
-    function form_switch($name,$switch=[] , $option=[],$value=1)
+    function form_switch($name,$switch=[] , $option=[],$value='')
     {
         return FormHelper::switchs($name,$switch , $option,$value);
     }
@@ -55,9 +55,9 @@ if (!function_exists('form_textarea')) {
      * @param $name
      * @return string
      */
-    function form_textarea($name=null, $value=null, $option=[])
+    function form_textarea($name=null, $option=[], $value=null)
     {
-        return FormHelper::textarea($name, $value, $option);
+        return FormHelper::textarea($name, $option,$value);
     }
 }
 if (!function_exists('form_select')) {
@@ -90,9 +90,9 @@ if (!function_exists('form_icon')) {
      * @return string
      */
 
-    function form_icon($name=null,$value=null,$options = [])
+    function form_icon($name=null,$options = [],$value=null)
     {
-        return FormHelper::icon($name,$value, $options);
+        return FormHelper::icon($name, $options,$value);
     }
 }
 
@@ -102,9 +102,9 @@ if (!function_exists('form_date')) {
      * @return string
      */
 
-    function form_date($name=null,$options = [])
+    function form_date($name=null,$options = [],$value='')
     {
-        return FormHelper::date($name, $options);
+        return FormHelper::date($name, $options,$value);
     }
 }
 
@@ -136,9 +136,9 @@ if (!function_exists('form_color')) {
      * @return string
      */
 
-    function form_color($id='iconPicker',$name=null,$value=null,$options = [])
+    function form_color($id='iconPicker',$name=null,$options = [],$value=null)
     {
-        return FormHelper::color($id,$name,$value,$options = []);
+        return FormHelper::color($id,$name,$options = [],$value);
     }
 }
 if (!function_exists('form_submitbtn')) {
@@ -169,7 +169,7 @@ if (!function_exists('form_upload')) {
      * @param null $formdata
      * @return string
      */
-    function form_upload($name=null,$formdata=null,$options=[])
+    function form_upload($name=null,$formdata=[],$options=[])
     {
         return FormHelper::upload($name,$formdata,$options);
     }
