@@ -393,7 +393,12 @@ class FormHelper
             $options['type'] = 'radio';
         }
         if ($formdata) {
-            foreach (explode(',', $formdata[$name]) as $k => $v) {
+            if(isset($formdata[$name])){
+                $formdata = explode(',', $formdata[$name]);
+            }else{
+                $formdata = explode(',', $formdata);
+            }
+            foreach ($formdata as $k => $v) {
                 switch ($options['mime']) {
 
                     case 'video':
