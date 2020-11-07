@@ -424,6 +424,8 @@ if (!function_exists('importsql')) {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath(); // 插件列表
         $sqlFile = $addons_path. $name . DS . 'install.sql';
+
+        $file = file_get_contents($sqlFile);
         if (is_file($sqlFile)) {
             $lines = file($sqlFile);
             $templine = '';
@@ -431,14 +433,13 @@ if (!function_exists('importsql')) {
                 if (substr($line, 0, 2) == '--' || $line == '' || substr($line, 0, 2) == '/*')
                     continue;
                 $templine .= $line;
-                if (substr(trim($line), -1, 1) == ';') {
+                if (substr(trim($line), -1, 1) == ';' and $line!='COMMIT;') {
                     $templine = str_ireplace('__PREFIX__', config('database.connections.mysql.prefix'), $templine);
                     $templine = str_ireplace('INSERT INTO ', 'INSERT IGNORE INTO ', $templine);
                     try {
                         Db::execute($templine);
                     } catch (\PDOException $e) {
                         throw new PDOException($e->getMessage());
-
                     }
                     $templine = '';
                 }
