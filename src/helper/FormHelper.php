@@ -26,10 +26,14 @@ class FormHelper
      */
     public static function input($name='',$type='text', $options = [],$value='')
     {
+
         $label = isset($options['label'])?$options['label']:$name;
         $tips = isset($options['tips'])?$options['tips']:$label;
         $placeholder = isset($options['ptips'])?$options['ptips']:$tips;
         $value = !empty($value)? 'value="'.$value.'"' :'';
+        if($type=='hidden'){
+            return  '<input type="' . $type . '" name="' . $name. '"  ' . self::verify($options) . self::filter($options) . self::readonlyOrdisabled($options) . ' autocomplete="off"         placeholder="' . $placeholder. '" class="layui-input" '. $value.'>';
+        }
         $str = '<div class="layui-form-item"> 
         <label class="layui-form-label '.self::labelRequire($options).'">'.lang(Str::title($label)).'</label>
         <div class="layui-input-block">
@@ -37,7 +41,6 @@ class FormHelper
          placeholder="' . $placeholder. '" class="layui-input"'. $value.'>
          ' . self::tips($options) . '
          </div></div>';
-
         return $str;
     }
 
@@ -567,7 +570,7 @@ class FormHelper
 
     protected static function labelRequire($options){
 
-        if(isset($options['verfiy']) && ($options['verfiy']=='required' || strpos($options['verfiy'],'required'))) {
+        if(isset($options['verify']) && ($options['verify']=='required' || strpos($options['verify'],'required'))) {
             return 'required';
         }
         return '';

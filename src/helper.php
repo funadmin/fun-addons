@@ -226,7 +226,7 @@ if (!function_exists('addons_url')) {
             $action = array_pop($route);
             $addons =  count($route)==3 ? $route[0]:$request->addon;
             $controller = (array_pop($route))?: $request->param('controller') ;
-            $module = (array_pop($route))?: $request->param('module');
+            $module = (array_pop($route))?: $request->param('module','frontend');
             $controller = Str::snake((string)$controller);
             /* 解析URL带的参数 */
             if (isset($url['query'])) {
@@ -234,7 +234,6 @@ if (!function_exists('addons_url')) {
                 $param = array_merge($query, $param);
             }
         }
-
         // 注册控制器路由
         return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
     }
