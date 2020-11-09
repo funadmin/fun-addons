@@ -26,7 +26,6 @@ class FormHelper
      */
     public static function input($name='',$type='text', $options = [],$value='')
     {
-
         $label = isset($options['label'])?$options['label']:$name;
         $tips = isset($options['tips'])?$options['tips']:$label;
         $placeholder = isset($options['ptips'])?$options['ptips']:$tips;
@@ -185,10 +184,12 @@ class FormHelper
             {
                 $select = 'selected';
             }
+            if($value == $k && !$attr)
+                $select = 'selected';
             if(!empty($attr)){
                 $op .= '<option '.$select.' value="'.$v[$attr[0]].'">'.$v[$attr[1]].'</option>';
             }else{
-                $op .= '<option value="'.$k.'">'. $v.'</option>';
+                $op .= '<option '.$select.' value="'.$k.'">'. $v.'</option>';
 
             }
         }
