@@ -53,7 +53,7 @@ class FormHelper
      * @param array $options
      * @return string
      */
-    public static function radio($name=null, $radiolist = null, $options = [], $value)
+    public static function radio($name, $radiolist, $options = [], $value)
     {
         if (is_null($radiolist)) {
             $radiolist = $name;
@@ -163,7 +163,7 @@ class FormHelper
         $str = ' <div class="layui-form-item layui-form-text">
             <label class="layui-form-label '.self::labelRequire($options).'">' . lang(Str::title($label)) . '</label>
             <div class="layui-input-block">
-            <textarea placeholder="' . $tips . '" class="layui-textarea" 
+            <textarea placeholder="' . lang($tips) . '" class="layui-textarea" 
             ' . self::filter($options) . self::verify($options) . ' name="'.$name.'"
             value="' . $value . '"></textarea>
             ' . self::tips($options) . '
@@ -556,15 +556,11 @@ class FormHelper
      * 是否选中
      */
     protected static function selectedOrchecked($select,$val,$type=1){
-        if ($select)  {
-           return '';
+        if($select==$val){
+            if($type==1) return 'selected';
+            return 'checked';
         }else{
-            if($select==$val){
-                if($type==1) return 'selected';
-                return 'checked';
-            }else{
-                return '';
-            }
+            return '';
         }
     }
 

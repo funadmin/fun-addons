@@ -17,9 +17,9 @@ if (!function_exists('form_radio')) {
      * @param $name
      * @return string
      */
-    function form_radio($name,$radiolist,$option=[],$value='')
+    function form_radio($name=null, $radiolist = null, $options = [],$value='')
     {
-        return FormHelper::radio($name,$radiolist,$option,$value);
+        return FormHelper::radio($name,$radiolist,$options,$value);
     }
 }
 
