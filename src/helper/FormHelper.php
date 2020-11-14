@@ -187,9 +187,9 @@ class FormHelper
             if($value == $k && !$attr)
                 $select = 'selected';
             if(!empty($attr)){
-                $op .= '<option '.$select.' value="'.$v[$attr[0]].'">'.$v[$attr[1]].'</option>';
+                $op .= '<option '.$select.' value="'.$v[$attr[0]].'">'.lang($v[$attr[1]]).'</option>';
             }else{
-                $op .= '<option '.$select.' value="'.$k.'">'. $v.'</option>';
+                $op .= '<option '.$select.' value="'.$k.'">'. lang($v).'</option>';
 
             }
         }
@@ -207,7 +207,7 @@ class FormHelper
                 <label class="layui-form-label '.self::labelRequire($options).'">' . lang(Str::title($label)) . '</label>
                 <div class="layui-input-block">
                   <select name="' . $name . '" ' . $multiple . self::filter($options) . self::verify($options) . self::search($options) . ' >
-                    <option value="">' . $default . '</option>
+                    <option value="">' . lang($default) . '</option>
                     ' . $op . '
                   </select>
                   ' . self::tips($options) . '
