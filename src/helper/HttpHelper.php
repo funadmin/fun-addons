@@ -22,9 +22,9 @@ class HttpHelper
      * @param array  $options 扩展参数
      * @return mixed|string
      */
-    public static function post($url, $params = [], $options = [],$cookie=[])
+    public static function post($url, $params = [], $options = [],$cookies=[])
     {
-        $req = self::sendRequest($url, $params, 'POST', $options);
+        $req = self::sendRequest($url, $params, 'POST', $options,$cookies);
         return $req['ret'] ? $req['msg'] : '';
     }
 
@@ -35,9 +35,9 @@ class HttpHelper
      * @param array  $options 扩展参数
      * @return mixed|string
      */
-    public static function get($url, $params = [], $options = [],$cookie=[])
+    public static function get($url, $params = [], $options = [],$cookies=[])
     {
-        $req = self::sendRequest($url, $params, 'GET', $options);
+        $req = self::sendRequest($url, $params, 'GET', $options,$cookies);
         return $req['ret'] ? $req['msg'] : '';
     }
 
@@ -49,7 +49,7 @@ class HttpHelper
      * @param mixed  $options CURL的参数
      * @return array
      */
-    public static function sendRequest($url, $params = [], $method = 'POST', $options = [],$cooki=[])
+    public static function sendRequest($url, $params = [], $method = 'POST', $options = [],$cookies=[])
     {
         $method = strtoupper($method);
         $protocol = substr($url, 0, 5);
