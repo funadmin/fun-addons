@@ -28,6 +28,12 @@ use think\Lang;
 class Token
 {
     use Send;
+
+    /**
+     * @var bool
+     * 是否需要验证数据库账号
+     */
+    public static $authapp = false;
     /**
      * 测试appid，正式请数据库进行相关验证
      */
@@ -49,18 +55,21 @@ class Token
         header('Access-Control-Allow-Credentials:true');
         header('Access-Control-Allow-Methods:GET, POST, PATCH, PUT, DELETE,OPTIONS');
         $this->request = Request::instance();
-        $appid = Request::post('appid');
-        $appsecret = Request::post('appsecret');
-        $oauth2_client = Db::name('oauth2_client')->where('appid', $appid)->find();
-        if (!$oauth2_client) {
-            self::error('Invalid authorization credentials', '', 401);
+        if(self::$authapp){
+            $appid = Request::post('appid');
+            $appsecret = Request::post('appsecret');
+            $oauth2_client = Db::name('oauth2_client')->where('appid', $appid)->find();
+            if (!$oauth2_client) {
+                self::error('Invalid authorization credentials', '', 401);
 
+            }
+            if ($oauth2_client['appsecret'] != $appsecret) {
+                self::error(lang('appsecret is not right'));
+            }
+            self::$appid = $oauth2_client['appid'];
+            self::$appsecret = $oauth2_client['appsecret'];
         }
-        if ($oauth2_client['appsecret'] != $appsecret) {
-            self::error(lang('appsecret is not right'));
-        }
-        self::$appid = $oauth2_client['appid'];
-        self::$appsecret = $oauth2_client['appsecret'];
+
     }
 
     /**
@@ -70,8 +79,14 @@ class Token
     {
         //参数验证
         $validate = new \fun\auth\validate\Token;
-        if (!$validate->check(Request::post())) {
-            self::error($validate->getError());
+        if(self::$authapp) {
+            if (!$validate->scene('authapp')->check(Request::post())) {
+                self::error($validate->getError());
+            }
+        }else{
+            if (!$validate->scene('noauthapp')->check(Request::post())) {
+                self::error($validate->getError());
+            }
         }
         self::checkParams(Request::post());  //参数校验
         //数据库已经有一个用户,这里需要根据input('mobile')去数据库查找有没有这个用户
@@ -115,7 +130,7 @@ class Token
              self::error('请求时间戳与服务器时间戳异常' . time(), '', 401);
         }
 
-        //appid检测，这里是在本地进行测试，正式的应该是查找数据库或者redis进行验证
+        //appid检测，查找数据库或者redis进行验证
         if ($params['appid'] !== self::$appid) {
              self::error('appid 错误','',401);
         }
@@ -203,7 +218,6 @@ class Token
                 return $member;
             } else {
                  self::error(lang('Password is not right'),'',401 );
-
             }
 
         } else {

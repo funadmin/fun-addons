@@ -28,6 +28,12 @@ class Token extends Validate
         'timestamp'   =>  'number|require',
         'sign'        =>  'require'
     ];
+
+    protected $scene  = [
+        'authapp'  =>  ['appid','appsecret','username','password','nonce','timestamp','sign'],
+        'noauthapp'  =>  ['username','password','nonce','timestamp','sign'],
+    ];
+
     protected $message  =   [
         'appid.require'    => 'appid不能为空',
         'appsecret.require'    => 'appsecret不能为空',
