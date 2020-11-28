@@ -227,7 +227,7 @@ class FormHelper
     public static function color($id,$name,$options=[],$value){
 
         $str = '<div class="layui-form-item">
-                    <label class="layui-form-label '.self::labelRequire($options).'">'.lang('Icon').'</label>
+                    <label class="layui-form-label '.self::labelRequire($options).'">'.lang('Color').'</label>
                     <div class="layui-input-block">
                         <input type="hidden" name="'.$name .'"  value="'.$value.'"' .self::filter($options) . self::readonlyOrdisabled($options).'>
                           <div id="'.$id.'" lay-filter="colorPicker"></div>
@@ -265,7 +265,7 @@ class FormHelper
      * @return string
      * 日期
      */
-    public static function date($name=null,$options=[], $value)
+    public static function date($name,$options, $value)
     {
         $op = '';
         if (isset($options['type'])) {
@@ -279,8 +279,9 @@ class FormHelper
             $op .= 'lay-format="' . $options['format'] . '"';
 
         }
+        $label = isset($options['label'])?$options['label']:$name;
         $str = '<div class="layui-form-item">
-         <label class="layui-form-label '.self::labelRequire($options).'">' . lang('Select Date') . '</label>
+         <label class="layui-form-label '.self::labelRequire($options).'">' . lang($label) . '</label>
          <div class="layui-input-block">
          <input  type="text" name="' . $name . '" value="'.$value.'" class="layui-input" lay-date ' . $op . ' placeholder="yyyy-MM-dd HH:mm:ss">
          </div>
