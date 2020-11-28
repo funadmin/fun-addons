@@ -473,7 +473,7 @@ class FormHelper
             $show = 'layui-hide';
         }
         $str =   '<div class="layui-form-item layui-btn-center '.$show.'">
-                <button type="button" class="layui-btn layui-btn-sm" onclick="parent.layui.layer.closeAll();">' . lang('Close') .
+                <button type="close" class="layui-btn layui-btn-sm" onclick="parent.layui.layer.closeAll();">' . lang('Close') .
             '</button>
             </div>';
 
