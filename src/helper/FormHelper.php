@@ -468,7 +468,11 @@ class FormHelper
      */
     public static function closebtn($reset = true, $options=[])
     {
-        $str =   '<div class="layui-form-item center">
+        $show = '';
+        if(!isset($options['show'])){
+            $show = 'layui-hide';
+        }
+        $str =   '<div class="layui-form-item layui-btn-center '.$show.'">
                 <button type="button" class="layui-btn layui-btn-sm" onclick="parent.layui.layer.closeAll();">' . lang('Close') .
             '</button>
             </div>';
@@ -483,9 +487,13 @@ class FormHelper
      * @param array $options
      * @return string
      */
-    public static function submitbtn($reset = true, $options=[])
+    public static function submitbtn($reset, $options)
     {
-        $str =   '<input type="hidden" name="__token__" value="'.self::token().'"><div class="layui-form-item center">
+        $show = '';
+        if(!isset($options['show'])){
+            $show = 'layui-hide';
+        }
+        $str =   '<input type="hidden" name="__token__" value="'.self::token().'"><div class="layui-form-item layui-btn-center '.$show.'">
             <button type="submit" class="layui-btn layui-btn-sm" lay-fitler="submit" lay-submit>' . lang('Submit') .
             '</button>';
         if ($reset) {
