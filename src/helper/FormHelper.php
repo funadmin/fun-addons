@@ -215,6 +215,27 @@ class FormHelper
                 </div>';
         return $str;
     }
+    /**
+     * @param $id
+     * @param $name
+     * @param $value
+     * @param array $options
+     * @return string
+     * 颜色选择
+     */
+    public static function tags($id,$name,$options=[],$value){
+        $label = isset($options['label'])?$options['label']:$name;
+        $str = '<div class="layui-form-item">
+                    <label class="layui-form-label '.self::labelRequire($options).'">'.lang($label).'</label>
+                    <div class="layui-input-block">
+                    <div class="tags" >
+                        <input type="hidden" name="'.$name .'">
+                        <input  id="'.$id.'" lay-filter="tags" type="text" placeholder="'.lang("Space To Generate Tags").'"  value="'.$value.'"' .self::filter($options) . self::readonlyOrdisabled($options).'>
+                    </div>
+                    </div>
+                </div>';
+        return $str;
+    }
 
     /**
      * @param $id
@@ -226,8 +247,9 @@ class FormHelper
      */
     public static function color($id,$name,$options=[],$value){
 
+        $label = isset($options['label'])?$options['label']:$name;
         $str = '<div class="layui-form-item">
-                    <label class="layui-form-label '.self::labelRequire($options).'">'.lang('Color').'</label>
+                    <label class="layui-form-label '.self::labelRequire($options).'">'.lang($label).'</label>
                     <div class="layui-input-block">
                         <input type="hidden" name="'.$name .'"  value="'.$value.'"' .self::filter($options) . self::readonlyOrdisabled($options).'>
                           <div id="'.$id.'" lay-filter="colorPicker"></div>
@@ -283,7 +305,7 @@ class FormHelper
         $str = '<div class="layui-form-item">
          <label class="layui-form-label '.self::labelRequire($options).'">' . lang($label) . '</label>
          <div class="layui-input-block">
-         <input  type="text" name="' . $name . '" value="'.$value.'" class="layui-input" lay-date ' . $op . ' placeholder="yyyy-MM-dd HH:mm:ss">
+         <input  type="text" name="' . $name . '" value="'.$value.'" class="layui-input" lay-filter="date" ' . $op . ' placeholder="yyyy-MM-dd HH:mm:ss">
          </div>
         </div>';
         return $str;
@@ -347,10 +369,10 @@ class FormHelper
          <div class="layui-input-block">';
         if($type==1){
             //百度。quill wangeditor
-         $str.='<div id="' . $id . '" name="' . $name . '" lay-editor="'.$type.'" type="text/plain"></div>';
+         $str.='<div id="' . $id . '" name="' . $name . '" lay-editor="'.$type.'" lay-filter="editor" type="text/plain"></div>';
         }else{
             //LAYEDIT
-            $str.='<textarea id="' . $id . '" name="' . $name . '" lay-editor="'.$type.'" type="text/plain"></textarea>';
+            $str.='<textarea id="' . $id . '" name="' . $name . '" lay-editor="'.$type.'" lay-filter="editor" type="text/plain"></textarea>';
         }
         $str.='</div></div>';
 
@@ -391,7 +413,7 @@ class FormHelper
                 lay-height = "'.$height.'"
                 lay-mark = "'.$mark.'"
                 lay-area = "'.$area.'"
-                class="layui-btn layui-btn-warm"  lay-cropper id="cropper">'
+                class="layui-btn layui-btn-warm"  lay-filter="cropper" id="cropper">'
                 .lang('Cropper').
                 '</button>';
             $options['num'] = 1;
@@ -452,8 +474,8 @@ class FormHelper
                     <div class="layui-upload">
                         <input value="' . $value . '" style="display: inline-block;width:65% " type="text" name="' . $name . '" class="layui-input attach"' . self::verify($options) . '>
                        '.$croper_container.'
-                        <button type="button" class="layui-btn layui-btn-normal"  '.$op.' lay-upload><i class="layui-icon layui-icon-upload-circle"></i>'.lang('Uploads').'</button>
-                        <button id="select-upload" type="button" class="layui-btn layui-btn-danger"  '.$op.'  lay-upload-select><i class="layui-icon layui-icon-align-center"></i>'.lang('Choose').'</button>
+                        <button type="button" class="layui-btn layui-btn-normal"  '.$op.' lay-filter="upload"><i class="layui-icon layui-icon-upload-circle"></i>'.lang('Uploads').'</button>
+                        <button id="select-upload" type="button" class="layui-btn layui-btn-danger"  '.$op.'  lay-filter="upload-select"><i class="layui-icon layui-icon-align-center"></i>'.lang('Choose').'</button>
                         <div class="layui-upload-list">'
                         .$li.'
                         </div>

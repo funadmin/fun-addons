@@ -130,15 +130,26 @@ if (!function_exists('form_region')) {
         return FormHelper::region($name,$id,$options);
     }
 }
+if (!function_exists('form_tags')) {
+    /**
+     * @param array $options
+     * @return string
+     */
+
+    function form_tags($id='tags',$name='',$options = [],$value='')
+    {
+        return FormHelper::tags($id,$name,$options,$value);
+    }
+}
 if (!function_exists('form_color')) {
     /**
      * @param array $options
      * @return string
      */
 
-    function form_color($id='iconPicker',$name=null,$options = [],$value=null)
+    function form_color($id='iconPicker',$name=null,$options = [],$value='')
     {
-        return FormHelper::color($id,$name,$options = [],$value);
+        return FormHelper::color($id,$name,$options,$value);
     }
 }
 if (!function_exists('form_submitbtn')) {
