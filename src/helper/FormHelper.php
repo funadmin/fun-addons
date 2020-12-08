@@ -24,12 +24,12 @@ class FormHelper
      * @param array $options
      * @return string
      */
-    public static function input($name='',$type='text', $options = [],$value='')
+    public static function input($name='',$type='text', $options = [],$value)
     {
         $label = isset($options['label'])?$options['label']:$name;
         $tips = isset($options['tips'])?$options['tips']:$label;
         $placeholder = isset($options['ptips'])?$options['ptips']:$tips;
-        $value = !empty($value)? 'value="'.$value.'"' :'';
+        $value = !is_null($value)? 'value="'.$value.'"'  :'';
         if($type=='hidden'){
             return  '<input type="' . $type . '" name="' . $name. '"  ' . self::verify($options) . self::filter($options) . self::readonlyOrdisabled($options) . ' autocomplete="off"         placeholder="' . $placeholder. '" class="layui-input" '. $value.'>';
         }
@@ -108,7 +108,14 @@ class FormHelper
         return $str;
     }
 
-
+    /**
+     * 多选
+     * @param null $name
+     * @param array $list
+     * @param array $options
+     * @param $value
+     * @return string
+     */
     public static function checkbox($name=null,$list = [], $options=[],$value)
     {
         if (empty($value)) {

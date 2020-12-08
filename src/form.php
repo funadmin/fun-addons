@@ -6,7 +6,7 @@ if (!function_exists('form_input')) {
      * @param $name
      * @return string
      */
-    function form_input($name='',$type='text',$options=[],$value='')
+    function form_input($name='',$type='text',$options=[],$value=null)
     {
         return FormHelper::input($name,$type,$options,$value);
     }
