@@ -236,8 +236,8 @@ class FormHelper
                     <label class="layui-form-label '.self::labelRequire($options).'">'.lang($label).'</label>
                     <div class="layui-input-block">
                     <div class="tags" >
-                        <input type="hidden" name="'.$name .'">
-                        <input  id="'.$id.'" lay-filter="tags" type="text" placeholder="'.lang("Space To Generate Tags").'"  value="'.$value.'"' .self::filter($options) . self::readonlyOrdisabled($options).'>
+                        <input type="hidden" name="'.$name .'" value="'.$value.'">
+                        <input  id="'.$id.'" lay-filter="tags" type="text" placeholder="'.lang("Space To Generate Tags").'" ' .self::filter($options) . self::readonlyOrdisabled($options).'>
                     </div>
                     </div>
                 </div>';
