@@ -372,7 +372,7 @@ class FormHelper
          $str.='<div id="' . $id . '" name="' . $name . '" lay-editor="'.$type.'" lay-filter="editor" type="text/plain"></div>';
         }else{
             //LAYEDIT
-            $str.='<textarea id="' . $id . '" name="' . $name . '" lay-editor="'.$type.'" lay-filter="editor" type="text/plain"></textarea>';
+            $str.='<textarea id="' . $id . '" name="' . $name . '" lay-editor="'.$type.'" lay-verify="layedit" lay-filter="editor" type="text/plain"></textarea>';
         }
         $str.='</div></div>';
 
