@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 use fun\addons\middleware\Addons;
 use fun\addons\Service;
+use fun\helper\FileHelper;
+use think\Exception;
 use think\facade\Db;
 use think\facade\App;
 use think\facade\Config;
@@ -114,7 +116,7 @@ if (!function_exists('set_addons_info')) {
             } else
                 $res[] = "$key = " . (is_numeric($val) ? $val : $val);
         }
-        
+
         if ($handle = fopen($file, 'w')) {
             fwrite($handle, implode("\n", $res) . "\n");
             fclose($handle);
@@ -127,6 +129,7 @@ if (!function_exists('set_addons_info')) {
         return true;
     }
 }
+
 if (!function_exists('get_addons_instance')) {
     /**
      * 获取插件的单例
@@ -197,6 +200,27 @@ if (!function_exists('get_addons_config')) {
         }
 
         return $addon->getConfig($name);
+    }
+}
+
+if (!function_exists('set_addons_config')) {
+
+    function set_addons_config($name, $array)
+    {
+        $service = new Service(App::instance()); // 获取service 服务
+        $addons_path = $service->getAddonsPath();
+        // 插件列表
+        $file = $addons_path. $name . DIRECTORY_SEPARATOR . 'config.php';
+        if (!FileHelper::isWritable($file)) {
+            throw new \Exception(lang("addons.php File does not have write permission"));
+        }
+        if ($handle = fopen($file, 'w')) {
+            fwrite($handle, "<?php\n\n" . "return " . var_export($array, TRUE) . ";");
+            fclose($handle);
+        } else {
+            throw new Exception(lang("File does not have write permission"));
+        }
+        return true;
     }
 }
 
@@ -278,7 +302,6 @@ if (!function_exists('get_addons_list')) {
         return $list;
     }
 }
-
 
 
 /**

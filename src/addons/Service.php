@@ -422,28 +422,6 @@ class Service extends \think\Service
         }
         return $list;
     }
-
-
-    //更新addons 文件；
-    public static function updateAdddonsConfig()
-    {
-        $config = get_addons_autoload_config(true);
-        if ($config['autoload'])
-            return '';
-        $file = app()->getRootPath() . 'config' . DS . 'addons.php';
-        if (!FileHelper::isWritable($file)) {
-            throw new \Exception(lang("addons.php File does not have write permission"));
-        }
-
-        if ($handle = fopen($file, 'w')) {
-            fwrite($handle, "<?php\n\n" . "return " . var_export($config, TRUE) . ";");
-            fclose($handle);
-        } else {
-            throw new Exception(lang("File does not have write permission"));
-        }
-        return true;
-    }
-
     //更新插件状态
     public static function updateAddonsInfo($name, $state = 1,$install=1)
     {
