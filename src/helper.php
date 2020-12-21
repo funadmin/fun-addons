@@ -250,7 +250,7 @@ if (!function_exists('addons_url')) {
             $action = $request->action();
         } else {
             $route = explode('/', trim($url['path'],'/'));
-            $action = array_pop($route);
+            $action = parse_name(array_pop($route));
             $addons = count($route) == 3 ? strtolower($route[0]) : $request->addon;
             $controller = (array_pop($route)) ?: $request->param('controller');
             $module = (array_pop($route)) ?: $request->param('module', 'frontend');
