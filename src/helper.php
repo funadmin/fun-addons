@@ -236,19 +236,22 @@ if (!function_exists('addons_url')) {
     function addons_url($url = '', $param = [], $suffix = true, $domain = false)
     {
         $request = app('request');
-        if (empty($url)) {
+        if (!is_array($param)) {
+            parse_str($param, $params);
+            $param = $params;}
+        $path = $url;
+        $url = parse_url(Str::studly($url));
+        if (empty($url['path'])) {
             // 生成 url 模板变量
             $addons = $request->addon;
-            $module = $request->modulename;
             $controller = $request->controller();
-            $controller = str_replace('/', '.', $controller);
+            $module = explode('.',$controller)[0];
+            $controller = explode('.',$controller)[1];
             $action = $request->action();
         } else {
-            $url = Str::studly($url);
-            $url = parse_url($url);
-            $route = explode('/', $url['path']);
+            $route = explode('/', trim($url['path'],'/'));
             $action = array_pop($route);
-            $addons = count($route) == 3 ? $route[0] : $request->addon;
+            $addons = count($route) == 3 ? strtolower($route[0]) : $request->addon;
             $controller = (array_pop($route)) ?: $request->param('controller');
             $module = (array_pop($route)) ?: $request->param('module', 'frontend');
             $controller = Str::snake((string)$controller);
@@ -258,8 +261,31 @@ if (!function_exists('addons_url')) {
                 $param = array_merge($query, $param);
             }
         }
-        // 注册控制器路由
-        return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
+        $url['path'] = $addons.'/'.$module.'/'.$controller.'/'.$action;
+        $config = get_addons_config($addons);
+        $dispatch = think\facade\Request::param();
+        $indomain = isset($dispatch['indomain']) && $dispatch['indomain'] ? true : false;
+        $domainprefix = $config && isset($config['domain']) && $config['domain']['value'] ? $config['domain']['value'] : '';
+        $domain = $domainprefix && Config::get('route.url_domain_deploy') ? $domainprefix : $domain;
+        $suffix = $config && isset($config['suffix']) && $config['suffix']['value'] ? $config['suffix']['value']:$suffix;
+        $rewrite = $config && isset($config['rewrite']) && $config['rewrite']['value'] ? $config['rewrite']['value'] : [];
+        if ($rewrite) {
+            $rewrite_val = array_values($rewrite);
+            $rewrite_key = array_keys($rewrite);
+            if ($key = array_search($url['path'],$rewrite_val)) {
+                $path = $rewrite_key[$key];
+                array_walk($param, function ($value, $key) use (&$path) {
+                    $path = str_replace(":{$key}", $value, $path);
+                });
+                return Route::buildUrl($path)->suffix($suffix)->domain($domain);
+            }else{
+                return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
+            }
+        } else {
+            // 注册控制器路由
+            return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
+
+        }
     }
 }
 
