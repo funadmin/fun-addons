@@ -15,7 +15,7 @@ use think\helper\{
     Str, Arr
 };
 
-define('DS',DIRECTORY_SEPARATOR);
+define('DS', DIRECTORY_SEPARATOR);
 
 \think\Console::starting(function (\think\Console $console) {
     $console->addCommands([
@@ -86,8 +86,8 @@ if (!function_exists('get_addons_info')) {
 
 /**
  * 设置基础配置信息
- * @param string $name  插件名
- * @param array  $array 配置数据
+ * @param string $name 插件名
+ * @param array $array 配置数据
  * @return boolean
  * @throws Exception
  */
@@ -98,12 +98,12 @@ if (!function_exists('set_addons_info')) {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath();
         // 插件列表
-        $file = $addons_path. $name . DIRECTORY_SEPARATOR . 'Plugin.ini';
+        $file = $addons_path . $name . DIRECTORY_SEPARATOR . 'Plugin.ini';
         $addon = get_addons_instance($name);
 //        echo '------------------1----------';
         $array = $addon->setInfo($name, $array);
 //        echo '------------2-----------';
-        $array['status']?$addon->enabled():$addon->disabled();
+        $array['status'] ? $addon->enabled() : $addon->disabled();
         if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
             throw new Exception("Failed to write plugin config");
         }
@@ -121,7 +121,7 @@ if (!function_exists('set_addons_info')) {
             fwrite($handle, implode("\n", $res) . "\n");
             fclose($handle);
             //清空当前配置缓存
-            Config::set($array,"addon_{$name}_info");
+            Config::set($array, "addon_{$name}_info");
             Cache::delete('addonslist');
         } else {
             throw new Exception("File does not have write permission");
@@ -161,7 +161,7 @@ if (!function_exists('get_addons_class')) {
      * @param string $class 当前类名
      * @return string
      */
-    function get_addons_class($name, $type = 'hook', $class = null,$module='backend')
+    function get_addons_class($name, $type = 'hook', $class = null, $module = 'backend')
     {
         $name = trim($name);
         // 处理多级控制器情况
@@ -175,7 +175,7 @@ if (!function_exists('get_addons_class')) {
         }
         switch ($type) {
             case 'controller':
-                 $namespace = '\\addons\\' . $name.'\\'  .$module. '\\controller\\' .$class;
+                $namespace = '\\addons\\' . $name . '\\' . $module . '\\controller\\' . $class;
                 break;
             default:
                 $namespace = '\\addons\\' . $name . '\\Plugin';
@@ -195,7 +195,7 @@ if (!function_exists('get_addons_config')) {
     function get_addons_config($name)
     {
         $addon = get_addons_instance($name);
-        if (! $addon) {
+        if (!$addon) {
             return [];
         }
 
@@ -210,7 +210,7 @@ if (!function_exists('set_addons_config')) {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath();
         // 插件列表
-        $file = $addons_path. $name . DIRECTORY_SEPARATOR . 'config.php';
+        $file = $addons_path . $name . DIRECTORY_SEPARATOR . 'config.php';
         if (!FileHelper::isWritable($file)) {
             throw new \Exception(lang("addons.php File does not have write permission"));
         }
@@ -227,7 +227,7 @@ if (!function_exists('set_addons_config')) {
 if (!function_exists('addons_url')) {
     /**
      * 插件显示内容里生成访问插件的url
-     * @param string $url    地址 格式：插件名/模块/控制器/方法 或者只有方法
+     * @param string $url 地址 格式：插件名/模块/控制器/方法 或者只有方法
      * @param array $param
      * @param bool|string $suffix 生成的URL后缀
      * @param bool|string $domain 域名
@@ -248,9 +248,9 @@ if (!function_exists('addons_url')) {
             $url = parse_url($url);
             $route = explode('/', $url['path']);
             $action = array_pop($route);
-            $addons =  count($route)==3 ? $route[0]:$request->addon;
-            $controller = (array_pop($route))?: $request->param('controller') ;
-            $module = (array_pop($route))?: $request->param('module','frontend');
+            $addons = count($route) == 3 ? $route[0] : $request->addon;
+            $controller = (array_pop($route)) ?: $request->param('controller');
+            $module = (array_pop($route)) ?: $request->param('module', 'frontend');
             $controller = Str::snake((string)$controller);
             /* 解析URL带的参数 */
             if (isset($url['query'])) {
@@ -272,7 +272,7 @@ if (!function_exists('get_addons_list')) {
 
     function get_addons_list()
     {
-        if(!Cache::get('addonslist')){
+        if (!Cache::get('addonslist')) {
             $service = new Service(App::instance()); // 获取service 服务
             $addons_path = $service->getAddonsPath(); // 插件列表
             $results = scandir($addons_path);
@@ -293,12 +293,12 @@ if (!function_exists('get_addons_list')) {
                     continue;
                 $info['url'] = (string)addons_url();
                 $list[$name] = $info;
-                Cache::set('addonslist',$list);
+                Cache::set('addonslist', $list);
             }
-        }else{
-            $list =  Cache::get('addonslist')  ;
+        } else {
+            $list = Cache::get('addonslist');
         }
-        
+
         return $list;
     }
 }
@@ -351,11 +351,11 @@ if (!function_exists('get_addons_autoload_config')) {
             $conf = get_addons_config($addon['name']);
             if ($conf) {
                 $conf['rewrite'] = isset($conf['rewrite']) && is_array($conf['rewrite']) ? $conf['rewrite'] : [];
-                $rule =  $conf['rewrite']?$conf['rewrite']['value']:[] ;
+                $rule = $conf['rewrite'] ? $conf['rewrite']['value'] : [];
                 if ($url_domain_deploy && isset($conf['domain']) && $conf['domain']) {
                     $domain[] = [
                         'addons' => $addon['name'],
-                        'indomain' => $conf['indomain'],
+                        'domain' => $conf['domain']['value'],
                         'rule' => $rule
                     ];
                 } else {
@@ -382,12 +382,12 @@ if (!function_exists('refreshaddons')) {
         $addons = get_addons_list();
         $jsArr = [];
         foreach ($addons as $name => $addon) {
-            $jsArrFile = app()->getRootPath().'addons'.DS . $name . DS . 'plugin.js';
+            $jsArrFile = app()->getRootPath() . 'addons' . DS . $name . DS . 'plugin.js';
             if ($addon['status'] && $addon['install'] && is_file($jsArrFile)) {
                 $jsArr[] = file_get_contents($jsArrFile);
             }
         }
-        $addonsjsFile =     app()->getRootPath()."public/static/require-addons.js";
+        $addonsjsFile = app()->getRootPath() . "public/static/require-addons.js";
         if ($file = fopen($addonsjsFile, 'w')) {
             $tpl = <<<EOF
 define([], function () {
@@ -402,12 +402,11 @@ EOF;
         $file = app()->getRootPath() . 'config' . DS . 'addons.php';
 
         $config = get_addons_autoload_config(true);
-        if (!$config['autoload']) return ;
+        if (!$config['autoload']) return;
 
         if (!is_really_writable($file)) {
             throw new Exception(lang("addons.js File does not have write permission"));
         }
-
         if ($handle = fopen($file, 'w')) {
             fwrite($handle, "<?php\n\n" . "return " . var_export($config, TRUE) . ";");
             fclose($handle);
@@ -423,10 +422,10 @@ EOF;
  */
 function is_really_writable($file)
 {
-    if (DIRECTORY_SEPARATOR == '/' AND @ ini_get("safe_mode") == false) {
+    if (DIRECTORY_SEPARATOR == '/' and @ ini_get("safe_mode") == false) {
         return is_writable($file);
     }
-    if (!is_file($file) OR ($fp = @fopen($file, "r+")) === false) {
+    if (!is_file($file) or ($fp = @fopen($file, "r+")) === false) {
         return false;
     }
     fclose($fp);
@@ -445,8 +444,7 @@ if (!function_exists('importsql')) {
     {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath(); // 插件列表
-        $sqlFile = $addons_path. $name . DS . 'install.sql';
-
+        $sqlFile = $addons_path . $name . DS . 'install.sql';
         $file = file_get_contents($sqlFile);
         if (is_file($sqlFile)) {
             $lines = file($sqlFile);
@@ -455,7 +453,7 @@ if (!function_exists('importsql')) {
                 if (substr($line, 0, 2) == '--' || $line == '' || substr($line, 0, 2) == '/*')
                     continue;
                 $templine .= $line;
-                if (substr(trim($line), -1, 1) == ';' and $line!='COMMIT;') {
+                if (substr(trim($line), -1, 1) == ';' and $line != 'COMMIT;') {
                     $templine = str_ireplace('__PREFIX__', config('database.connections.mysql.prefix'), $templine);
                     $templine = str_ireplace('INSERT INTO ', 'INSERT IGNORE INTO ', $templine);
                     try {
@@ -466,12 +464,10 @@ if (!function_exists('importsql')) {
                     $templine = '';
                 }
             }
-           
         }
         return true;
     }
 }
-
 
 
 /**
@@ -481,12 +477,11 @@ if (!function_exists('importsql')) {
  * @return  boolean
  */
 if (!function_exists('uninstallsql')) {
-
     function uninstallsql($name)
     {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath(); // 插件列表
-        $sqlFile = $addons_path. $name . DS . 'uninstall.sql';
+        $sqlFile = $addons_path . $name . DS . 'uninstall.sql';
         if (is_file($sqlFile)) {
             $lines = file($sqlFile);
             $templine = '';
@@ -500,7 +495,6 @@ if (!function_exists('uninstallsql')) {
                         Db::query($templine);
                     } catch (\PDOException $e) {
                         throw new PDOException($e->getMessage());
-
                     }
                     $templine = '';
                 }

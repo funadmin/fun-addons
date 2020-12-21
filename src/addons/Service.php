@@ -29,8 +29,6 @@ class Service extends \think\Service
 {
     protected $addons_path;
     protected $appName;
-//    protected $module_name;
-
     public function register()
     {
         $this->addons_path = $this->getAddonsPath();
@@ -48,19 +46,15 @@ class Service extends \think\Service
         $this->loadApp();
         // 绑定插件容器
         $this->app->bind('addons', Service::class);
-
     }
-
     public function boot()
     {
-
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
             $execute = '\\fun\\addons\\Route::execute';
             // 注册控制器路由
             $route->rule("addons/:addon/[:module]/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
-//            $this->appName =
             // 自定义路由
             $routes = (array)Config::get('addons.route', []);
             if(Config::get('addons.autoload',true)){
@@ -93,8 +87,6 @@ class Service extends \think\Service
                                 }
                             });
                         }
-
-
                     } else {
                         $val = rtrim($val,'/');
                         list($addon,$module, $controller, $action) = explode('/', $val);
@@ -109,12 +101,9 @@ class Service extends \think\Service
                             ]);
                     }
                 }
-
             }
         });
-
     }
-
 
     private function loadLang()
     {
@@ -125,7 +114,6 @@ class Service extends \think\Service
         // 加载应用默认语言包
         $this->app->loadLangPack($this->app->lang->defaultLangSet());
     }
-
     /**
      *  加载插件自定义路由文件
      */
@@ -137,7 +125,6 @@ class Service extends \think\Service
             if (in_array($name, ['.', '..'])) {
                 continue;
             }
-
             $module_dir = $this->addons_path . $name . DS;
             foreach (scandir($module_dir) as $mdir) {
                 if (in_array($mdir, ['.', '..'])) {
@@ -156,7 +143,6 @@ class Service extends \think\Service
             }
         }
     }
-
     /**
      * 插件事件
      */
@@ -178,7 +164,6 @@ class Service extends \think\Service
             }
             Cache::set('hooks', $hooks);
         }
-
         //如果在插件中有定义 AddonsInit，则直接执行
         if (isset($hooks['AddonsInit'])) {
             foreach ($hooks['AddonsInit'] as $k => $v) {
@@ -187,8 +172,6 @@ class Service extends \think\Service
         }
         Event::listenEvents($hooks);
     }
-
-
     /**
      * 挂载插件服务
      */
@@ -219,7 +202,6 @@ class Service extends \think\Service
         }
         $this->app->bind($bind);
     }
-
     /**
      * 加载配置，路由，语言，中间件等
      */
@@ -239,7 +221,7 @@ class Service extends \think\Service
                         if (in_array($mdir, ['.', '..'])) {
                             continue;
                         }
-                       $commands = [];
+                        $commands = [];
                         //配置文件
                         $addons_config_dir = $this->addons_path . $name. DS . $childname  . DS . 'config' . DS;
                         if (is_dir($addons_config_dir)) {
@@ -255,14 +237,10 @@ class Service extends \think\Service
                             }
                         }
                     }
-
                 }
             }
-
         }
-
     }
-
     /**
      * 自动载入钩子插件
      * @return bool
@@ -305,7 +283,6 @@ class Service extends \think\Service
         }
         Config::set($config, 'addons');
     }
-
     /**
      * 获取 addons 路径
      * @return string
@@ -318,10 +295,8 @@ class Service extends \think\Service
         if (!is_dir($addons_path)) {
             @mkdir($addons_path, 0755, true);
         }
-
         return $addons_path;
     }
-
     /**
      * 获取插件的配置信息
      * @param string $name
@@ -334,10 +309,8 @@ class Service extends \think\Service
         if (!$addon) {
             return [];
         }
-
         return $addon->getConfig();
     }
-
     /**
      * 获取插件源资源文件夹
      * @param string $name 插件名称
@@ -347,7 +320,6 @@ class Service extends \think\Service
     {
         return app()->getRootPath() . 'addons/' . $name . DS . 'public' . DS;
     }
-
     /**
      * 获取插件目标资源文件夹
      * @param string $name 插件名称
@@ -361,16 +333,11 @@ class Service extends \think\Service
         }
         return $assetsDir;
     }
-
-
     //获取插件目录
     public static function getAddonsNamePath($name)
     {
-
         return app()->getRootPath() . 'addons' . DS . $name . DS;
     }
-
-
     /**
      * 获取检测的全局文件夹目录
      * @return  array
@@ -430,7 +397,6 @@ class Service extends \think\Service
         $addonslist[$name]['install'] = $install;
         Cache::set('addonslist', $addonslist);
         set_addons_info($name,['status'=>$state,'install'=>$install]);
-
     }
 
 }
