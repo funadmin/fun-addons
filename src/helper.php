@@ -100,9 +100,7 @@ if (!function_exists('set_addons_info')) {
         // 插件列表
         $file = $addons_path . $name . DIRECTORY_SEPARATOR . 'Plugin.ini';
         $addon = get_addons_instance($name);
-//        echo '------------------1----------';
         $array = $addon->setInfo($name, $array);
-//        echo '------------2-----------';
         $array['status'] ? $addon->enabled() : $addon->disabled();
         if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
             throw new Exception("Failed to write plugin config");
@@ -250,7 +248,7 @@ if (!function_exists('addons_url')) {
             $action = $request->action();
         } else {
             $route = explode('/', trim($url['path'],'/'));
-            $action = parse_name(array_pop($route));
+            $action = array_pop($route);
             $addons = count($route) == 3 ? strtolower($route[0]) : $request->addon;
             $controller = (array_pop($route)) ?: $request->param('controller');
             $module = (array_pop($route)) ?: $request->param('module', 'frontend');
@@ -274,8 +272,9 @@ if (!function_exists('addons_url')) {
             $rewrite_key = array_keys($rewrite);
             if ($key = array_search($url['path'],$rewrite_val)) {
                 $path = $rewrite_key[$key];
+                $path = '/'.ltrim($path,'/');
                 array_walk($param, function ($value, $key) use (&$path) {
-                    $path = str_replace(":{$key}", $value, $path);
+                    $path = str_replace("<{$key}>", $value, $path);
                 });
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
             }else{

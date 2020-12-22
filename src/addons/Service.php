@@ -77,7 +77,7 @@ class Service extends \think\Service
                                     'indomain' => 1,
                                 ];
                             }
-                            if (!$rules) $rules[] = [
+                            if (!$rules) $rules = [
                                 '/' => ['module' => 'frontend','addon' => $val['addons'],'controller' => 'index', 'action' => 'index',
                                 ],
                             ];
@@ -85,7 +85,6 @@ class Service extends \think\Service
                                 // 动态注册域名的路由规则
                                 foreach ($rules as $k => $rule) {
                                     $route->rule($k, $execute)
-                                        ->name($k)
                                         ->completeMatch(true)
                                         ->append($rule);
                                 }
@@ -95,7 +94,6 @@ class Service extends \think\Service
                         $val = rtrim($val, '/');
                         list($addon, $module, $controller, $action) = explode('/', $val);
                         $route->rule($key, $execute)
-                            ->name($key)
                             ->completeMatch(true)
                             ->append([
                                 'module' => $module,
