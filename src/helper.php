@@ -274,7 +274,7 @@ if (!function_exists('addons_url')) {
                 $path = $rewrite_key[$key];
                 $path = '/'.ltrim($path,'/');
                 array_walk($param, function ($value, $key) use (&$path) {
-                    $path = str_replace("<{$key}>", $value, $path);
+                    $path = str_replace("[:$key]", $value, $path);
                 });
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
             }else{
