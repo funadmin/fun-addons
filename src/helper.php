@@ -261,8 +261,6 @@ if (!function_exists('addons_url')) {
         }
         $url['path'] = $addons.'/'.$module.'/'.$controller.'/'.$action;
         $config = get_addons_config($addons);
-        $dispatch = think\facade\Request::param();
-        $indomain = isset($dispatch['indomain']) && $dispatch['indomain'] ? true : false;
         $domainprefix = $config && isset($config['domain']) && $config['domain']['value'] ? $config['domain']['value'] : '';
         $domain = $domainprefix && Config::get('route.url_domain_deploy') ? $domainprefix : $domain;
         $suffix = $config && isset($config['suffix']) && $config['suffix']['value'] ? $config['suffix']['value']:$suffix;
@@ -272,10 +270,11 @@ if (!function_exists('addons_url')) {
             $rewrite_key = array_keys($rewrite);
             if ($key = array_search($url['path'],$rewrite_val)) {
                 $path = $rewrite_key[$key];
-                $path = '/'.ltrim($path,'/');
+                $path = '/'.trim($path,'/');
                 array_walk($param, function ($value, $key) use (&$path) {
                     $path = str_replace("[:$key]", $value, $path);
                 });
+                $path=  preg_replace("/(\/\[:.*)/",'',$path);
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
             }else{
                 return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
