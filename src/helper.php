@@ -309,20 +309,18 @@ if (!function_exists('get_addons_list')) {
                 $addonDir = $addons_path . $name . DS;
                 if (!is_dir($addonDir))
                     continue;
-
                 if (!is_file($addonDir . 'Plugin' . '.php'))
                     continue;
                 $info = get_addons_info($name);
                 if (!isset($info['name']))
                     continue;
-                $info['url'] = (string)addons_url();
+                $info['url'] =isset($info['url']) && $info['url'] ?(string)addons_url($info['url']):'';
                 $list[$name] = $info;
                 Cache::set('addonslist', $list);
             }
         } else {
             $list = Cache::get('addonslist');
         }
-
         return $list;
     }
 }
