@@ -274,7 +274,7 @@ if (!function_exists('addons_url')) {
                 array_walk($param, function ($value, $key) use (&$path) {
                     $path = str_replace("[:$key]", $value, $path);
                 });
-                $path=  ltrim(preg_replace("/(\/\[:.*)/",'',$path),'/');
+                $path=  rtrim(preg_replace("/(\/\[:.*)/",'',$path),'/');
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
             }else{
                 return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
