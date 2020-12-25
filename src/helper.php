@@ -266,15 +266,18 @@ if (!function_exists('addons_url')) {
         $suffix = $config && isset($config['suffix']) && $config['suffix']['value'] ? $config['suffix']['value']:$suffix;
         $rewrite = $config && isset($config['rewrite']) && $config['rewrite']['value'] ? $config['rewrite']['value'] : [];
         if ($rewrite) {
+
             $rewrite_val = array_values($rewrite);
             $rewrite_key = array_keys($rewrite);
-            if ($key = array_search($url['path'],$rewrite_val)) {
+            $key = array_search($url['path'],$rewrite_val);
+            if ($key!==false) {
                 $path = $rewrite_key[$key];
                 $path = '/'.trim($path,'/');
                 array_walk($param, function ($value, $key) use (&$path) {
                     $path = str_replace("[:$key]", $value, $path);
                 });
-                $path=  rtrim(preg_replace("/(\/\[:.*)/",'',$path),'/');
+                dump($path);die;
+                $path=  preg_replace("/(\/\[:.*)/",'',$path);
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
             }else{
                 return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
