@@ -87,7 +87,7 @@ class Controller extends BaseController
     protected function _initialize()
     {
         $view_config = Config::get('view');
-        // 渲染配置到视图中
+         // 渲染配置到视图中
         if(isset($this->param['addon'])){
             $view_config = array_merge($view_config,['view_path' => $this->addon_path .'view' .DS],);
             View::engine('Think')->config($view_config);
