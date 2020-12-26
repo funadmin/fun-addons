@@ -77,24 +77,25 @@ class Service extends \think\Service
                                     'indomain' => 1,
                                 ];
                             }
-                            if (!$rules) $rules = [
-                                '/' => ['module' => 'frontend','addon' => $val['addons'],'controller' => 'index', 'action' => 'index',
-                                ],
-                            ];
                             if($domain){
+                                if (!$rules) $rules = [
+                                    '/' => ['module' => 'frontend','addon' => $val['addons'],'controller' => 'index', 'action' => 'index',
+                                    ],
+                                ];
                                 $route->domain($domain, function () use ($rules, $route, $execute) {
                                     // 动态注册域名的路由规则
                                     foreach ($rules as $k => $rule) {
                                         $k = explode('/',trim($k,'/'));
                                         $k = implode('/',array_slice($k,1));
-                                        $route->rule(trim($k,'/'), $execute)
+                                        $route->rule($k, $execute)
                                             ->completeMatch(true)
                                             ->append($rule);
                                     }
                                 });
                             }else{
                                 foreach ($rules as $k => $rule) {
-                                    $route->rule(trim($k,'/'), $execute)
+                                    $k = '/'.trim($k,'/');
+                                    $route->rule($k, $execute)
                                         ->completeMatch(true)
                                         ->append($rule);
                                 }
