@@ -147,7 +147,7 @@ class Service extends \think\Service
                 }
                 //路由配置文件
                 $addons_route_dir = $this->addons_path . $name . DS . $mdir . DS . 'route' . DS;
-                if (is_dir($addons_route_dir)) {
+                if (strpos($addons_route_dir,'.')===false && is_dir($addons_route_dir)) {
                     $files = glob($addons_route_dir . '*.php');
                     foreach ($files as $file) {
                         if (file_exists($file)) {
