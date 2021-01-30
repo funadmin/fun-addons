@@ -50,8 +50,6 @@ class Controller extends BaseController
     public function __construct(App $app)
     {
         $this->request = app()->request;
-        //移除HTML标签
-        app()->request->filter('trim,strip_tags,htmlspecialchars');
         // 是否自动转换控制器和操作名
         $convert = Config::get('url_convert');
         $filter = $convert ? 'strtolower' : 'trim';
