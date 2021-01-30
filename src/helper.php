@@ -278,7 +278,8 @@ if (!function_exists('addons_url')) {
                 $path=  preg_replace("/(\/\[:.*)/",'',$path);
                 if($domain){
                     $array = explode("/", $path);
-                    $path = $val = implode("/", array_slice($array, 1));
+                    $path = implode("/", array_slice($array, 2));
+                    return '/'.trim($path,'/');
                 }
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
             }else{
