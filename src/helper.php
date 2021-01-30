@@ -265,6 +265,10 @@ if (!function_exists('addons_url')) {
         $domain = $domainprefix && Config::get('route.url_domain_deploy') ? $domainprefix : $domain;
         $suffix = $config && isset($config['suffix']) && $config['suffix']['value'] ? $config['suffix']['value']:$suffix;
         $rewrite = $config && isset($config['rewrite']) && $config['rewrite']['value'] ? $config['rewrite']['value'] : [];
+        if($module==='backend'){
+            //后台注册控制器路由
+            return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix);
+        }
         if ($rewrite) {
             $rewrite_val = array_values($rewrite);
             $rewrite_key = array_keys($rewrite);
