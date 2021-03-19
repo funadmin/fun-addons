@@ -477,7 +477,6 @@ if (!function_exists('importsql')) {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath(); // 插件列表
         $sqlFile = $addons_path . $name . DS . 'install.sql';
-        $file = file_get_contents($sqlFile);
         if (is_file($sqlFile)) {
             $lines = file($sqlFile);
             $templine = '';
