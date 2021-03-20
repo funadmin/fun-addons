@@ -277,7 +277,7 @@ if (!function_exists('addons_url')) {
                 $path = $rewrite_key[$key];
                 $path = '/'.trim($path,'/');
                 array_walk($param, function ($value, $key) use (&$path) {
-                    $path = str_replace("[:$key]", $value, $path);
+                    $path = str_replace("[:$key]", "$value", $path);
                 });
                 $path=  preg_replace("/(\/\[:.*)/",'',$path);
                 if($domain){
@@ -477,6 +477,7 @@ if (!function_exists('importsql')) {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath(); // 插件列表
         $sqlFile = $addons_path . $name . DS . 'install.sql';
+        $file = file_get_contents($sqlFile);
         if (is_file($sqlFile)) {
             $lines = file($sqlFile);
             $templine = '';
