@@ -354,7 +354,7 @@ if (!function_exists('get_addons_autoload_config')) {
         $route = [];
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\fun\\Addons");
-        $base = array_merge($base, ['install', 'uninstall', 'enabled', 'disabled']);
+        $base = array_merge($base, ['init','initialize','install', 'uninstall', 'enabled', 'disabled']);
 
         $url_domain_deploy = Config::get('route.url_domain_deploy');
         $addons = get_addons_list();
