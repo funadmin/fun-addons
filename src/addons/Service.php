@@ -180,6 +180,7 @@ class Service extends \think\Service
             }
             Cache::set('hooks', $hooks);
         }
+
         //如果在插件中有定义 AddonsInit，则直接执行
         if (isset($hooks['AddonsInit'])) {
             foreach ($hooks['AddonsInit'] as $k => $v) {
@@ -210,11 +211,11 @@ class Service extends \think\Service
             if (!is_file($addonDir . 'Plugin.php')) {
                 continue;
             }
-            $service_file = $addonDir . 'Plugin.ini';
-            if (!is_file($service_file)) {
+            $ini = $addonDir . 'Plugin.ini';
+            if (!is_file($ini)) {
                 continue;
             }
-            $info = parse_ini_file($service_file, true, INI_SCANNER_TYPED) ?: [];
+            $info = parse_ini_file($ini, true, INI_SCANNER_TYPED) ?: [];
             $bind = array_merge($bind, $info);
         }
         $this->app->bind($bind);
@@ -273,6 +274,7 @@ class Service extends \think\Service
         $config = Config::get('addons');
         // 读取插件目录及钩子列表
         $base = get_class_methods("\\fun\\Addons");
+        $base = array_merge($base, ['init','initialize','install', 'uninstall', 'enabled', 'disabled']);
         // 读取插件目录中的php文件
         foreach (glob($this->getAddonsPath() . '*/*.php') as $addons_file) {
             // 格式化路径信息
@@ -283,6 +285,12 @@ class Service extends \think\Service
             if (strtolower($info['filename']) === 'plugin') {
                 // 读取出所有公共方法
                 $methods = (array)get_class_methods("\\addons\\" . $name . "\\" . $info['filename']);
+                $ini= $info['dirname'] .DS. 'Plugin.ini';
+                if (!is_file($ini)) {
+                    continue;
+                }
+                $addon_config = parse_ini_file($ini, true, INI_SCANNER_TYPED) ?: [];
+                if(!$addon_config['status'] || !$addon_config['install']) continue;
                 // 跟插件基类方法做比对，得到差异结果
                 $hooks = array_diff($methods, $base);
                 // 循环将钩子方法写入配置中
