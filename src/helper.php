@@ -360,8 +360,8 @@ if (!function_exists('get_addons_autoload_config')) {
         $addons = get_addons_list();
         $domain = [];
         foreach ($addons as $name => $addon) {
-            if (!$addon['status'])
-                continue;
+            if(!$addon['install']) continue;
+            if (!$addon['status']) continue;
             // 读取出所有公共方法
             $methods = (array)get_class_methods("\\addons\\" . $name . "\\" . 'Plugin');
             // 跟插件基类方法做比对，得到差异结果
