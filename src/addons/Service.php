@@ -34,7 +34,7 @@ class Service extends \think\Service
     {
         // 绑定插件容器
         $this->app->bind('addons', Service::class);
-        
+
         $this->addons_path = $this->getAddonsPath();
         // 自动载入插件
         $this->autoload();
@@ -182,14 +182,13 @@ class Service extends \think\Service
             }
             Cache::set('hooks', $hooks);
         }
-
+        Event::listenEvents($hooks);
         //如果在插件中有定义 AddonsInit，则直接执行
         if (isset($hooks['AddonsInit'])) {
             foreach ($hooks['AddonsInit'] as $k => $v) {
                 Event::trigger('AddonsInit', $v);
             }
         }
-        Event::listenEvents($hooks);
     }
 
     /**
