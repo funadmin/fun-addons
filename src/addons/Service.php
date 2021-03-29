@@ -32,6 +32,9 @@ class Service extends \think\Service
 
     public function register()
     {
+        // 绑定插件容器
+        $this->app->bind('addons', Service::class);
+        
         $this->addons_path = $this->getAddonsPath();
         // 自动载入插件
         $this->autoload();
@@ -45,8 +48,7 @@ class Service extends \think\Service
         $this->loadService();
         //加载配置
         $this->loadApp();
-        // 绑定插件容器
-        $this->app->bind('addons', Service::class);
+
     }
 
     public function boot()
@@ -290,7 +292,8 @@ class Service extends \think\Service
                     continue;
                 }
                 $addon_config = parse_ini_file($ini, true, INI_SCANNER_TYPED) ?: [];
-                if(!$addon_config['status'] || !$addon_config['install']) continue;
+                if(!$addon_config['status']) continue;
+                if(!$addon_config['install']) continue;
                 // 跟插件基类方法做比对，得到差异结果
                 $hooks = array_diff($methods, $base);
                 // 循环将钩子方法写入配置中
