@@ -142,6 +142,7 @@ class Service extends \think\Service
             if (in_array($name, ['.', '..'])) {
                 continue;
             }
+            if(!is_dir($module_dir = $this->addons_path . $name)) continue;
             $module_dir = $this->addons_path . $name . DS;
             foreach (scandir($module_dir) as $mdir) {
                 if (in_array($mdir, ['.', '..'])) {
