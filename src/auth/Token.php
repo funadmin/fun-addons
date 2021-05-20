@@ -33,15 +33,15 @@ class Token
      * @var bool
      * 是否需要验证数据库账号
      */
-    public static $authapp = false;
+    public $authapp = false;
     /**
      * 测试appid，正式请数据库进行相关验证
      */
-    public static $appid = 'funadmin';
+    public $appid = 'funadmin';
     /**
      * appsecret
      */
-    public static $appsecret = '';
+    public $appsecret = '';
 
     /**
      * 构造方法
@@ -49,54 +49,52 @@ class Token
      */
     public function __construct(Request $request)
     {
-
         header('Access-Control-Allow-Origin:*');
         header('Access-Control-Allow-Headers:Accept,Referer,Host,Keep-Alive,User-Agent,X-Requested-With,Cache-Control,Content-Type,Cookie,token');
         header('Access-Control-Allow-Credentials:true');
         header('Access-Control-Allow-Methods:GET, POST, PATCH, PUT, DELETE,OPTIONS');
         $this->request = Request::instance();
-        if (self::$authapp) {
+        if ($this->authapp) {
             $appid = Request::post('appid');
             $appsecret = Request::post('appsecret');
             $oauth2_client = Db::name('oauth2_client')->where('appid', $appid)->find();
             if (!$oauth2_client) {
-                self::error('Invalid authorization credentials', '', 401);
+                $this->error('Invalid authorization credentials', '', 401);
             }
             if ($oauth2_client['appsecret'] != $appsecret) {
-                self::error(lang('appsecret is not right'));
+                $this->error(lang('appsecret is not right'));
             }
-            self::$appid = $oauth2_client['appid'];
-            self::$appsecret = $oauth2_client['appsecret'];
+            $this->appid = $oauth2_client['appid'];
+            $this->appsecret = $oauth2_client['appsecret'];
         }
-
     }
 
     /**
-     * 生成token $accessToken
      */
     public function accessToken(Request $request)
     {
         //参数验证
         $validate = new \fun\auth\validate\Token;
-        if (self::$authapp) {
+        if ($this->authapp) {
             if (!$validate->scene('authapp')->check(Request::post())) {
-                self::error($validate->getError());
+                $this->error($validate->getError());
             }
         } else {
             if (!$validate->scene('noauthapp')->check(Request::post())) {
-                self::error($validate->getError());
+                $this->error($validate->getError());
             }
         }
-        self::checkParams(Request::post());  //参数校验
+
+        $this->checkParams(Request::post());  //参数校验
         //数据库已经有一个用户,这里需要根据input('mobile')去数据库查找有没有这个用户
-        $memberInfo = self::getMember(Request::post('username'), Request::post('password'));
+        $memberInfo = $this->getMember(Request::post('username'), Request::post('password'));
         //虚拟一个uid返回给调用方
         try {
-            $accessToken = self::setAccessToken(array_merge($memberInfo, Request::post()));  //传入参数应该是根据手机号查询改用户的数据
+            $accessToken = $this->setAccessToken(array_merge($memberInfo, Request::post()));  //传入参数应该是根据手机号查询改用户的数据
         } catch (\Exception $e) {
-            self::error($e, $e->getMessage(), 500);
+            $this->error($e, $e->getMessage(), 500);
         }
-        self::success('success', $accessToken);
+        $this->success('success', $accessToken);
 
     }
 
@@ -105,16 +103,16 @@ class Token
      */
     public function refresh($refresh_token = '', $appid = '')
     {
-        $cache_refresh_token = Cache::get(self::$refreshAccessTokenPrefix . $appid);  //查看刷新token是否存在
+        $cache_refresh_token = Cache::get($this->refreshAccessTokenPrefix . $appid);  //查看刷新token是否存在
         if (!$cache_refresh_token) {
-            self::error('refresh_token is null', '', 401);
+            $this->error('refresh_token is null', '', 401);
         } else {
             if ($cache_refresh_token !== $refresh_token) {
-                self::error('refresh_token is error', '', 401);
+                $this->error('refresh_token is error', '', 401);
             } else {    //重新给用户生成调用token
                 $data['appid'] = $appid;
-                $accessToken = self::setAccessToken($data);
-                self::success('success', $accessToken);
+                $accessToken = $this->setAccessToken($data);
+                $this->success('success', $accessToken);
             }
         }
     }
@@ -122,24 +120,27 @@ class Token
     /**
      * 参数检测和验证签名
      */
-    public static function checkParams($params = [])
+    public function checkParams($params = [])
     {
         //时间戳校验
-        if (abs($params['timestamp'] - time()) > self::$timeDif) {
-
-            self::error('请求时间戳与服务器时间戳异常' . time(), '', 401);
+        if (abs($params['timestamp'] - time()) > $this->timeDif) {
+            
+            $this->error('请求时间戳与服务器时间戳异常' . time(), '', 401);
         }
-        if (self::$authapp) {
+        if ($this->authapp) {
             //appid检测，查找数据库或者redis进行验证
-            if ($params['appid'] !== self::$appid) {
-                self::error('appid 错误', '', 401);
+            if ($params['appid'] !== $this->appid) {
+                $this->error('appid 错误', '', 401);
             }
         }
         //签名检测
-        $sign = Oauth::makeSign($params, self::$appsecret);
+        $Oauth = new Oauth();
+        $sign = $Oauth->makeSign($params, $this->appsecret);
         if ($sign !== $params['sign']) {
-            self::error('sign错误', 401);
+            $this->error('sign错误','', 401);
         }
+        
+
     }
 
     /**
@@ -150,33 +151,33 @@ class Token
     protected function setAccessToken($clientInfo)
     {
         //生成令牌
-        $accessToken = self::buildAccessToken();
-        $refresh_token = self::getRefreshToken($clientInfo['appid']);
+        $accessToken = $this->buildAccessToken();
+        $refresh_token = $this->getRefreshToken($clientInfo['appid']);
         $accessTokenInfo = [
             'access_token' => $accessToken,//访问令牌
-            'expires_time' => time() + self::$expires,      //过期时间时间戳
+            'expires_time' => time() + $this->expires,      //过期时间时间戳
             'refresh_token' => $refresh_token,//刷新的token
-            'refresh_expires_time' => time() + self::$refreshExpires,      //过期时间时间戳
+            'refresh_expires_time' => time() + $this->refreshExpires,      //过期时间时间戳
             'client' => $clientInfo,//用户信息
         ];
-        self::saveAccessToken($accessToken, $accessTokenInfo);  //保存本次token
-        self::saveRefreshToken($refresh_token, $clientInfo['appid']);
+        $this->saveAccessToken($accessToken, $accessTokenInfo);  //保存本次token
+        $this->saveRefreshToken($refresh_token, $clientInfo['appid']);
         return $accessTokenInfo;
     }
 
     /**
      * 获取刷新用的token检测是否还有效
      */
-    public static function getRefreshToken($appid = '')
+    public function getRefreshToken($appid = '')
     {
-        return Cache::get(self::$refreshAccessTokenPrefix . $appid) ? Cache::get(self::$refreshAccessTokenPrefix . $appid) : self::buildAccessToken();
+        return Cache::get($this->refreshAccessTokenPrefix . $appid) ? Cache::get($this->refreshAccessTokenPrefix . $appid) : $this->buildAccessToken();
     }
 
     /**
      * 生成AccessToken
      * @return string
      */
-    protected static function buildAccessToken($lenght = 32)
+    protected function buildAccessToken($lenght = 32)
     {
         //生成AccessToken
         $str_pol = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789abcdefghijklmnopqrstuvwxyz";
@@ -189,10 +190,10 @@ class Token
      * @param $accessToken
      * @param $accessTokenInfo
      */
-    protected static function saveAccessToken($accessToken, $accessTokenInfo)
+    protected function saveAccessToken($accessToken, $accessTokenInfo)
     {
         $token_type = config('api.auth.token_type');
-        cache(self::$accessTokenPrefix . $accessToken, $accessTokenInfo, self::$expires);
+        cache($this->accessTokenPrefix . $accessToken, $accessTokenInfo, $this->expires);
     }
 
     /**
@@ -200,13 +201,13 @@ class Token
      * @param $accessToken
      * @param $accessTokenInfo
      */
-    protected static function saveRefreshToken($refresh_token, $appid)
+    protected function saveRefreshToken($refresh_token, $appid)
     {
         //存储RefreshToken
-        cache(self::$refreshAccessTokenPrefix . $appid, $refresh_token, self::$refreshExpires);
+        cache($this->refreshAccessTokenPrefix . $appid, $refresh_token, $this->refreshExpires);
     }
 
-    protected static function getMember($membername, $password)
+    protected function getMember($membername, $password)
     {
         $member = Db::name('member')->where('username', $membername)
             ->whereOr('mobile', $membername)
@@ -216,11 +217,10 @@ class Token
                 $member['uid'] = $member['id'];
                 return $member;
             } else {
-                self::error(lang('Password is not right'), '', 401);
+                $this->error(lang('Password is not right'), '', 401);
             }
-
         } else {
-            self::error(lang('Account is not exist'), '', 401);
+            $this->error(lang('Account is not exist'), '', 401);
         }
     }
 }

@@ -32,7 +32,7 @@ class Oauth
      */
     final function authenticate()
     {      
-        return self::certification(self::getClient());
+        return $this->certification($this->getClient());
     }
 
     /**
@@ -41,7 +41,7 @@ class Oauth
      * @return $this
      * @throws UnauthorizedException
      */
-    public static function getClient()
+    public  function getClient()
     {   
         //获取头部信息
         try {
@@ -54,7 +54,7 @@ class Oauth
             $clientInfo['uid'] = $authorizationInfo[2];
             return $clientInfo;
         } catch (Exception $e) {
-            self::error('Invalid authorization credentials','',401,'',Request::header(''));
+            $this->error('Invalid authorization credentials','',401,'',Request::header(''));
         }
     }
 
@@ -62,16 +62,16 @@ class Oauth
      * 获取用户信息后 验证权限
      * @return mixed
      */
-    public static function certification($data = []){
+    public  function certification($data = []){
 
         
-        $getCacheAccessToken = Cache::get(self::$accessTokenPrefix . $data['access-token']);  //获取缓存access-token
+        $getCacheAccessToken = Cache::get($this->accessTokenPrefix . $data['access-token']);  //获取缓存access-token
         if(!$getCacheAccessToken){
-            self::error('access-token不存在或为空','',401);
+            $this->error('access-token不存在或为空','',401);
 
         }
         if($getCacheAccessToken['client']['appid'] !== $data['appid']){
-            self::error('appid错误','',401);//appid与缓存中的appid不匹配
+            $this->error('appid错误','',401);//appid与缓存中的appid不匹配
         }
         return $data;
     }
@@ -82,7 +82,7 @@ class Oauth
      * @param array $arr 需要验证权限的数组
      * @return boolean
      */
-    public static function match($arr = [])
+    public  function match($arr = [])
     {
         $request = Request::instance();
         $arr = is_array($arr) ? $arr : explode(',', $arr);
@@ -104,17 +104,17 @@ class Oauth
      * 生成签名
      * _字符开头的变量不参与签名
      */
-    public static function makeSign ($data = [],$app_secret = '')
-    {   
+    public  function makeSign ($data = [],$app_secret = '')
+    {
         unset($data['version']);
         unset($data['sign']);
-        return self::buildSign($data,$app_secret);
+        return $this->buildSign($data,$app_secret);
     }
 
     /**
      * 计算ORDER的MD5签名
      */
-    private static function buildSign($params = [] , $app_secret = '') {
+    private  function buildSign($params = [] , $app_secret = '') {
         ksort($params);
         $params['key'] = $app_secret;
         return strtolower(md5(urldecode(http_build_query($params))));
