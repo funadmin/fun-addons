@@ -44,17 +44,17 @@ class Oauth
     public  function getClient()
     {   
         //获取头部信息
+        $authorization = config('api.authentication')?config('api.authentication'):'authentication';
+        $authorizationHeader = Request::header($authorization); //获取请求中的authentication字段，值形式为USERID asdsajh..这种形式
         try {
-            $authorization = config('api.authentication')?config('api.authentication'):'authentication';
-            $authorization = Request::header($authorization); //获取请求中的authentication字段，值形式为USERID asdsajh..这种形式
-            $authorization = explode(" ", $authorization);//explode分割，获取后面一窜base64加密数据
-            $authorizationInfo  = explode(":", base64_decode($authorization[1]));  //对base_64解密，获取到用:拼接的自字符串，然后分割，可获取appid、accesstoken、uid这三个参数
+            $authorizationArr = explode(" ", $authorizationHeader);//explode分割，获取后面一窜base64加密数据
+            $authorizationInfo  = explode(":", base64_decode($authorizationArr[1]));  //对base_64解密，获取到用:拼接的自字符串，然后分割，可获取appid、accesstoken、uid这三个参数
             $clientInfo['appid'] = $authorizationInfo[0];
-            $clientInfo['access-token'] = $authorizationInfo[1];
+            $clientInfo['access_token'] = $authorizationInfo[1];
             $clientInfo['uid'] = $authorizationInfo[2];
             return $clientInfo;
         } catch (Exception $e) {
-            $this->error('Invalid authorization credentials','',401,'',Request::header(''));
+            $this->error('Invalid authorization credentials','',401,'',$authorizationHeader?$authorizationHeader:[]);
         }
     }
 
@@ -65,9 +65,9 @@ class Oauth
     public  function certification($data = []){
 
         
-        $getCacheAccessToken = Cache::get($this->accessTokenPrefix . $data['access-token']);  //获取缓存access-token
+        $getCacheAccessToken = Cache::get($this->accessTokenPrefix . $data['access_token']);  //获取缓存access_token
         if(!$getCacheAccessToken){
-            $this->error('access-token不存在或为空','',401);
+            $this->error('access_token不存在或为空','',401);
 
         }
         if($getCacheAccessToken['client']['appid'] !== $data['appid']){
