@@ -13,12 +13,9 @@
 
 namespace fun\auth;
 
-use app\common\service\PredisService;
 use think\facade\Request;
 use fun\auth\Send;
 use fun\auth\Oauth;
-use think\facade\Cache;
-use app\common\model\WxFans;
 use think\facade\Db;
 use think\Lang;
 
@@ -70,6 +67,7 @@ class Token
     }
 
     /**
+     * 生成token
      */
     public function accessToken(Request $request)
     {
@@ -84,15 +82,14 @@ class Token
                 $this->error($validate->getError());
             }
         }
-
         $this->checkParams(Request::post());  //参数校验
         //数据库已经有一个用户,这里需要根据input('mobile')去数据库查找有没有这个用户
         $memberInfo = $this->getMember(Request::post('username'), Request::post('password'));
         //虚拟一个uid返回给调用方
         try {
-            $accessToken = $this->setAccessToken(array_merge($memberInfo, Request::post()));  //传入参数应该是根据手机号查询改用户的数据
+            $accessToken = $this->setAccessToken(array_merge($memberInfo, ['appid'=>Request::post('appid')]));  //传入参数应该是根据手机号查询改用户的数据
         } catch (\Exception $e) {
-            $this->error($e, $e->getMessage(), 500);
+            $this->error($e->getMessage(), $e, 500);
         }
         $this->success('success', $accessToken);
 
@@ -101,17 +98,22 @@ class Token
     /**
      * token 过期 刷新token
      */
-    public function refresh($refresh_token = '', $appid = '')
+    public function refresh()
     {
-        $cache_refresh_token = Cache::get($this->refreshAccessTokenPrefix . $appid);  //查看刷新token是否存在
-        if (!$cache_refresh_token) {
-            $this->error('refresh_token is null', '', 401);
+        $refresh_token = Request::post('refresh_token')?Request::post('refresh_token'):Request::get('refresh_token');
+        $refresh_token_info = Db::name('oauth2_access_token')
+            ->where('refresh_token',$refresh_token)->order('id desc')->find();
+        if (!$refresh_token_info) {
+            $this->error('refresh_token is error', '', 401);
         } else {
-            if ($cache_refresh_token !== $refresh_token) {
-                $this->error('refresh_token is error', '', 401);
+            if ($refresh_token_info['refresh_expires_time'] <time()) {
+                $this->error('refresh_token is expired', '', 401);
             } else {    //重新给用户生成调用token
-                $data['appid'] = $appid;
-                $accessToken = $this->setAccessToken($data);
+                $member =  Db::name('member')->where('status',1)->find($refresh_token_info['member_id']);
+                $client =  Db::name('oauth2_client')
+                    ->field('appid')->find($refresh_token_info['client_id']);
+                $clientInfo = array_merge($member,$client);
+                $accessToken = $this->setAccessToken($clientInfo,$refresh_token);
                 $this->success('success', $accessToken);
             }
         }
@@ -148,29 +150,42 @@ class Token
      * @param $clientInfo
      * @return int
      */
-    protected function setAccessToken($clientInfo)
+    protected function setAccessToken($clientInfo,$refresh_token='')
     {
-        //生成令牌
-        $accessToken = $this->buildAccessToken();
-        $refresh_token = $this->getRefreshToken($clientInfo['appid']);
         $accessTokenInfo = [
-            'access_token' => $accessToken,//访问令牌
+            'access_token' => '',//访问令牌
             'expires_time' => time() + $this->expires,      //过期时间时间戳
             'refresh_token' => $refresh_token,//刷新的token
             'refresh_expires_time' => time() + $this->refreshExpires,      //过期时间时间戳
             'client' => $clientInfo,//用户信息
         ];
-        $this->saveAccessToken($accessToken, $accessTokenInfo);  //保存本次token
-        $this->saveRefreshToken($refresh_token, $clientInfo['appid']);
+        $token =  Db::name('oauth2_access_token')->order('id desc')->limit(1)->find();
+        if($token and $token['expires_time']>time()){
+            $accessTokenInfo['access_token'] = $token['access_token'];
+            $accessTokenInfo['refresh_token'] = $token['refresh_token'];
+            $accessTokenInfo['expires_time'] = $token['expires_time'];
+            $accessTokenInfo['refresh_expires_time'] = $token['refresh_expires_time'];
+        }else{
+            $accessTokenInfo['access_token'] = $this->buildAccessToken();
+            $accessTokenInfo['refresh_token'] = $this->getRefreshToken($clientInfo,$refresh_token);
+        }
+        $this->saveToken($accessTokenInfo);  //保存本次token
         return $accessTokenInfo;
     }
 
     /**
      * 获取刷新用的token检测是否还有效
      */
-    public function getRefreshToken($appid = '')
+    public function getRefreshToken($clientInfo,$refresh_token)
     {
-        return Cache::get($this->refreshAccessTokenPrefix . $appid) ? Cache::get($this->refreshAccessTokenPrefix . $appid) : $this->buildAccessToken();
+        if(!$refresh_token){
+            return $this->buildAccessToken();
+        }
+        $accessToken =Db::name('oauth2_access_token')->where('member_id',$clientInfo['id'])
+            ->where('refresh_token',$refresh_token)
+            ->field('refresh_token')
+            ->find();
+        return $accessToken?$refresh_token:$this->buildAccessToken();
     }
 
     /**
@@ -182,36 +197,43 @@ class Token
         //生成AccessToken
         $str_pol = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789abcdefghijklmnopqrstuvwxyz";
         return substr(str_shuffle($str_pol), 0, $lenght);
-
     }
 
     /**
      * 存储token
-     * @param $accessToken
      * @param $accessTokenInfo
      */
-    protected function saveAccessToken($accessToken, $accessTokenInfo)
+    protected function saveToken($accessTokenInfo)
     {
-        $token_type = config('api.auth.token_type');
-        cache($this->accessTokenPrefix . $accessToken, $accessTokenInfo, $this->expires);
-    }
-
-    /**
-     * 刷新token存储
-     * @param $accessToken
-     * @param $accessTokenInfo
-     */
-    protected function saveRefreshToken($refresh_token, $appid)
-    {
-        //存储RefreshToken
-        cache($this->refreshAccessTokenPrefix . $appid, $refresh_token, $this->refreshExpires);
+        $client = Db::name('oauth2_client')->where('appid',$this->appid)
+            ->where('appsecret',$this->appsecret)->find();
+        $accessToken =Db::name('oauth2_access_token')->where('member_id',$accessTokenInfo['client']['id'])
+            ->where('access_token',$accessTokenInfo['access_token'])
+            ->find();
+        if(!$accessToken){
+            $data = [
+                'client_id'=>$client['id'],
+                'member_id'=>$accessTokenInfo['client']['id'],
+                'group'=>isset($accessTokenInfo['client']['group'])?$accessTokenInfo['client']['group']:'api',
+                'openid'=>isset($accessTokenInfo['client']['openid'])?$accessTokenInfo['client']['openid']:'',
+                'access_token'=>$accessTokenInfo['access_token'],
+                'expires_time'=>time() + $this->expires,
+                'refresh_token'=>$accessTokenInfo['refresh_token'],
+                'refresh_expires_time' => time() + $this->refreshExpires,      //过期时间时间戳
+                'create_time' => time()      //创建时间
+            ];
+            Db::name('oauth2_access_token')->save($data);
+        }
     }
 
     protected function getMember($membername, $password)
     {
-        $member = Db::name('member')->where('username', $membername)
+        $member = Db::name('member')
+            ->where('status',1)
+            ->where('username', $membername)
             ->whereOr('mobile', $membername)
-            ->whereOr('email', $membername)->find();
+            ->whereOr('email', $membername)
+            ->find();
         if ($member) {
             if (password_verify($password, $member['password'])) {
                 $member['uid'] = $member['id'];

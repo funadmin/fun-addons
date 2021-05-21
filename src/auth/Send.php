@@ -18,8 +18,6 @@ use think\Response;
 trait Send
 {
     public  $timeDif = 10000;
-    public  $accessTokenPrefix = 'accessToken_';
-    public  $refreshAccessTokenPrefix = 'refreshAccessToken_';
     public  $refreshExpires = 3600 * 24 * 30;   //刷新token过期时间
     public  $expires = 7200;
     public  $responseType = 'json';

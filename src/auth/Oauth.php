@@ -12,10 +12,11 @@
  */
 namespace fun\auth;
 
+use app\common\model\Oauth2AccessToken;
 use fun\auth\Send;
 use think\Exception;
+use think\facade\Db;
 use think\facade\Request;
-use think\facade\Cache;
 
 /**
  * API鉴权验证
@@ -64,13 +65,13 @@ class Oauth
      */
     public  function certification($data = []){
 
-        
-        $getCacheAccessToken = Cache::get($this->accessTokenPrefix . $data['access_token']);  //获取缓存access_token
-        if(!$getCacheAccessToken){
+        $AccessToken = Db::name('oauth2_access_token')->where('member_id',$data['uid'])
+            ->where('access_token',$data['access_token'])->order('id desc')->find();
+        if(!$AccessToken){
             $this->error('access_token不存在或为空','',401);
-
         }
-        if($getCacheAccessToken['client']['appid'] !== $data['appid']){
+        $client = Db::name('oauth2_client')->find($AccessToken['client_id']);
+        if(!$client || $client['appid'] !== $data['appid']){
             $this->error('appid错误','',401);//appid与缓存中的appid不匹配
         }
         return $data;
