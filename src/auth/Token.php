@@ -159,7 +159,7 @@ class Token
             'refresh_expires_time' => time() + $this->refreshExpires,      //过期时间时间戳
             'client' => $clientInfo,//用户信息
         ];
-        $token =  Db::name('oauth2_access_token')->order('id desc')->limit(1)->find();
+        $token =  Db::name('oauth2_access_token')->where('member_id',$clientInfo['id'])->order('id desc')->limit(1)->find();
         if($token and $token['expires_time']>time()){
             $accessTokenInfo['access_token'] = $token['access_token'];
             $accessTokenInfo['refresh_token'] = $token['refresh_token'];
