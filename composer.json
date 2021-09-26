@@ -30,7 +30,7 @@
       ],
       "config":{
         "addons": "src/config.php",
-        "auth": "src/api.php"
+        "api": "src/api.php"
       }
     }
   },
