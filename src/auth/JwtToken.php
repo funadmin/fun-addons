@@ -13,16 +13,17 @@
 
 namespace fun\auth;
 
+use fun\auth\Oauth;
+use think\facade\Config;
 use think\facade\Request;
 use fun\auth\Send;
-use fun\auth\Oauth;
 use think\facade\Db;
 use think\Lang;
-
+use Firebase\JWT\JWT;
 /**
  * 生成token
  */
-class Token
+class JwtToken
 {
     use Send;
 
@@ -34,11 +35,12 @@ class Token
     /**
      * 测试appid，正式请数据库进行相关验证
      */
-    public $appid = 'funadmin';
+    public $appid = 'FunAdmin';
     /**
      * appsecret
      */
     public $appsecret = '';
+    public $key = '';
 
     /**
      * 构造方法
@@ -51,19 +53,7 @@ class Token
         header('Access-Control-Allow-Credentials:true');
         header('Access-Control-Allow-Methods:GET, POST, PATCH, PUT, DELETE,OPTIONS');
         $this->request = Request::instance();
-        if ($this->authapp) {
-            $appid = Request::post('appid');
-            $appsecret = Request::post('appsecret');
-            $oauth2_client = Db::name('oauth2_client')->where('appid', $appid)->find();
-            if (!$oauth2_client) {
-                $this->error('Invalid authorization credentials', '', 401);
-            }
-            if ($oauth2_client['appsecret'] != $appsecret) {
-                $this->error(lang('appsecret is not right'));
-            }
-            $this->appid = $oauth2_client['appid'];
-            $this->appsecret = $oauth2_client['appsecret'];
-        }
+        $this->key = md5(Config::get('api.jwt_key'));
     }
 
     /**
@@ -73,13 +63,13 @@ class Token
     {
         //参数验证
         $validate = new \fun\auth\validate\Token;
-        if ($this->authapp) {
-            if (!$validate->scene('authapp')->check(Request::post())) {
-                $this->error($validate->getError(),'',500);
+        if($this->authapp){
+            if (!$validate->scene('authappjwt')->check(Request::post())) {
+                $this->error($validate->getError(), '', 500);
             }
-        } else {
-            if (!$validate->scene('noauthapp')->check(Request::post())) {
-                $this->error($validate->getError(),'',500);
+        }else {
+            if (!$validate->scene('jwt')->check(Request::post())) {
+                $this->error($validate->getError(), '', 500);
             }
         }
         $this->checkParams(Request::post());  //参数校验
@@ -93,6 +83,31 @@ class Token
         }
         $this->success('success', $accessToken);
 
+    }
+    /**
+     * 设置AccessToken
+     * @param $clientInfo
+     * @return int
+     */
+    protected function setAccessToken($clientInfo,$refresh_token='')
+    {
+        $accessTokenInfo = [
+            'expires_time'=>$this->expires,
+            'refresh_token'=>$this->refreshExpires,
+            'client' => $clientInfo,//用户信息
+        ];
+        $token =  Db::name('oauth2_access_token')->where('member_id',$clientInfo['id'])->order('id desc')->limit(1)->find();
+        if($token and $token['expires_time']>time()) {
+            $accessTokenInfo['access_token'] = $token['access_token'];
+            $accessTokenInfo['refresh_token'] = $token['refresh_token'];
+            $accessTokenInfo['expires_time'] = $token['expires_time'];
+            $accessTokenInfo['refresh_expires_time'] = $token['refresh_expires_time'];
+        }else{
+            $accessTokenInfo['access_token'] = $this->buildAccessToken($clientInfo,$this->expires);
+            $accessTokenInfo['refresh_token'] = $this->getRefreshToken($clientInfo,$refresh_token,$this->refreshExpires);
+        }
+        $this->saveToken($accessTokenInfo);  //保存本次token
+        return $accessTokenInfo;
     }
 
     /**
@@ -126,58 +141,41 @@ class Token
     {
         //时间戳校验
         if (abs($params['timestamp'] - time()) > $this->timeDif) {
-            
             $this->error('请求时间戳与服务器时间戳异常' . time(), '', 401);
         }
         if ($this->authapp && $params['appid'] !== $this->appid) {
             //appid检测，查找数据库或者redis进行验证
             $this->error('appid 错误', '', 401);
         }
-        //签名检测
-        $Oauth = new Oauth();
-        $sign = $Oauth->makeSign($params, $this->appsecret);
-        if ($sign !== $params['sign']) {
-            $this->error('sign错误','', 401);
-        }
-        
-
     }
 
     /**
-     * 设置AccessToken
-     * @param $clientInfo
-     * @return int
+     * 生成AccessToken
+     * @return string
      */
-    protected function setAccessToken($clientInfo,$refresh_token='')
+    protected function buildAccessToken($clientInfo,$expires)
     {
-        $accessTokenInfo = [
-            'access_token' => '',//访问令牌
-            'expires_time' => time() + $this->expires,      //过期时间时间戳
-            'refresh_token' => $refresh_token,//刷新的token
-            'refresh_expires_time' => time() + $this->refreshExpires,      //过期时间时间戳
-            'client' => $clientInfo,//用户信息
-        ];
-        $token =  Db::name('oauth2_access_token')->where('member_id',$clientInfo['id'])->order('id desc')->limit(1)->find();
-        if($token and $token['expires_time']>time()){
-            $accessTokenInfo['access_token'] = $token['access_token'];
-            $accessTokenInfo['refresh_token'] = $token['refresh_token'];
-            $accessTokenInfo['expires_time'] = $token['expires_time'];
-            $accessTokenInfo['refresh_expires_time'] = $token['refresh_expires_time'];
-        }else{
-            $accessTokenInfo['access_token'] = $this->buildAccessToken();
-            $accessTokenInfo['refresh_token'] = $this->getRefreshToken($clientInfo,$refresh_token);
-        }
-        $this->saveToken($accessTokenInfo);  //保存本次token
-        return $accessTokenInfo;
+        $time = time(); //签发时间
+        $expire = $time + $expires; //过期时间
+        $token = array(
+            'appid'=>$this->appid,
+            'appsecret'=>$this->appsecret,
+            "uid" => $clientInfo['id'],
+            "iss" => "https://www.funadmin.com",//签发组织
+            "aud" => "https://www.funadmin.com", //签发作者
+            "iat" => $time,
+            "nbf" => $time,
+            "exp" => $expire,      //过期时间时间戳
+        );
+        return   JWT::encode($token,  $this->key);
     }
-
     /**
      * 获取刷新用的token检测是否还有效
      */
-    public function getRefreshToken($clientInfo,$refresh_token)
+    public function getRefreshToken($clientInfo,$refresh_token,$expires)
     {
         if(!$refresh_token){
-            return $this->buildAccessToken();
+            return $this->buildAccessToken($clientInfo,$expires);
         }
         $accessToken =Db::name('oauth2_access_token')->where('member_id',$clientInfo['id'])
             ->where('refresh_token',$refresh_token)
@@ -185,18 +183,6 @@ class Token
             ->find();
         return $accessToken?$refresh_token:$this->buildAccessToken();
     }
-
-    /**
-     * 生成AccessToken
-     * @return string
-     */
-    protected function buildAccessToken($lenght = 32)
-    {
-        //生成AccessToken
-        $str_pol = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789abcdefghijklmnopqrstuvwxyz";
-        return substr(str_shuffle($str_pol), 0, $lenght);
-    }
-
     /**
      * 存储token
      * @param $accessTokenInfo

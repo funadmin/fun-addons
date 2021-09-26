@@ -10,9 +10,10 @@
  * Author: yuege
  * Date: 2019/10/3
  */
+//配置api 接口
 return [
-    'autoload' => true,
-    'hooks' => [],
-    'route' => [],
-    'service' => [],
+    'authentication'=>"authentication",
+    'is_jwt'=>0,//开启jwt配置
+    'jwt_key'=>'funadmin',
+
 ];
