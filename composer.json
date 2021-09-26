@@ -29,7 +29,8 @@
         "fun\\addons\\Service"
       ],
       "config":{
-        "addons": "src/config.php"
+        "addons": "src/config.php",
+        "auth": "src/api.php"
       }
     }
   },

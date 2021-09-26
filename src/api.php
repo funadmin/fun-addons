@@ -13,7 +13,7 @@
 //配置api 接口
 return [
     'authentication'=>"authentication",
-    'is_jwt'=>0,//开启jwt配置
-    'jwt_key'=>'funadmin',
+    'is_jwt'=>0,////是否开启jwt配置 1开启
+    'jwt_key'=>'funadmin',//jwtkey，请一定记得修改
 
 ];
