@@ -49,7 +49,7 @@ class SendConfig extends Command
             throw new \RuntimeException(sprintf('The config file "%s" could not be written to "%s"', $configFile,$configPath));
         }
 
-        $output->writeln('create api config ok');
+        $output->writeln('create console config ok');
     }
 
 }
