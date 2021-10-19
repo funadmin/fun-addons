@@ -17,4 +17,6 @@ class {{$modelName}} extends BaseModel
         parent::__construct($data);
     }
     {{$joinTpl}}
+
+    {{$attrTpl}}
 }

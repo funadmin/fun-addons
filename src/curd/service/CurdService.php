@@ -289,17 +289,21 @@ class CurdService
                 }else{
                     $joinModelFile = $this->rootPath . "addons" . DS . "{$this->addon}" . DS . "{$this->module}" . DS . "model" . DS . ucfirst(Str::studly($this->joinTable[$k])) . '.php';
                 }
+                //生成关联表的模型
                 $modelTplTemp = str_replace([
                     '{{$modelNamespace}}',
                     '{{$modelName}}',
                     '{{$modelTableName}}',
-                    '{{$joinTpl}}'
+                    '{{$joinTpl}}',
+                    '{{$attrTpl}}',
                 ],
                     [
                         $this->modelNamespace,
                         ucfirst(Str::studly($this->joinName[$k])),
                         $this->joinName[$k],
-                        ''],
+                        '',
+                        '',
+                    ],
                     file_get_contents($modelTpl));
                 $this->makeFile($joinModelFile,$modelTplTemp);
             }
@@ -448,16 +452,20 @@ class CurdService
                 }
             }
         }
+        $attrStr = $this->modifyAttr();
         $modelTpl = str_replace([
             '{{$modelNamespace}}',
             '{{$modelName}}',
             '{{$modelTableName}}',
-            '{{$joinTpl}}'
+            '{{$joinTpl}}',
+            '{{$attrTpl}}',
         ],
             [$this->modelNamespace,
                 ucfirst($this->modelName),
                 $this->modelTableName,
-                $joinTplStr],
+                $joinTplStr,
+                $attrStr,
+            ],
             file_get_contents($modelTpl));
         $validateTpl = str_replace(
             ['{{$validateNamespace}}', '{{$validateName}}'],
@@ -706,7 +714,7 @@ class CurdService
                     break;
                 case "select":
                     $vo['name_list'] = lcfirst(Str::studly($vo['name']));
-                    if ($vo['DATA_TYPE'] == 'set') {
+                    if (in_array($vo['DATA_TYPE'],['set','varchar','char'])) {
                         $formFieldData .= "{:form_select('{$vo['name']}',\${$vo['name_list']}List, ['label' => '{$name}', 'verify' => '{$vo['required']}', 'multiple'=>1,'search' => 1], [], '{$vo['value']}')}" . PHP_EOL;
                     } else {
                         $formFieldData .= "{:form_select('{$vo['name']}',\${$vo['name_list']}List, ['label' => '{$name}', 'verify' => '{$vo['required']}', 'search' => 1], [], '{$vo['value']}')}" . PHP_EOL;
@@ -1000,6 +1008,75 @@ class CurdService
         $this->assign = $assign;
         $this->lang = $lang;
         return $this;
+    }
+
+    /**
+     * 设置属性
+     * @return string
+     */
+    protected function modifyAttr(){
+        $fieldAttrData = '';
+        $tpl = [
+            $this->tplPath.'attrtimeget.tpl',
+            $this->tplPath.'attrtimeset.tpl',
+            $this->tplPath.'attrmutiget.tpl',
+            $this->tplPath.'attrmutiset.tpl',
+        ];
+        foreach ($this->fieldsList as $k => $vo) {
+            if ($vo['COLUMN_KEY'] == 'PRI') continue;
+            if (in_array($vo['name'], $this->config['ignoreFields']) and $vo['name']!='status') continue;
+            $name = Str::studly($vo['name']);
+            $method = ucfirst($name);
+            switch ($vo['type']) {
+                case "checkbox":
+                case "_id":
+                case "select":
+                    if(strpos($vo['name'],'_ids')!==false ||
+                        $vo['type']=='checkbox'
+                        ||   ($vo['type']=='select' && in_array($vo['DATA_TYPE'],['set','varchar','char'])) ){
+                        //生成关联表的模型
+                        $getTpl = str_replace([
+                            '{{$methodName}}',
+                        ],
+                            [$method,
+                            ],
+                            file_get_contents($tpl[2]));
+                        $setTpl = str_replace([
+                            '{{$methodName}}',
+                        ],
+                            [$method,
+                            ],
+                            file_get_contents($tpl[3]));
+                        $fieldAttrData.=$getTpl.PHP_EOL.$setTpl;
+                    }
+                    break;
+                case "timestamp":
+                case "datetime":
+                case "range":
+                case "year":
+                case "date":
+                case "time":
+                    if($vo['DATA_TYPE']=='int'){
+                        //生成关联表的模型
+                        $getTpl = str_replace([
+                            '{{$methodName}}',
+                        ],
+                            [$method,
+                            ],
+                            file_get_contents($tpl[0]));
+                        $setTpl = str_replace([
+                            '{{$methodName}}',
+                        ],
+                            [$method,
+                            ],
+                            file_get_contents($tpl[1]));
+                        $fieldAttrData.=$getTpl.PHP_EOL.$setTpl;
+                    }
+                    break;
+
+            }
+        }
+        return $fieldAttrData;
     }
     /**
      * @param $v
