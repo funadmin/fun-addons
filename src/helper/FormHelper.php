@@ -241,7 +241,7 @@ class FormHelper
             <div class="layui-input-block">
             <textarea placeholder="' . lang($placeholder) . '" class="layui-textarea '. self::addClass($options) .'" 
             ' . self::filter($options) . self::verify($options) . ' name="' . $name . '"
-            value="' . $value . '"></textarea>
+            value="' . $value . '">'.$value.'</textarea>
             ' . self::tips($options) . '
             </div></div>';
         return $str;
