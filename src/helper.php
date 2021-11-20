@@ -298,13 +298,12 @@ if (!function_exists('addons_url')) {
                     $path=  str_replace($domainprefix,$domain,$path);
                     $array = explode("/", $path);
                     $path = implode("/", array_slice($array, 1));
-                    $index = strpos($_SERVER['HTTP_HOST'],'.');
-                    $domain_suffix = substr_count($_SERVER['HTTP_HOST'],'.')>1?substr($_SERVER['HTTP_HOST'],$index+1):$_SERVER['HTTP_HOST'];
-                    //完整域名
-                    $domain_new = httpType().str_replace(httpType(),'',$domain);
-                    if (filter_var($domain_new, FILTER_VALIDATE_URL) !== false) {
+                    //手否完整域名
+                    if (strpos($domain,'.')!==false) {
                         return httpType() . $domain .'/' . $path;
                     }
+                    $index = strpos($_SERVER['HTTP_HOST'],'.');
+                    $domain_suffix = substr_count($_SERVER['HTTP_HOST'],'.')>1?substr($_SERVER['HTTP_HOST'],$index+1):$_SERVER['HTTP_HOST'];
                     return httpType() . $domain . '.' . $domain_suffix . '/' . $path;
                 }
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
