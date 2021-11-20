@@ -300,7 +300,12 @@ if (!function_exists('addons_url')) {
                     $path = implode("/", array_slice($array, 1));
                     $index = strpos($_SERVER['HTTP_HOST'],'.');
                     $domain_suffix = substr_count($_SERVER['HTTP_HOST'],'.')>1?substr($_SERVER['HTTP_HOST'],$index+1):$_SERVER['HTTP_HOST'];
-                    return httpType().$domain.'.'.$domain_suffix.'/'.$path;
+                    //完整域名
+                    $domain_new = httpType().str_replace(httpType(),'',$domain);
+                    if (filter_var($domain_new, FILTER_VALIDATE_URL) !== false) {
+                        return httpType() . $domain .'/' . $path;
+                    }
+                    return httpType() . $domain . '.' . $domain_suffix . '/' . $path;
                 }
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
             }else{
