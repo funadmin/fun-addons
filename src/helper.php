@@ -300,11 +300,15 @@ if (!function_exists('addons_url')) {
                     $array = explode("/", $path);
                     $path = implode("/", array_slice($array, 1));
                     //手否完整域名
-                    if (strpos($domain,'.')!==false) {
+                     if ($domain !=true &&  strpos($domain,'.')!==false) {
                         return httpType() . $domain .'/' . $path;
                     }
                     $index = strpos($_SERVER['HTTP_HOST'],'.');
                     $domain_suffix = substr_count($_SERVER['HTTP_HOST'],'.')>1?substr($_SERVER['HTTP_HOST'],$index+1):$_SERVER['HTTP_HOST'];
+                    $domain_suffix = substr_count($_SERVER['HTTP_HOST'],'.')>1?substr($_SERVER['HTTP_HOST'],$index+1):$_SERVER['HTTP_HOST'];
+                    if($domain ==true){
+                        return httpType() . $domainprefix . '.' . $domain_suffix . '/' . $path;
+                    }
                     return httpType() . $domain . '.' . $domain_suffix . '/' . $path;
                 }
                 return Route::buildUrl($path)->suffix($suffix)->domain($domain);
