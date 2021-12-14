@@ -307,7 +307,8 @@ if (!function_exists('addons_url')) {
                     $domain_suffix = substr_count($_SERVER['HTTP_HOST'],'.')>1?substr($_SERVER['HTTP_HOST'],$index+1):$_SERVER['HTTP_HOST'];
                     $domain_suffix = substr_count($_SERVER['HTTP_HOST'],'.')>1?substr($_SERVER['HTTP_HOST'],$index+1):$_SERVER['HTTP_HOST'];
                     if($domain ==true){
-                        return httpType() . $domainprefix . '.' . $domain_suffix . '/' . $path;
+                        $domain = $domainprefix?$domainprefix . '.' . $domain_suffix:$_SERVER['HTTP_HOST'];
+                        return httpType() . $domain . '/' . $path;
                     }
                     return httpType() . $domain . '.' . $domain_suffix . '/' . $path;
                 }
