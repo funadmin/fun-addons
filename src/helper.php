@@ -291,7 +291,7 @@ if (!function_exists('addons_url')) {
             $key = array_search(strtolower($url['path']), array_map('strtolower', $rewrite_val));
             if ($key!==false) {
                 $path = $rewrite_key[$key];
-                $path = '/'.trim($path,'/');
+                $path = trim($path,'/');
                 array_walk($param, function ($value, $key) use (&$path) {
                     $path = str_replace("[:$key]", "$value", $path);
                 });
