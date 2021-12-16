@@ -265,7 +265,8 @@ if (!function_exists('addons_url')) {
             $addons = count($route) == 3 ? strtolower($route[0]) : $request->addon;
             $controller = (array_pop($route)) ?: $request->param('controller');
             $module = (array_pop($route)) ?: $request->param('module', 'frontend');
-            $controller = Str::studly((string)$controller);
+            $module = lcfirst($module);
+            $controller = lcfirst(Str::studly((string)$controller));
             /* 解析URL带的参数 */
             if (isset($url['query'])) {
                 parse_str($url['query'], $query);
