@@ -506,7 +506,7 @@ class FormHelper
             //百度。quill wangeditor ckeditor,editormd
             $textarea = '';
             if(!empty($options['textarea'])){
-                $textarea ='<textarea  name="' . $name . '" data-path="'.$path.'"  '.self::verify($options) . ' lay-filter="editor">'.$value.'</textarea>';
+                $textarea ='<textarea  name="' . $name . '" data-path="'.$path.'"  '.self::verify($options) . '>'   .  $value  . '</textarea>';
             }
             //百度。quill wangeditor ckeditor
             $str .= '<div data-value="'.htmlentities($value).'" id="' . $id . '" name="' . $name . '" 
