@@ -283,10 +283,10 @@ class FormHelper
         if(is_object($select)){
             $op.=" data-data='".json_encode((array)$select,JSON_UNESCAPED_UNICODE)."'";
         }
-        $str = '<div class="layui-form-item">
+        $str = '<div class="layui-form-item layui-form" lay-filter="'.$name.'">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
                 <div class="layui-input-block">
-                  <div "'.self::addextend($options) .' " id="'.$name.'"'. $op .'" lay-filter="selectN" '. self::addClass($options) .'" name="' . $name . '" '   . self::verify($options).' ' . self::search($options).' ' . self::readonlyOrdisabled($options). ' >
+                  <div '.self::addextend($options) .'  id="'.$name.'"'. $op .'" lay-filter="selectN" '. self::addClass($options) .'" name="' . $name . '" '   . ' ' . self::search($options).' ' . self::readonlyOrdisabled($options). ' >
                   
                   </div>
                   ' . self::tips($options) . '
@@ -322,7 +322,7 @@ class FormHelper
         $str = '<div class="layui-form-item">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
                 <div class="layui-input-block">
-                  <div "'.self::addextend($options) .' " id="'.$name.'"'. $op .'" lay-filter="selectPlus" '. self::addClass($options) .'" name="' . $name . '" ' . $multiple .  self::verify($options).' ' . self::search($options).' ' . self::readonlyOrdisabled($options). ' >
+                  <div '.self::addextend($options) .'  id="'.$name.'"'. $op .'" lay-filter="selectPlus" '. self::addClass($options) .'" name="' . $name . '" ' . $multiple .' ' . self::search($options).' ' . self::readonlyOrdisabled($options). ' >
                   
                   </div>
                   ' . self::tips($options) . '
