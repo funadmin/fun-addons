@@ -547,20 +547,14 @@ if (!function_exists('uninstallsql')) {
         $addons_path = $service->getAddonsPath(); // 插件列表
         $sqlFile = $addons_path . $name . DS . 'uninstall.sql';
         if (is_file($sqlFile)) {
-            $lines = file($sqlFile);
-            $tempLine = '';
-            foreach ($lines as $line) {
-                if (substr($line, 0, 2) == '--' || $line == '' || substr($line, 0, 2) == '/*')
-                    continue;
-                $tempLine .= $line;
-                if (substr(trim($line), -1, 1) == ';') {
-                    $tempLine = str_ireplace('__PREFIX__', config('database.connections.mysql.prefix'), $tempLine);
-                    try {
-                        Db::execute($tempLine);
-                    } catch (\PDOException $e) {
-                        throw new PDOException($e->getMessage());
-                    }
-                    $tempLine = '';
+            $sql = file_get_contents($sqlFile);
+            $sql = str_replace('__PREFIX__', config('database.connections.mysql.prefix'),$sql);
+            $sql = explode("\r\n",$sql);
+            foreach ($sql as $k=>$v){
+                try {
+                    Db::execute($v);
+                } catch (\PDOException $e) {
+                    throw new PDOException($e->getMessage());
                 }
             }
         }
