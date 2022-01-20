@@ -535,7 +535,7 @@ if (!function_exists('importsql')) {
  * @return  boolean
  */
 if (!function_exists('uninstallsql')) {
-    function uninstallsql($name)
+     function uninstallsql($name)
     {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath(); // 插件列表
@@ -545,11 +545,14 @@ if (!function_exists('uninstallsql')) {
             $sql = str_replace('__PREFIX__', config('database.connections.mysql.prefix'),$sql);
             $sql = explode("\r\n",$sql);
             foreach ($sql as $k=>$v){
-                try {
-                    Db::execute($v);
-                } catch (\PDOException $e) {
-                    throw new PDOException($e->getMessage());
+                if(strpos(strtolower($v),'drop table')!==false){
+                    try {
+                        Db::execute($v);
+                    } catch (\Exception $e) {
+                        throw new Exception($e->getMessage());
+                    }
                 }
+               
             }
         }
         return true;
