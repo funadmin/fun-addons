@@ -622,18 +622,11 @@ class FormHelper
      */
     public static function upload($name = 'avatar', $formData = '', $options = [],$value='')
     {
-        if (!isset($options['type'])) {
-            $options['type'] = 'radio';
-        }
-        if (!isset($options['mime'])) {
-            $options['mime'] = 'image';
-        }
-        if (!isset($options['num'])) {
-            $options['num'] = 1;
-        }
-        if (!isset($options['path'])) {
-            $options['path'] = 'upload';//上传路劲
-        }
+        if (!isset($options['type'])) $options['type'] = 'radio';
+        if (!isset($options['mime'])) $options['mime'] = 'image';
+        if (!isset($options['num'])) $options['num'] = 1;
+        if (isset($options['num']) && $options['num'] == '*') $options['num'] = 100;
+        if (!isset($options['path'])) $options['path'] = 'upload';//上传路劲
         $css = isset($options['css'])?$options['css']:'display:inline-block;';
         $label = isset($options['label']) ? $options['label'] : $name;
         $li = '';
