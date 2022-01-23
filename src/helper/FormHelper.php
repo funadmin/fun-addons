@@ -636,7 +636,7 @@ class FormHelper
             $height = isset($options['height']) ? $options['height'] : '300';
             $mark = isset($options['mark']) ? $options['mark'] : '1';
             $area = isset($options['area']) ? $options['area'] : '900px';
-            $cops = ['width' => $width, 'height' => $height, 'mark' => $mark, 'area' => $area];
+            $cops = ['path'=>$options['path'],'width' => $width, 'height' => $height, 'mark' => $mark, 'area' => $area];
             $crpperops = 'data-value="' . json_encode($cops, true) . '"';
             $croper_container = '<button type="button" 
                ' . $crpperops . '
