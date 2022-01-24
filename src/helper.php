@@ -40,10 +40,10 @@ define('DS', DIRECTORY_SEPARATOR);
 spl_autoload_register(function ($class) {
 
     $class = ltrim($class, '\\');
-    $dir = app()->getRootPath();
     $namespace = 'addons';
 
     if (strpos($class, $namespace) === 0) {
+        $dir = app()->getRootPath();
         $class = substr($class, strlen($namespace));
         $path = '';
         if (($pos = strripos($class, '\\')) !== false) {
