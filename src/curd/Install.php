@@ -11,7 +11,7 @@
  * Date: 2020/9/21
  */
 
-namespace fun\curd\Install;
+namespace fun\curd;
 
 use think\facade\Cache;
 use think\facade\Config;
