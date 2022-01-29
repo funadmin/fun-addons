@@ -846,7 +846,7 @@ class FormHelper
     protected static function labelRequire($options)
     {
 
-        if (isset($options['verify']) && ($options['verify'] == 'required' || strpos($options['verify'], 'required'))) {
+        if (isset($options['verify']) && ($options['verify'] == 'required' || strpos($options['verify'], 'required')!==false)) {
             return 'required';
         }
         return '';
