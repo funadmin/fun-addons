@@ -208,6 +208,7 @@ if (!function_exists('form_tags')) {
 
     function form_tags($name='',$options = [],$value='')
     {
+        $value = is_array($value) ? implode(',',$value):"";
         return FormHelper::tags($name,$options,$value);
     }
 }
