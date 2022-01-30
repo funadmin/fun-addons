@@ -754,7 +754,7 @@ class CurdService
                     $formFieldData .= "{:form_radio('{$vo['name']}' ,\${$vo['name_list']}List, ['label' => '{$name}', 'verify' => '{$vo['required']}'], '{$vo['value']}')}" . PHP_EOL;
                     break;
                 case "array":
-                    $formFieldData .= "{:form_textarea('{$vo['name']}', '{$vo['value']}', ['label' => '{$name}', 'verify' => '{$vo['required']}'])}" . PHP_EOL;
+                    $formFieldData .= "{:form_textarea('{$vo['name']}', ['label' => '{$name}', 'verify' => '{$vo['required']}'])}" . PHP_EOL;
                     break;
                 case "checkbox":
                     $vo['name_list'] = lcfirst(Str::studly($vo['name']));
@@ -787,7 +787,7 @@ class CurdService
                     }
                     break;
                 case "color":
-                    $formFieldData .= "{:form_color('{$vo['name']}', '{$vo['name']}', ['label' => '{$name}', 'verify' => '{$vo['required']}', 'search' => 1])}" . PHP_EOL;
+                    $formFieldData .= "{:form_color('{$vo['name']}',['label' => '{$name}', 'verify' => '{$vo['required']}', 'search' => 1])}" . PHP_EOL;
                     break;
                 case "timestamp":
                 case "datetime":
@@ -821,7 +821,7 @@ class CurdService
                     $formFieldData .= "{:form_upload('{$vo['name']}', \$formData?\$formData['{$vo['name']}']:'{$vo['value']}', ['label' => '{$name}', 'verify' => '{$vo['required']}', 'type' => 'checkbox', 'mime' => 'file', 'path' => '{$this->modelName}', 'num' => '*'])}" . PHP_EOL;
                     break;
                 case "editor":
-                    $formFieldData .= "{:form_editor('{$vo['name']}', '{$vo['name']}', 2,['label'=>'{$name}','verify' => '{$vo['required']}'])}" . PHP_EOL;
+                    $formFieldData .= "{:form_editor('{$vo['name']}', 2,['label'=>'{$name}','verify' => '{$vo['required']}'])}" . PHP_EOL;
             }
         }
         return $formFieldData;
