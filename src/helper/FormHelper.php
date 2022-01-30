@@ -302,7 +302,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function selectplus($name = '',, $select, $options, $attr, $value)
+    public static function selectplus($name = '', $select, $options, $attr, $value)
     {
         $url = isset($options['url'])?$options['url']:'';
         $label = isset($options['label'])?$options['label']: $name;
