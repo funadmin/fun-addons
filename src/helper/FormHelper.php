@@ -60,7 +60,7 @@ class FormHelper
      * @param string $value
      * @return string
      */
-    public static function radio($name, $radiolist, $options = [], $value='')
+    public static function radio($name = '', $radiolist, $options = [], $value='')
     {
         if (is_null($radiolist)) {
             $radiolist = $name;
@@ -100,7 +100,7 @@ class FormHelper
      * switch是关键字不能用
      */
 
-    public static function switchs($name , $switch, $options = [], $value='')
+    public static function switchs($name = '', $switch, $options = [], $value='')
     {
         $label = isset($options['label']) ? $options['label'] : $name;
         $switchArr = $switch;
@@ -127,7 +127,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function checkbox($name = null, $list = [], $options = [], $value='')
+    public static function checkbox($name = '', $list = [], $options = [], $value='')
     {
         if (empty($value)) {
             $value = $name;
@@ -187,7 +187,7 @@ class FormHelper
      * @param array $list
      * @return string
      */
-    public static function arrays($name=null, $options = [], $list = [])
+    public static function arrays($name = '', $list = [], $options = [])
     {
         $label = isset($options['label']) ? $options['label'] : $name;
         $arr = '';
@@ -241,7 +241,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function textarea($name = null, $options = [], $value='')
+    public static function textarea($name = '', $options = [], $value='')
     {
         $label = isset($options['label']) ? $options['label'] : $name;
         $tips = isset($options['tips']) ? $options['tips'] : $name;
@@ -265,7 +265,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function selectn($name, $select, $options, $attr, $value)
+    public static function selectn($name = '', $select, $options, $attr, $value)
     {
         $url = isset($options['url'])?$options['url']:'';
         $label = isset($options['label'])?$options['label']: $name;
@@ -302,7 +302,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function selectplus($name, $select, $options, $attr, $value)
+    public static function selectplus($name = '',, $select, $options, $attr, $value)
     {
         $url = isset($options['url'])?$options['url']:'';
         $label = isset($options['label'])?$options['label']: $name;
@@ -338,7 +338,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function multiselect($name, $select, $options, $attr, $value)
+    public static function multiselect($name = '', $select, $options, $attr, $value)
     {
         $op = '';
         if($select){
@@ -389,7 +389,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function xmselect($name, $select, $options, $attr, $value)
+    public static function xmselect($name = '', $select, $options, $attr, $value)
     {
         $op = '';
         if(is_array($select)){
@@ -439,16 +439,16 @@ class FormHelper
         return $str;
     }
     /**
-     * @param $id
      * @param $name
      * @param $value
      * @param array $options
      * @return string
      * 颜色选择
      */
-    public static function tags($id, $name, $options = [], $value='')
+    public static function tags($name = '', $options = [], $value='')
     {
         $label = isset($options['label']) ? $options['label'] : $name;
+        $id = isset($options['id']) ? $options['id'] : $name;
         $str = '<div class="layui-form-item">
                     <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang($label) . '</label>
                     <div class="layui-input-block">
@@ -462,16 +462,16 @@ class FormHelper
     }
 
     /**
-     * @param $id
      * @param $name
      * @param $value
      * @param array $options
      * @return string
      * 颜色选择
      */
-    public static function color($id, $name, $options = [], $value='')
+    public static function color( $name = '', $options = [], $value='')
     {
 
+        $id = isset($options['id']) ? $options['id'] : $name;
         $label = isset($options['label']) ? $options['label'] : $name;
         $str = '<div class="layui-form-item">
                     <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang($label) . '</label>
@@ -490,7 +490,7 @@ class FormHelper
      * @return string
      * 图标，有点小问题
      */
-    public static function icon($name, $options = [], $value='')
+    public static function icon($name = '', $options = [], $value='')
     {
         $name = $name ? $name : 'icon';
         $value = $value ? $value : 'layui-icon-rate';
@@ -536,12 +536,12 @@ class FormHelper
     /**
      * 城市选择
      * @param string $name
-     * @param string $id
      * @param $options
      * @return string
      */
-    public static function city($name = 'cityPicker', $id = 'cityPicker', $options=[])
+    public static function city($name = 'cityPicker', $options=[])
     {
+        $id = isset($options['id']) ? $options['id'] : 'iconPicker';
         $options['provinceId'] = isset($options['provinceId'])?$options['provinceId']:'province_id';
         $options['cityId'] = isset($options['cityId'])?$options['cityId']:'city_id';
         $options['districtId'] = isset($options['districtId'])?$options['districtId']:'area_id';
@@ -558,13 +558,12 @@ class FormHelper
     /**
      * 城市选择
      * @param string $name
-     * @param string $id
      * @param $options
      * @return string
      */
-    public static function region($name = 'regionCheck', $id = 'regionCheck', $options = [])
+    public static function region($name = 'regionCheck',  $options = [])
     {
-
+        $id = isset($options['id']) ? $options['id'] : 'iconPicker';
         $str = ' <div class="layui-form-item">
                     <label class="layui-form-label ">区域</label>
                     <div class="layui-input-block">
@@ -584,11 +583,9 @@ class FormHelper
      * @return string
      * 编辑器
      */
-    public static function editor($name = 'container', $id = null, $type = 1, $options = [],$value='')
+    public static function editor($name = 'container', $type = 1, $options = [],$value='')
     {
-        if ($id == '') {
-            $id = $name;
-        }
+        $id = isset($options['id']) ? $options['id'] : $name;
         $height = isset($options['height'])?$options['height']:'350px';
         $path = isset($options['path'])?$options['path']:'';
         $label = isset($options['label']) ? $options['label'] : $name;
