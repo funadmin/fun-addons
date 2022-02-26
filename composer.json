@@ -1,6 +1,7 @@
 {
   "name": "funadmin/fun-addons",
   "license": "Apache-2.0",
+  "description": "fun-addons是一个基于FunAdmin的插件扩展",
   "authors": [
     {
       "name": "fun",
