@@ -111,7 +111,7 @@ class FormHelper
      * @param string $value
      * @return string
      */
-    public static function radio($name = '', $radiolist, $options = [], $value = '')
+    public static function radio($name = '', $radiolist=[], $options = [], $value = '')
     {
         if (is_null($radiolist)) {
             $radiolist = $name;
@@ -151,7 +151,7 @@ class FormHelper
      * switch是关键字不能用
      */
 
-    public static function switchs($name = '', $switch, $options = [], $value = '')
+    public static function switchs($name = '', $switch=[], $options = [], $value = '')
     {
         $label = $options['label'] ?? $name;
         $switchArr = $switch;
@@ -315,7 +315,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function selectn($name = '', $select, $options, $attr, $value)
+    public static function selectn($name = '', $select= [], $options=[], $attr=[], $value='')
     {
         $url =  $options['url'] ?? '';
         $label = $options['label'] ?? $name;
@@ -352,7 +352,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function selectplus($name = '', $select, $options, $attr, $value)
+    public static function selectplus($name = '', $select= [], $options=[], $attr=[], $value='')
     {
         $url = $options['url'] ?? '';
         $label = $options['label'] ?? $name;
@@ -388,7 +388,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function multiselect($name = '', $select, $options, $attr, $value)
+    public static function multiselect($name = '', $select=[], $options=[], $attr=[], $value='')
     {
         $op = '';
         if ($select) {
@@ -439,7 +439,7 @@ class FormHelper
      * @param $value
      * @return string
      */
-    public static function xmselect($name = '', $select, $options, $attr, $value)
+    public static function xmselect($name = '', $select=[], $options=[], $attr=[], $value='')
     {
         $op = '';
         if (is_array($select)) {
@@ -561,7 +561,7 @@ class FormHelper
      * @return string
      * 日期
      */
-    public static function date($name, $options, $value)
+    public static function date($name='', $options=[], $value='')
     {
         $op = '';
         if (isset($options['range'])) {
@@ -800,7 +800,7 @@ class FormHelper
      * @param array $options
      * @return string
      */
-    public static function submitbtn($reset, $options)
+    public static function submitbtn($reset=true, $options=[])
     {
         $show = '';
         if (!isset($options['show'])) {
@@ -876,7 +876,7 @@ class FormHelper
      * @return string
      * 是否选中
      */
-    protected static function selectedOrchecked($select, $val, $type = 1)
+    protected static function selectedOrchecked($select=[], $val='', $type = 1)
     {
         if ($select == $val) {
             if ($type == 1) return 'selected';
@@ -886,7 +886,7 @@ class FormHelper
         }
     }
 
-    protected static function labelRequire($options)
+    protected static function labelRequire($options=[])
     {
 
         if (isset($options['verify']) && ($options['verify'] == 'required' || strpos($options['verify'], 'required') !== false)) {
@@ -895,7 +895,7 @@ class FormHelper
         return '';
     }
 
-    protected static function readonlyOrdisabled($options)
+    protected static function readonlyOrdisabled($options=[])
     {
 
         if (isset($options['readonly'])  && $options['readonly']) {
@@ -907,7 +907,7 @@ class FormHelper
         return '';
     }
     //自定义class属性
-    protected static function addClass($options)
+    protected static function addClass($options=[])
     {
         if (isset($options['class']) and $options['class']) {
             $classArr = is_array($options['class']) ? $options['class'] : explode(',', $options['class']);
@@ -915,14 +915,14 @@ class FormHelper
         }
         return '';
     }
-    protected static function addstyle($options)
+    protected static function addstyle($options=[])
     {
         if (isset($options['style']) and $options['style']) {
             return ' style="' . $options['style'] . '" ';
         }
         return ' ';
     }
-    protected static function addextend($options)
+    protected static function addextend($options=[])
     {
         if (isset($options['extend']) and $options['extend']) {
             return $options['extend'];
