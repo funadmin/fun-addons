@@ -76,9 +76,9 @@ if (!function_exists('form_switch')) {
      * @param $value
      * @return string
      */
-    function form_switch($name, $switch = [], $option = [], $value = '')
+    function form_switch($name='', $switch = [], $option = [], $value = '')
     {
-        return FormHelper::switchs($name, $switch, $option = [], $value);
+        return FormHelper::switchs($name, $switch, $option, $value);
     }
 }
 if (!function_exists('form_checkbox')) {
@@ -86,9 +86,9 @@ if (!function_exists('form_checkbox')) {
      * @param $name
      * @return string
      */
-    function form_checkbox($name, $list, $option = [], $value)
+    function form_checkbox($name ='', $list = [], $option = [], $value = '')
     {
-        return FormHelper::checkbox($name, $list, $option = [], $value);
+        return FormHelper::checkbox($name, $list, $option, $value);
     }
 }
 
@@ -97,9 +97,9 @@ if (!function_exists('form_arrays')) {
      * @param $name
      * @return string
      */
-    function form_arrays($name, $list = [], $option = [])
+    function form_arrays($name='', $list = [], $option = [])
     {
-        return FormHelper::arrays($name, $list, $option = []);
+        return FormHelper::arrays($name, $list, $option);
     }
 }
 
@@ -111,7 +111,7 @@ if (!function_exists('form_textarea')) {
      */
     function form_textarea($name = '', $option = [], $value = '')
     {
-        return FormHelper::textarea($name, $option = [], $value);
+        return FormHelper::textarea($name, $option, $value);
     }
 }
 if (!function_exists('form_select')) {
