@@ -483,7 +483,7 @@ class FormHelper
         $label = $options['label'] ?? $name;
         $str = '<div class="layui-form-item">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
-                <div "' . self::addextend($options) . ' " ' . self::addstyle($options) . '  id="' . $name . '" name="' . $name . '" class="layui-input-block ' . self::addClass($options) . '" ' . $op . ' lay-filter="xmSelect">
+                <div ' . self::addextend($options) . ' " ' . self::addstyle($options) . '  id="' . $name . '" name="' . $name . '" class="layui-input-block ' . self::addClass($options) . '" ' . $op . ' lay-filter="xmSelect">
                 ' . self::tips($options) . '
                 </div>
                 </div>';
