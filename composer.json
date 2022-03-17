@@ -2,6 +2,7 @@
   "name": "funadmin/fun-addons",
   "license": "Apache-2.0",
   "description": "fun-addons是一个基于TP6的插件扩展,适用于FunAmin框架",
+  "version": "4.0",
   "authors": [
     {
       "name": "fun",
@@ -9,7 +10,7 @@
     }
   ],
   "require": {
-    "php": ">=7.1.0",
+    "php": ">=7.4.0",
     "topthink/framework": "6.0.*",
     "topthink/think-view": "^1.0",
     "topthink/think-helper": "^3.1",

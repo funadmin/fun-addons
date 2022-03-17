@@ -38,8 +38,8 @@ class Api
      * 不需要鉴权方法
      */
     protected $noAuth = [];
-
-    protected $uid = '';
+    
+    protected $member_id = '';
 
     /**
      * 构造方法
@@ -51,7 +51,7 @@ class Api
         $this->request->filter('trim,strip_tags,htmlspecialchars');
         $this->init();
         if($this->clientInfo){
-            $this->uid = $this->clientInfo['uid'];
+            $this->member_id = $this->clientInfo['member_id'];
         }
     }
 

@@ -13,16 +13,66 @@
 namespace fun\auth;
 
 use think\exception\HttpResponseException;
+use think\facade\Db;
 use think\Response;
 
 trait Send
 {
+    /**
+     * 时间差
+     * @var int
+     */
     public  $timeDif = 10000;
+    /**
+     * 刷新有效期
+     * @var float|int
+     */
     public  $refreshExpires = 3600 * 24 * 30;   //刷新token过期时间
+    /**
+     * 有效期
+     * @var float|int
+     */
     public  $expires = 7200*12;
-    public  $responseType = 'json';
+    /**
+     * 多个用户表
+     * @var string
+     */
     public  $tableName = 'member';
 
+    /**
+     * redis 对象
+     * @var 
+     */
+    public  $redis ;
+    /**
+     * 客户端对象
+     * @var 
+     */
+    public  $client ;
+    /**
+     * @var bool
+     * 是否需要验证数据库账号
+     */
+    public $authapp = false;
+    /**
+     * 测试appid，正式请数据库进行相关验证
+     */
+    protected $appid = 'funadmin';
+    /**
+     * appsecret
+     */
+    protected $appsecret = '692ffa52429dd7e2b1df280be0f8c83f';
+    /**
+     * JWT key
+     * @var string 
+     */
+    public $key = '';
+
+    /**
+     * 返沪格式
+     * @var string
+     */
+    public  $responseType = 'json';
     /**
      * 操作成功返回的数据
      * @param string $msg 提示信息
@@ -69,6 +119,12 @@ trait Send
         }
         $response = Response::create($result, $type)->header($header);
         throw new HttpResponseException($response);
+    }
+
+    protected function getClient($appid='',$appsecret='',$field='*'){
+
+        return Db::name('oauth2_client')->where('appid',$appid)
+            ->where('appsecret',$appsecret)->field($field)->cache($appid.$appsecret,$this->refreshExpires)->find();
     }
 }
 

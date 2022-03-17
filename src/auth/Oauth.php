@@ -37,6 +37,32 @@ class Oauth
         return $this->certification($this->getClient());
     }
 
+
+    /**
+     * 获取用户信息后 验证权限
+     * @return mixed
+     */
+    public  function certification($data = []){
+
+        if(config('api.driver')=='redis'){
+            $this->redis = PredisService::instance();
+            $AccessToken = $this->redis->get(config('api.redisTokenKey' . $this->appid . $this->tableName.$data['access_token']));
+        }else{
+            $AccessToken = Db::name('oauth2_access_token')->where('member_id',$data['member_id'])
+                ->where('tablename',$this->tableName)
+                ->where('access_token',$data['access_token'])->order('id desc')->find();
+        }
+        if(!$AccessToken){
+            $this->error('access_token不存在或过期','',401);
+        }
+        $client = Db::name('oauth2_client')->find($AccessToken['client_id']);
+        if(!$client || $client['appid'] !== $data['appid']){
+            $this->error('appid错误','',401);//appid与缓存中的appid不匹配
+        }
+        return $data;
+    }
+
+
     /**
      * 获取用户信息
      * @param Request $request
@@ -58,22 +84,29 @@ class Oauth
                 return $clientInfo;
             }
             $authorizationArr = explode(" ", $authorizationHeader);//explode分割，获取后面一窜base64加密数据
-            $authorizationInfo  = explode(":", base64_decode($authorizationArr[1]));  //对base_64解密，获取到用:拼接的自字符串，然后分割，可获取appid、accesstoken、uid这三个参数
+            $authorizationInfo  = explode(":", base64_decode($authorizationArr[1]));  //对base_64解密，获取到用:拼接的自字符串，然后分割，可获取appid、accesstoken、member_id这三个参数
             $clientInfo['appid'] = $authorizationInfo[0];
             $clientInfo['access_token'] = $authorizationInfo[1];
-            $clientInfo['uid'] = $authorizationInfo[2];
+            $clientInfo['member_id'] = $authorizationInfo[2];
             return $clientInfo;
         } catch (\Exception $e) {
             $this->error($e->getMessage(),$authorizationHeader,401,'',[]);
         }
     }
+
+    /**
+     * 解密
+     * @param $authorizationHeader
+     * @return array
+     * @throws \Exception
+     */
     public function jwtcheck($authorizationHeader){
         try {
             JWT::$leeway = 60;//当前时间减去60，把时间留点余地
             $decoded = JWT::decode($authorizationHeader, md5(config('api.jwt_key')), ['HS256']); //HS256方式，这里要和签发的时候对应
             $jwtAuth = (array)$decoded;
             $clientInfo['access_token'] = $authorizationHeader;
-            $clientInfo['uid'] = $jwtAuth['uid'];
+            $clientInfo['member_id'] = $jwtAuth['member_id'];
             $clientInfo['appid'] = $jwtAuth['appid'];
         } catch(\Firebase\JWT\SignatureInvalidException $e) {  //签名不正确
             throw new \Exception ($e->getMessage());
@@ -87,24 +120,9 @@ class Oauth
         return $clientInfo;
 
     }
-    /**
-     * 获取用户信息后 验证权限
-     * @return mixed
-     */
-    public  function certification($data = []){
 
-        $AccessToken = Db::name('oauth2_access_token')->where('member_id',$data['uid'])
-            ->where('tablename',$this->tableName)
-            ->where('access_token',$data['access_token'])->order('id desc')->find();
-        if(!$AccessToken){
-            $this->error('access_token不存在或为空','',401);
-        }
-        $client = Db::name('oauth2_client')->find($AccessToken['client_id']);
-        if(!$client || $client['appid'] !== $data['appid']){
-            $this->error('appid错误','',401);//appid与缓存中的appid不匹配
-        }
-        return $data;
-    }
+
+
 
     /**
      * 检测当前控制器和方法是否匹配传递的数组

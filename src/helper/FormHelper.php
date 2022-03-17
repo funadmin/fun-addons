@@ -479,6 +479,7 @@ class FormHelper
         isset($options['create']) ? $op .= " data-create='" . $options['create'] . "'" : '';
         isset($options['theme']) ? $op .= " data-theme='" . $options['theme'] . "'" : '';
         isset($options['value']) ? $op .= " data-value='" . $options['value'] . "'" : '';
+        isset($options['autorow']) ? $op .= " data-autorow='" . $options['autorow'] . "'" : '';
         isset($options['toolbar']) ? $op .= " data-toolbar='" . json_encode($options['toolbar'],JSON_UNESCAPED_UNICODE) . "'" : '';
         $label = $options['label'] ?? $name;
         $str = '<div class="layui-form-item">

@@ -13,6 +13,7 @@
 
 namespace fun\auth;
 
+use app\common\service\PredisService;
 use think\facade\Config;
 use think\facade\Request;
 use fun\auth\Send;
@@ -26,21 +27,6 @@ use think\Lang;
 class Token
 {
     use Send;
-
-    /**
-     * @var bool
-     * 是否需要验证数据库账号
-     */
-    public $authapp = false;
-    
-    /**
-     * 测试appid，正式请数据库进行相关验证
-     */
-    public $appid = 'funadmin';
-    /**
-     * appsecret
-     */
-    public $appsecret = '';
 
     /**
      * 构造方法
@@ -59,22 +45,7 @@ class Token
         $this->responseType = Config::get('api.responseType')??$this->responseType;
         $this->responseType = Config::get('api.responseType')??$this->responseType;
         $this->authapp = Config::get('api.authapp')??$this->authapp;
-
-        if ($this->authapp) {
-            $appid = Request::post('appid');
-            $appsecret = Request::post('appsecret');
-            $oauth2_client = Db::name('oauth2_client')
-                ->where('appid', $appid)
-                ->find();
-            if (!$oauth2_client) {
-                $this->error('Invalid authorization credentials', '', 401);
-            }
-            if ($oauth2_client['appsecret'] != $appsecret) {
-                $this->error(lang('appsecret is not right'));
-            }
-            $this->appid = $oauth2_client['appid'];
-            $this->appsecret = $oauth2_client['appsecret'];
-        }
+        $this->redis = PredisService::instance();
     }
 
     /**
@@ -96,9 +67,10 @@ class Token
         $this->checkParams(Request::post());  //参数校验
         //数据库已经有一个用户,这里需要根据input('mobile')去数据库查找有没有这个用户
         $memberInfo = $this->getMember(Request::post('username'), Request::post('password'));
-        //虚拟一个uid返回给调用方
+        $client = $this->getClient($this->appid,$this->appsecret,'id,group');
+        //member_id返回给调用方
         try {
-            $accessToken = $this->setAccessToken(array_merge($memberInfo, ['appid'=>Request::post('appid')]));  //传入参数应该是根据手机号查询改用户的数据
+            $accessToken = $this->setAccessToken(array_merge($memberInfo, ['client_id' => $client['id'],'appid'=>Request::post('appid')]));  //传入参数应该是根据手机号查询改用户的数据
         } catch (\Exception $e) {
             $this->error($e->getMessage(), $e, 500);
         }
@@ -111,7 +83,7 @@ class Token
      */
     public function refresh()
     {
-        $refresh_token = Request::post('refresh_token')?Request::post('refresh_token'):Request::get('refresh_token');
+        $refresh_token = Request::param('refresh_token');
         $refresh_token_info = Db::name('oauth2_access_token')
             ->where('refresh_token',$refresh_token)
             ->where('tablename',$this->tableName)->order('id desc')->find();
@@ -138,12 +110,25 @@ class Token
     {
         //时间戳校验
         if (abs($params['timestamp'] - time()) > $this->timeDif) {
-            
             $this->error('请求时间戳与服务器时间戳异常' . time(), '', 401);
         }
         if ($this->authapp && $params['appid'] !== $this->appid) {
-            //appid检测，查找数据库或者redis进行验证
+            //appid检测
             $this->error('appid 错误', '', 401);
+        }
+        if ($this->authapp && $params['appsecret'] !== $this->appsecret) {
+            //appsecret，检测
+            $this->error('appsecret 错误', '', 401);
+        }
+        if($this->authapp){
+            $oauth2_client = Db::name('oauth2_client')
+                ->where('appid', $params['appid'])
+                ->where('appsecret', $params['appsecret'])
+                ->field('id')
+                ->find();
+            if (!$oauth2_client) {
+                $this->error('Invalid authorization client', '', 401);
+            }
         }
         //签名检测
         $Oauth = new Oauth();
@@ -167,37 +152,31 @@ class Token
             'expires_time' => time() + $this->expires,      //过期时间时间戳
             'refresh_token' => $refresh_token,//刷新的token
             'refresh_expires_time' => time() + $this->refreshExpires,      //过期时间时间戳
-            'client' => $memberInfo,//用户信息
         ];
-        $token =  Db::name('oauth2_access_token')->where('member_id',$memberInfo['id'])
-            ->where('tablename',$this->tableName)->order('id desc')->limit(1)->find();
-        if($token and $token['expires_time']>time()){
-            $accessTokenInfo['access_token'] = $token['access_token'];
-            $accessTokenInfo['refresh_token'] = $token['refresh_token'];
-            $accessTokenInfo['expires_time'] = $token['expires_time'];
-            $accessTokenInfo['refresh_expires_time'] = $token['refresh_expires_time'];
-        }else{
+        $accessTokenInfo = array_merge($accessTokenInfo,$memberInfo);
+        $driver = Config::get('api.driver');
+        if($driver =='redis'){
             $accessTokenInfo['access_token'] = $this->buildAccessToken();
-            $accessTokenInfo['refresh_token'] = $this->getRefreshToken($memberInfo,$refresh_token);
+            $accessTokenInfo['refresh_token'] = $this->buildAccessToken();
+            $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],serialize($accessTokenInfo),$this->expires);
+            $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],serialize($accessTokenInfo),$this->refreshExpires);
+        }else{
+            $token =  Db::name('oauth2_access_token')->where('member_id',$memberInfo['member_id'])
+                ->where('tablename',$this->tableName)
+                ->order('id desc')->limit(1)
+                ->find();
+            if($token and $token['expires_time']>time() && !$refresh_token) {
+                $accessTokenInfo['access_token'] = $token['access_token'];
+                $accessTokenInfo['refresh_token'] = $token['refresh_token'];
+                $accessTokenInfo['expires_time'] = $token['expires_time'];
+                $accessTokenInfo['refresh_expires_time'] = $token['refresh_expires_time'];
+            }else{
+                $accessTokenInfo['access_token'] = $this->buildAccessToken();
+                $accessTokenInfo['refresh_token'] = $this->buildAccessToken();
+            }
+            $this->saveToken($accessTokenInfo);  //保存本次token
         }
-        $this->saveToken($accessTokenInfo);  //保存本次token
         return $accessTokenInfo;
-    }
-
-    /**
-     * 获取刷新用的token检测是否还有效
-     */
-    public function getRefreshToken($memberInfo,$refresh_token)
-    {
-        if(!$refresh_token){
-            return $this->buildAccessToken();
-        }
-        $accessToken =Db::name('oauth2_access_token')->where('member_id',$memberInfo['id'])
-            ->where('refresh_token',$refresh_token)
-            ->where('tablename',$this->tableName)
-            ->field('refresh_token')
-            ->find();
-        return $accessToken?$refresh_token:$this->buildAccessToken();
     }
 
     /**
@@ -215,21 +194,17 @@ class Token
      */
     protected function saveToken($accessTokenInfo)
     {
-        $client = Db::name('oauth2_client')->where('appid',$this->appid)
-            ->where('tablename',$this->tablename)
-            ->where('appsecret',$this->appsecret)->find();
-        $accessToken =Db::name('oauth2_access_token')
+        $accessToken =Db::name('oauth2_access_token')->where('member_id',$accessTokenInfo['member_id'])
             ->where('tablename',$this->tableName)
-            ->where('member_id',$accessTokenInfo['client']['id'])
             ->where('access_token',$accessTokenInfo['access_token'])
             ->find();
         if(!$accessToken){
             $data = [
-                'client_id'=>$client['id'],
-                'member_id'=>$accessTokenInfo['client']['id'],
+                'client_id'=>$accessTokenInfo['client_id'],
+                'member_id'=>$accessTokenInfo['member_id'],
                 'tablename'=>$this->tableName,
-                'group'=>isset($accessTokenInfo['client']['group'])?$accessTokenInfo['client']['group']:'api',
-                'openid'=>isset($accessTokenInfo['client']['openid'])?$accessTokenInfo['client']['openid']:'',
+                'group'=>isset($accessTokenInfo['group'])?$accessTokenInfo['group']:'api',
+                'openid'=>isset($accessTokenInfo['openid'])?$accessTokenInfo['openid']:'',
                 'access_token'=>$accessTokenInfo['access_token'],
                 'expires_time'=>time() + $this->expires,
                 'refresh_token'=>$accessTokenInfo['refresh_token'],
@@ -247,12 +222,11 @@ class Token
             ->where('username', $membername)
             ->whereOr('mobile', $membername)
             ->whereOr('email', $membername)
-            ->field('id,password')
-            ->cache(3600)
+            ->field('id as member_id,password')
+            ->cache($this->appid.$membername,3600)
             ->find();
         if ($member) {
             if (password_verify($password, $member['password'])) {
-                $member['uid'] = $member['id'];
                 unset($member['password']);
                 return $member;
             } else {
