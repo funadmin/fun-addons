@@ -182,12 +182,16 @@ class JwtToken
     {
         $time = time(); //签发时间
         $expire = $time + $expires; //过期时间
+        $scopes = 'role_access';
+        if($expires==$this->refreshExpires)  $scopes = 'role_refresh';
         $token = array(
+            "member_id" => $memberInfo['member_id'],
+            'data'=>serialize($memberInfo),
             'appid'=>$this->appid,
             'appsecret'=>$this->appsecret,
-            "member_id" => $memberInfo['member_id'],
             "iss" => "https://www.funadmin.com",//签发组织
             "aud" => "https://www.funadmin.com", //签发作者
+            "scopes" => $scopes, //刷新
             "iat" => $time,
             "nbf" => $time,
             "exp" => $expire,      //过期时间时间戳
