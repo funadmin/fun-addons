@@ -2,7 +2,6 @@
   "name": "funadmin/fun-addons",
   "license": "Apache-2.0",
   "description": "fun-addons是一个基于TP6的插件扩展,适用于FunAmin框架",
-  "version": "4.0",
   "authors": [
     {
       "name": "fun",
