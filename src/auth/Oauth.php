@@ -13,7 +13,9 @@
 namespace fun\auth;
 
 use app\common\model\Oauth2AccessToken;
+use app\common\service\PredisService;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use fun\auth\Send;
 use think\Exception;
 use think\facade\Db;
@@ -46,7 +48,8 @@ class Oauth
 
         if(config('api.driver')=='redis'){
             $this->redis = PredisService::instance();
-            $AccessToken = $this->redis->get(config('api.redisTokenKey' . $this->appid . $this->tableName.$data['access_token']));
+            $AccessToken = $this->redis->get(config('api.redisTokenKey'). $this->appid . $this->tableName.$data['access_token']);
+            $AccessToken = unserialize($AccessToken);
         }else{
             $AccessToken = Db::name('oauth2_access_token')->where('member_id',$data['member_id'])
                 ->where('tablename',$this->tableName)
@@ -73,7 +76,7 @@ class Oauth
     {   
         //获取头部信息
         $authorization = config('api.authentication')?config('api.authentication'):'authentication';
-        $authorizationHeader = Request::header($authorization); //获取请求中的authentication字段，值形式为USERID asdsajh..这种形式
+        $authorizationHeader = Request::header($authorization);
         if(!$authorizationHeader){
             $this->error('Invalid authorization credentials','',401,'',$authorizationHeader?$authorizationHeader:[]);
         }
@@ -100,12 +103,13 @@ class Oauth
      * @return array
      * @throws \Exception
      */
-    public function jwtcheck($authorizationHeader){
+    public function jwtcheck($jwt){
         try {
+
             JWT::$leeway = 60;//当前时间减去60，把时间留点余地
-            $decoded = JWT::decode($authorizationHeader, md5(config('api.jwt_key')), ['HS256']); //HS256方式，这里要和签发的时候对应
+            $decoded = JWT::decode($jwt, new Key(md5(config('api.jwt_key')), 'HS256'));
             $jwtAuth = (array)$decoded;
-            $clientInfo['access_token'] = $authorizationHeader;
+            $clientInfo['access_token'] = $jwt;
             $clientInfo['member_id'] = $jwtAuth['member_id'];
             $clientInfo['appid'] = $jwtAuth['appid'];
         } catch(\Firebase\JWT\SignatureInvalidException $e) {  //签名不正确

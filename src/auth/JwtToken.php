@@ -89,17 +89,21 @@ class JwtToken
         ];
         $accessTokenInfo = array_merge($accessTokenInfo,$memberInfo);
         $driver = Config::get('api.driver');
+        $accessTokenInfo['access_token'] = $this->buildAccessToken($memberInfo,$this->expires);
+        $accessTokenInfo['refresh_token'] = $this->buildAccessToken($memberInfo,$this->refreshExpires);
         if($driver =='redis'){
             $accessTokenInfo['access_token'] = $this->buildAccessToken($memberInfo,$this->expires);
             $accessTokenInfo['refresh_token'] = $this->buildAccessToken($memberInfo,$this->refreshExpires);
+            //可以保存到数据库 也可以去掉下面两句,本身jwt不需要存储
             $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],serialize($accessTokenInfo),$this->expires);
             $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],serialize($accessTokenInfo),$this->refreshExpires);
         }else{
+
             $token =  Db::name('oauth2_access_token')->where('member_id',$memberInfo['member_id'])
                 ->where('tablename',$this->tableName)
                 ->order('id desc')->limit(1)
                 ->find();
-            if($token and $token['expires_time']>time() && !$refresh_token) {
+            if($token and $token['expires_time'] > time() && !$refresh_token) {
                 $accessTokenInfo['access_token'] = $token['access_token'];
                 $accessTokenInfo['refresh_token'] = $token['refresh_token'];
                 $accessTokenInfo['expires_time'] = $token['expires_time'];
@@ -196,7 +200,7 @@ class JwtToken
             "nbf" => $time,
             "exp" => $expire,      //过期时间时间戳
         );
-        return   JWT::encode($token,  $this->key);
+        return   JWT::encode($token,  $this->key, 'HS256');
     }
     /**
      * 存储token
