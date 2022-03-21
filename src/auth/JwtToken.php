@@ -44,7 +44,6 @@ class JwtToken
         $this->expires =Config::get('api.expires')??$this->expires;
         $this->responseType = Config::get('api.responseType')??$this->responseType;
         $this->authapp = Config::get('api.authapp')??$this->authapp;
-        $this->redis = PredisService::instance();
     }
 
     /**
@@ -95,6 +94,7 @@ class JwtToken
             $accessTokenInfo['access_token'] = $this->buildAccessToken($memberInfo,$this->expires);
             $accessTokenInfo['refresh_token'] = $this->buildAccessToken($memberInfo,$this->refreshExpires);
             //可以保存到数据库 也可以去掉下面两句,本身jwt不需要存储
+            $this->redis = PredisService::instance();
             $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],serialize($accessTokenInfo),$this->expires);
             $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],serialize($accessTokenInfo),$this->refreshExpires);
         }else{
@@ -124,6 +124,7 @@ class JwtToken
     {
         $refresh_token = Request::param('refresh_token');
         if(Config::get('api.driver')=='redis'){
+            $this->redis = PredisService::instance();
             $refresh_token_info = $this->redis->get(Config::get('api.redisRefreshTokenKey').$this->appid.$this->tableName.$refresh_token);
             $refresh_token_info = unserialize($refresh_token_info);
         }else{
