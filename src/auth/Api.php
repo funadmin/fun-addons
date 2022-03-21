@@ -49,6 +49,7 @@ class Api
     {
         $this->request = Request::instance();
         $this->request->filter('trim,strip_tags,htmlspecialchars');
+        $this->group =  $this->request->param('group')?$this->request->param('group'):'api';
         $this->init();
         if($this->clientInfo){
             $this->member_id = $this->clientInfo['member_id'];

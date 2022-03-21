@@ -51,9 +51,12 @@ class Oauth
             $AccessToken = $this->redis->get(config('api.redisTokenKey'). $this->appid . $this->tableName.$data['access_token']);
             $AccessToken = unserialize($AccessToken);
         }else{
-            $AccessToken = Db::name('oauth2_access_token')->where('member_id',$data['member_id'])
+            $AccessToken = Db::name('oauth2_access_token')
+                ->where('member_id',$data['member_id'])
                 ->where('tablename',$this->tableName)
+                ->where('group',$this->group)
                 ->where('access_token',$data['access_token'])->order('id desc')->find();
+            dump($AccessToken);die;
         }
         if(!$AccessToken){
             $this->error('access_token不存在或过期','',401);

@@ -67,6 +67,8 @@ trait Send
      * @var string 
      */
     public $key = '';
+    
+    public $group = 'api';
 
     /**
      * 返沪格式

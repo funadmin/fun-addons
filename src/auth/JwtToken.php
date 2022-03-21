@@ -44,6 +44,8 @@ class JwtToken
         $this->expires =Config::get('api.expires')??$this->expires;
         $this->responseType = Config::get('api.responseType')??$this->responseType;
         $this->authapp = Config::get('api.authapp')??$this->authapp;
+        $this->group =  $this->request->param('group')?$this->request->param('group'):'api';
+
     }
 
     /**
@@ -88,8 +90,6 @@ class JwtToken
         ];
         $accessTokenInfo = array_merge($accessTokenInfo,$memberInfo);
         $driver = Config::get('api.driver');
-        $accessTokenInfo['access_token'] = $this->buildAccessToken($memberInfo,$this->expires);
-        $accessTokenInfo['refresh_token'] = $this->buildAccessToken($memberInfo,$this->refreshExpires);
         if($driver =='redis'){
             $accessTokenInfo['access_token'] = $this->buildAccessToken($memberInfo,$this->expires);
             $accessTokenInfo['refresh_token'] = $this->buildAccessToken($memberInfo,$this->refreshExpires);
@@ -98,9 +98,9 @@ class JwtToken
             $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],serialize($accessTokenInfo),$this->expires);
             $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],serialize($accessTokenInfo),$this->refreshExpires);
         }else{
-
             $token =  Db::name('oauth2_access_token')->where('member_id',$memberInfo['member_id'])
                 ->where('tablename',$this->tableName)
+                ->where('group',$this->group)
                 ->order('id desc')->limit(1)
                 ->find();
             if($token and $token['expires_time'] > time() && !$refresh_token) {
@@ -110,7 +110,7 @@ class JwtToken
                 $accessTokenInfo['refresh_expires_time'] = $token['refresh_expires_time'];
             }else{
                 $accessTokenInfo['access_token'] = $this->buildAccessToken($memberInfo,$this->expires);
-                $accessTokenInfo['refresh_token'] = $this->buildAccessToken($memberInfo,$this->refreshExpires);
+                $accessTokenInfo['refresh_token'] = $this->getRefreshToken($memberInfo,$refresh_token);
             }
             $this->saveToken($accessTokenInfo);  //保存本次token
         }
@@ -131,6 +131,7 @@ class JwtToken
             $refresh_token_info = Db::name('oauth2_access_token')
                 ->where('refresh_token',$refresh_token)
                 ->where('tablename',$this->tableName)
+                ->where('group',$this->group)
                 ->order('id desc')->find();
         }
         if (!$refresh_token_info) {
@@ -191,7 +192,6 @@ class JwtToken
         if($expires==$this->refreshExpires)  $scopes = 'role_refresh';
         $token = array(
             "member_id" => $memberInfo['member_id'],
-            'data'=>serialize($memberInfo),
             'appid'=>$this->appid,
             'appsecret'=>$this->appsecret,
             "iss" => "https://www.funadmin.com",//签发组织
@@ -203,6 +203,24 @@ class JwtToken
         );
         return   JWT::encode($token,  $this->key, 'HS256');
     }
+
+    /**
+     * 获取刷新用的token检测是否还有效
+     */
+    protected function getRefreshToken($memberInfo,$refresh_token)
+    {
+        if(!$refresh_token){
+            return $this->buildAccessToken($memberInfo,$this->refreshExpires);
+        }
+        $accessToken =Db::name('oauth2_access_token')->where('member_id',$memberInfo['member_id'])
+            ->where('refresh_token',$refresh_token)
+            ->where('tablename',$this->tableName)
+            ->where('group',$this->group)
+            ->field('refresh_token')
+            ->find();
+        return $accessToken?$refresh_token:$this->buildAccessToken($memberInfo,$this->refreshExpires);
+    }
+
     /**
      * 存储token
      * @param $accessTokenInfo
@@ -211,23 +229,28 @@ class JwtToken
     {
         $accessToken =Db::name('oauth2_access_token')->where('member_id',$accessTokenInfo['member_id'])
             ->where('tablename',$this->tableName)
-            ->where('access_token',$accessTokenInfo['access_token'])
+            ->where('group',$this->group)
             ->find();
+        $data = [
+            'client_id'=>$accessTokenInfo['client_id'],
+            'member_id'=>$accessTokenInfo['member_id'],
+            'tablename'=>$this->tableName,
+            'group'=>$this->group,
+            'openid'=>isset($accessTokenInfo['openid'])?$accessTokenInfo['openid']:'',
+            'access_token'=>$accessTokenInfo['access_token'],
+            'expires_time'=>time() + $this->expires,
+            'refresh_token'=>$accessTokenInfo['refresh_token'],
+            'refresh_expires_time' => time() + $this->refreshExpires,      //过期时间时间戳
+            'create_time' => time()      //创建时间
+        ];
         if(!$accessToken){
-            $data = [
-                'client_id'=>$accessTokenInfo['client_id'],
-                'member_id'=>$accessTokenInfo['member_id'],
-                'tablename'=>$this->tableName,
-                'group'=>isset($accessTokenInfo['group'])?$accessTokenInfo['group']:'api',
-                'openid'=>isset($accessTokenInfo['openid'])?$accessTokenInfo['openid']:'',
-                'access_token'=>$accessTokenInfo['access_token'],
-                'expires_time'=>time() + $this->expires,
-                'refresh_token'=>$accessTokenInfo['refresh_token'],
-                'refresh_expires_time' => time() + $this->refreshExpires,      //过期时间时间戳
-                'create_time' => time()      //创建时间
-            ];
             Db::name('oauth2_access_token')->save($data);
+        }else{
+            Db::name('oauth2_access_token')->where('member_id',$accessTokenInfo['member_id'])
+                ->where('group',$this->group)
+                ->update($data);
         }
+        return true;
     }
 
     protected function getMember($membername, $password)
