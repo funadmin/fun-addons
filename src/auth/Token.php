@@ -45,7 +45,6 @@ class Token
         $this->responseType = Config::get('api.responseType')??$this->responseType;
         $this->responseType = Config::get('api.responseType')??$this->responseType;
         $this->authapp = Config::get('api.authapp')??$this->authapp;
-        $this->redis = PredisService::instance();
     }
 
     /**
@@ -136,7 +135,7 @@ class Token
         if ($sign !== $params['sign']) {
             $this->error('sign错误','', 401);
         }
-        
+
 
     }
 
@@ -158,6 +157,7 @@ class Token
         if($driver =='redis'){
             $accessTokenInfo['access_token'] = $this->buildAccessToken();
             $accessTokenInfo['refresh_token'] = $this->buildAccessToken();
+            $this->redis = PredisService::instance();
             $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],serialize($accessTokenInfo),$this->expires);
             $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],serialize($accessTokenInfo),$this->refreshExpires);
         }else{
