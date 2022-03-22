@@ -56,7 +56,6 @@ class Oauth
                 ->where('tablename',$this->tableName)
                 ->where('group',$this->group)
                 ->where('access_token',$data['access_token'])->order('id desc')->find();
-            dump($AccessToken);die;
         }
         if(!$AccessToken){
             $this->error('access_token不存在或过期','',401);
