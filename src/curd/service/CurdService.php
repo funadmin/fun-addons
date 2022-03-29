@@ -53,6 +53,7 @@ class CurdService
      * @var string
      */
     protected $database = 'funadmin';
+    protected $driver = 'mysql';
     protected $force = false;
     protected $jump = true;//跳过文件
     protected $rootPath;
@@ -95,10 +96,12 @@ class CurdService
     protected $menuListStr;
     protected $softDelete;
 
-    public function __construct()
+    public function __construct(array $config)
     {
-        $this->tablePrefix = config('database.connections.mysql.prefix');
-        $this->database = Config::get('database.connections' . '.' . Config::get('database.default') . '.database');
+        $this->setParam($config);
+        $this->tablePrefix = config('database.connections.'.$config['driver'].'.prefix');
+        $this->database = Config::get('database.connections' . '.' .$config['driver'] . '.database');
+        $this->driver = $config['driver'];
         $this->dir = __DIR__;
         $this->rootPath = root_path();
         $this->tplPath = $this->rootPath . 'vendor' . DS . 'funadmin'. DS . 'fun-addons' . DS . 'src' . DS . 'curd'  . DS . 'tpl' . DS ;
@@ -127,7 +130,6 @@ class CurdService
                 unset($this->config[$k], $config[$k]);
             }
         }
-
         foreach ($config as $k=>&$v){
 
             if(!empty($v)  && is_array($v) && strpos($v[0],',')!==false) {
@@ -282,7 +284,7 @@ class CurdService
         $indexTpl = '';
         $recycleTpl = '';
         $relationSearch = '';
-        $statusResult = Db::query("SELECT COUNT(*) FROM information_schema.columns WHERE table_name ='".$this->tablePrefix.$this->table."' AND column_name ='status'");
+        $statusResult = Db::connect($this->driver)->query("SELECT COUNT(*) FROM information_schema.columns WHERE table_name ='".$this->tablePrefix.$this->table."' AND column_name ='status'");
         $status= $statusResult[0]['COUNT(*)'];
         if ($this->joinTable) {
             $relationSearch ='$this->relationSearch = true;';
@@ -298,16 +300,18 @@ class CurdService
                 $softDelete = '';
                 //判断是否有删除字段
                 $sql = "select COLUMN_NAME as name, COLUMN_DEFAULT as value from information_schema.columns where table_name = '" . $this->tablePrefix . $v . "' and table_schema = '" . $this->database . "' and column_name = 'delete_time'";
-                $delete = Db::query($sql);
+                $delete = Db::connect($this->driver)->query($sql);
                 if(!empty($delete)){
                     $softDelete = $this->getSoftDelete($delete[0]);
                 }
                 //生成关联表的模型
+                $connection = $this->driver=='mysql'?"":"protected \$connection = '".$this->driver."';";
                 $modelTplTemp = str_replace([
                     '{{$modelNamespace}}',
                     '{{$modelName}}',
                     '{{$modelTableName}}',
                     '{{$softDelete}}',
+                    '{{$connection}}',
                     '{{$joinTpl}}',
                     '{{$attrTpl}}',
                 ],
@@ -316,6 +320,7 @@ class CurdService
                         ucfirst(Str::studly($this->joinName[$k])),
                         $this->joinName[$k],
                         $softDelete,
+                        $connection,
                         '',
                         '',
                     ],
@@ -496,6 +501,7 @@ class CurdService
             }
         }
         $attrStr = $this->modifyAttr();
+        $connection = $this->driver=='mysql'?"":"protected \$connection = '".$this->driver."';";
         $modelTpl = str_replace([
             '{{$modelNamespace}}',
             '{{$modelName}}',
@@ -503,6 +509,7 @@ class CurdService
             '{{$joinTpl}}',
             '{{$attrTpl}}',
             '{{$softDelete}}',
+            '{{$connection}}',
         ],
             [$this->modelNamespace,
                 ucfirst($this->modelName),
@@ -510,6 +517,7 @@ class CurdService
                 $joinTplStr,
                 $attrStr,
                 $this->softDelete,
+                $connection,
             ],
             file_get_contents($modelTpl));
         $validateTpl = str_replace(
@@ -929,13 +937,13 @@ class CurdService
         $lang = '';
         $softDelete = '';
         $sql = "show tables like '{$this->tablePrefix}{$this->table}'";
-        $table = Db::query($sql);
+        $table = Db::connect($this->driver)->query($sql);
         if(!$table){
             throw new \Exception($this->table.'表不存在');
         }
         $sql = "select $field from information_schema . columns  where table_name = '" . $this->tablePrefix . $this->table . "' and table_schema = '" . $this->database . "'";
-        $tableField = Db::query($sql);
-        $tableComment = Db::query(' SELECT TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES  WHERE TABLE_NAME =  "'.$this->tablePrefix . $this->table.'";');
+        $tableField = Db::connect($this->driver)->query($sql);
+        $tableComment = Db::connect($this->driver)->query(' SELECT TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES  WHERE TABLE_NAME =  "'.$this->tablePrefix . $this->table.'";');
         $this->tableComment =$tableComment[0]['TABLE_COMMENT'];
         foreach ($tableField as $k => &$v) {
             $v['required'] = $v['IS_NULLABLE'] == 'NO' ? 'required' : "";
