@@ -31,6 +31,7 @@ class Curd extends Command
     protected function configure()
     {
         $this->setName('curd')
+            ->addOption('driver', '', Option::VALUE_OPTIONAL, '数据库', 'mysql')
             ->addOption('table', 't', Option::VALUE_REQUIRED, '表名', null)
             ->addOption('controller', 'c', Option::VALUE_OPTIONAL, '控制器名', null)
             ->addOption('model', 'm', Option::VALUE_OPTIONAL, '模型名', null)
@@ -73,6 +74,7 @@ class Curd extends Command
     protected function execute(Input $input, Output $output)
     {
         $param = [];
+        $param['driver'] = $input->getOption('driver');
         $param['table'] = $input->getOption('table');
         $param['controller'] = $input->getOption('controller');
         $param['page'] = $input->getOption('page');
@@ -109,8 +111,7 @@ class Curd extends Command
             $output->info("主表不能为空");
             return false;
         }
-        $curdService = new CurdService();
-        $curdService->setParam($param);
+        $curdService = new CurdService($param);
         try {
             $curdService->maker();
             $output->info('make success');
