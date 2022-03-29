@@ -913,7 +913,7 @@ class FormHelper
     {
         if (isset($options['class']) and $options['class']) {
             $classArr = is_array($options['class']) ? $options['class'] : explode(',', $options['class']);
-            return implode(' ', $classArr);
+            return ' ' .implode(' ', $classArr);
         }
         return '';
     }
