@@ -11,6 +11,9 @@ use think\model\concern\SoftDelete;
 class {{$modelName}} extends BaseModel
 {
     {{$softDelete}}
+
+    {{$connection}}
+
     public function __construct(array $data = [])
     {
         parent::__construct($data);
