@@ -130,13 +130,13 @@ class CurdService
                 unset($this->config[$k], $config[$k]);
             }
         }
-        foreach ($config as $k=>&$v){
-
-            if(!empty($v)  && is_array($v) && strpos($v[0],',')!==false) {
-//                $v = explode(',',$v[0]);
-            }
-        }
-        unset($v);
+//        foreach ($config as $k=>&$v){
+//
+//            if(!empty($v)  && is_array($v) && strpos($v[0],',')!==false) {
+////                $v = explode(',',$v[0]);
+//            }
+//        }
+//        unset($v);
         $this->config = array_merge($res, $this->config, $config);
         $this->setArg();
     }
@@ -867,27 +867,27 @@ class CurdService
                             }
                             break;
                         case 'image':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),sort:true,templet: Table.templet.image},".PHP_EOL;;
+                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
                             break;
                         case 'file':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),sort:true,templet: Table.templet.image},".PHP_EOL;;
+                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
                             break;
                         case 'checkbox':
-                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,sort:true,templet: Table.templet.tags},".PHP_EOL;;
+                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,templet: Table.templet.tags},".PHP_EOL;;
                             break;
                         case 'select':
                         case 'radio':
-                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,sort:true,templet: Table.templet.select},".PHP_EOL;;
+                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,templet: Table.templet.select},".PHP_EOL;;
                             break;
                         case 'switch':
-                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'), filter: '{$v['name']}', selectList:{$listName}List,sort:true,templet: Table.templet.switch},".PHP_EOL;;
+                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'), filter: '{$v['name']}', selectList:{$listName}List,templet: Table.templet.switch},".PHP_EOL;;
                             break;
                         case 'number':
                             if ($this->hasSuffix($v['name'], ['sort'])) {
-                                $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',edit:'text',sort:true},".PHP_EOL;;
+                                $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',edit:'text'},".PHP_EOL;;
                                 break;
                             }else{
-                                $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',sort:true},".PHP_EOL;;
+                                $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center'},".PHP_EOL;;
                                 break;
                             }
                         case 'date':
@@ -907,7 +907,7 @@ class CurdService
                             $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'HH:mm:ss',searchdateformat:'HH:mm:ss',timeType:'time',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
                             break;
                         default :
-                            $this->jsCols .= "                    {field:'{$v['name']}', title: __('{$name}'),align: 'center',sort:true},".PHP_EOL;
+                            $this->jsCols .= "                    {field:'{$v['name']}', title: __('{$name}'),align: 'center'},".PHP_EOL;
                             break;
                     }
                 }
