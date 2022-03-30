@@ -870,7 +870,7 @@ class CurdService
                             $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
                             break;
                         case 'images':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.images},".PHP_EOL;;
+                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
                             break;
                         case 'file':
                             $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.url},".PHP_EOL;;
