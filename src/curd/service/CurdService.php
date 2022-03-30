@@ -869,8 +869,14 @@ class CurdService
                         case 'image':
                             $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
                             break;
+                        case 'images':
+                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.images},".PHP_EOL;;
+                            break;
                         case 'file':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
+                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.url},".PHP_EOL;;
+                            break;
+                        case 'files':
+                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.url},".PHP_EOL;;
                             break;
                         case 'checkbox':
                             $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,templet: Table.templet.tags},".PHP_EOL;;
