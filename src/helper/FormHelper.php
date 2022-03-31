@@ -765,7 +765,7 @@ class FormHelper
                     <div class="layui-upload">
                         <input ' . self::addextend($options) . ' ' . self::addstyle($options) . '  value="' . $value . '" style="' . $css . ' ;width:65% " type="text" name="' . $name . '" class="layui-input attach ' . self::addClass($options) . '"' . self::verify($options) . '/>
                        ' . $croper_container . '
-                        <button type="button"  style="margin-left:0px" class="layui-btn"  ' . $op . ' lay-filter="upload"><i class="layui-icon layui-icon-upload-circle"></i>' . lang('Uploads') . '</button>
+                        <button type="button"  style="margin-left:0px" class="layui-btn layui-btn-normal"  ' . $op . ' lay-filter="upload"><i class="layui-icon layui-icon-upload-circle"></i>' . lang('Uploads') . '</button>
                         ' . $select_container . '
                         <div class="layui-upload-list">'
             . $li . '
@@ -808,13 +808,12 @@ class FormHelper
             $show = 'layui-hide';
         }
         $str = '<input type="hidden" name="__token__" value="' . self::token() . '"><div class=" layui-btn-submit layui-form-item layui-btn-center ' . $show . '" />
-            <button type="submit" class="layui-btn layui-btn-sm" lay-fitler="submit" lay-submit>' . lang('Submit') .
+            <button type="submit" class="layui-btn layui-btn-sm submit" lay-fitler="submit" lay-submit>' . lang('Submit') .
             '</button>';
         if ($reset) {
-            $str .= '<button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">' . lang('Reset') . '</button>';
+            $str .= '<button type="reset" class="layui-btn layui-btn-sm layui-btn-primary reset">' . lang('Reset') . '</button>';
         }
         $str .= '</div>';
-
         return $str;
     }
 
