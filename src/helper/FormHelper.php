@@ -636,7 +636,7 @@ class FormHelper
     public static function editor($name = 'container', $type = 1, $options = [], $value = '')
     {
         $id = $options['id'] ?? $name;
-        $height = $options['height'] ?? '350px';
+        $height = $options['height'] ?? '450px';
         $path = $options['path'] ?? 'upload';
         $label = $options['label'] ?? $name;
         $str = '<div class="layui-form-item">
