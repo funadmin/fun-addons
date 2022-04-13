@@ -668,11 +668,13 @@ class FormHelper
      */
     public static function upload($name = 'avatar', $formData = '', $options = [], $value = '')
     {
+        $id = $name;
         if (!isset($options['type'])) $options['type'] = 'radio';
         if (!isset($options['mime'])) $options['mime'] = 'image';
         if (!isset($options['num'])) $options['num'] = 1;
         if (isset($options['num']) && $options['num'] == '*') $options['num'] = 100;
         if (!isset($options['path'])) $options['path'] = 'upload'; //上传路劲
+        if (isset($options['id'])) $id = $options['id']; //ID
         $css = isset($options['css']) ? $options['css'] : 'display:inline-block;';
         $label = $options['label'] ?? $name;
         $li = '';
@@ -686,7 +688,7 @@ class FormHelper
             $crpperops = 'data-value="' . json_encode($cops, true) . '"';
             $croper_container = '<button type="button" 
                ' . $crpperops . '
-                class="layui-btn layui-btn-warm"  lay-filter="cropper" id="cropper">'
+                class="layui-btn layui-btn-warm"  lay-filter="cropper" id="' .$id .'">'
                 . lang('Cropper') .
                 '</button>';
             $options['num'] = 1;
