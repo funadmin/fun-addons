@@ -545,7 +545,7 @@ class FormHelper
     {
         $name = $name ? $name : 'icon';
         $value = $value ? $value : 'layui-icon-rate';
-        $id = $options['id'] ?? 'iconPicker';
+        $id = $options['id'] ?? $name;
         $str = '<div class="layui-form-item">
                     <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang('Icon') . '</label>
                     <div class="layui-input-block">
@@ -591,7 +591,7 @@ class FormHelper
      */
     public static function city($name = 'cityPicker', $options = [])
     {
-        $id =  $options['id'] ?? 'iconPicker';
+        $id =  $options['id'] ?? $name;
         $options['provinceId'] = $options['provinceId'] ?? 'province_id';
         $options['cityId'] = $options['cityId'] ?? 'city_id';
         $options['districtId'] = $options['districtId'] ?? 'area_id';
@@ -599,7 +599,7 @@ class FormHelper
         $str = ' <div class="layui-form-item">
                     <label class="layui-form-label width_auto text-r" style="margin-top:2px">省市县：</label>
                     <div class="layui-input-block">
-                        <input ' . self::addextend($options) . ' type="hidden" autocomplete="on" cclass="layui-input ' . self::addClass($options) . '" ' . $attr . ' lay-filter="cityPicker" id="' . $id . '" name="' . $name . '" readonly="readonly" data-toggle="city-picker" placeholder="请选择"/>
+                        <input ' . self::addextend($options) . ' type="hidden" autocomplete="on" class="layui-input ' . self::addClass($options) . '" ' . $attr . ' lay-filter="cityPicker" id="' . $id . '" name="' . $name . '" readonly="readonly" data-toggle="city-picker" placeholder="请选择"/>
                     </div>
                     </div>';
         return $str;
@@ -613,7 +613,7 @@ class FormHelper
      */
     public static function region($name = 'regionCheck',  $options = [])
     {
-        $id = $options['id'] ?? 'iconPicker';
+        $id = $options['id'] ?? $name;
         $str = ' <div class="layui-form-item">
                     <label class="layui-form-label ">区域</label>
                     <div class="layui-input-block">
@@ -668,13 +668,12 @@ class FormHelper
      */
     public static function upload($name = 'avatar', $formData = '', $options = [], $value = '')
     {
-        $id = $name;
         if (!isset($options['type'])) $options['type'] = 'radio';
         if (!isset($options['mime'])) $options['mime'] = 'image';
         if (!isset($options['num'])) $options['num'] = 1;
         if (isset($options['num']) && $options['num'] == '*') $options['num'] = 100;
         if (!isset($options['path'])) $options['path'] = 'upload'; //上传路劲
-        if (isset($options['id'])) $id = $options['id']; //ID
+        $id = $options['id']??$name;
         $css = isset($options['css']) ? $options['css'] : 'display:inline-block;';
         $label = $options['label'] ?? $name;
         $li = '';
