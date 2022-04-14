@@ -68,14 +68,18 @@ class FormHelper
         $label = $options['label'] ?? $name;
         $id = ($options['id']) ?? $name;
         $value = !is_null($value) ? $value  : '';
-        $options = json_encode($options, JSON_UNESCAPED_UNICODE);
+        $data_value = '';
+        foreach ($options as $key => $val) {
+            $data_value .= ' data-'.$key.'="'.$val.'" ';
+        }
         $disorread = self::readonlyOrdisabled($options) ? self::readonlyOrdisabled($options) : self::readonlyOrdisabled($options);
         $disorread  = $disorread ? 'layui-disabled' : '';
+        $op = json_encode($options,JSON_UNESCAPED_UNICODE);
         $str = "<div class='layui-form-item " . self::addClass($options) . "'> 
         <label class='layui-form-label " . self::labelRequire($options) . "'>" . lang(Str::title($label)) . "</label>
         <div class='layui-input-block'>
         <input type='hidden' name='" . $name . "' class='layui-input' value='" . $value . "'>
-        <div " . self::addextend($options) . self::addstyle($options)  ." data-name='" . $name . "' data-value ='" . $value . "' id='" . $id . "'  lay-filter='rate' class='" . self::addClass($options) . "' data-options='" . $options . "'>
+        <div ". $data_value . self::addextend($options) . self::addstyle($options)  ." data-name='" . $name . "' data-value ='" . $value . "' id='" . $id . "'  lay-filter='rate' class='" . self::addClass($options) . "' data-options='" . $op . "'>
         " . self::tips($options) . "</div></div></div>";
         return $str;
     }
@@ -91,14 +95,18 @@ class FormHelper
         $label = $options['label'] ?? $name;
         $id = ($options['id']) ?? $name;
         $value = !is_null($value) ? $value  : '';
-        $options = json_encode($options, JSON_UNESCAPED_UNICODE);
+        $data_value = '';
+        foreach ($options as $key => $val) {
+            $data_value .= ' data-'.$key.'="'.$val.'" ';
+        }
         $disorread = self::readonlyOrdisabled($options) ? self::readonlyOrdisabled($options) : self::readonlyOrdisabled($options);
         $disorread  = $disorread ? 'layui-disabled' : '';
+        $op = json_encode($options,JSON_UNESCAPED_UNICODE);
         $str = "<div class='layui-form-item " . self::addClass($options) . "'> 
         <label class='layui-form-label " . self::labelRequire($options) . "'>" . lang(Str::title($label)) . "</label>
         <div class='layui-input-block'>
         <input type='hidden' name='" . $name . "' class='layui-input' value='" . $value . "'>
-        <div " . self::addextend($options) ." style='top:16px' data-name='" . $name . "' data-value ='" . $value . "' id='" . $id . "'  lay-filter='slider' class='" . self::addClass($options) . "' data-options='" . $options . "'>
+        <div " .$data_value . self::addextend($options) ." style='top:16px' data-name='" . $name . "' data-value ='" . $value . "' id='" . $id . "'  lay-filter='slider' class='" . self::addClass($options) . "' data-options='" . $op . "'>
         " . self::tips($options) . "
         </div></div></div>";
         return $str;
@@ -318,14 +326,18 @@ class FormHelper
     {
         $url =  $options['url'] ?? '';
         $label = $options['label'] ?? $name;
-        $delimiter =   $options['delimiter'] ?? '';
-        $search =   isset($options['search']) ? true : '';
-        $num =   $options['num'] ?? 3;
-        $last =   $options['last'] ?? '';
+        $options['delimiter'] =   $options['delimiter'] ?? '';
+        $options['search']=   isset($options['search']) ? true : '';
+        $options['search'] =   $options['num'] ?? 3;
+        $options['search'] =   $options['last'] ?? '';
         if ($attr) {
             $attr = is_array($attr) ? implode(',', $attr) : $attr;
         }
-        $op = 'data-num="' . $num . '" data-search="' . $search . '" data-last="' . $last . '" data-delimiter="' . $delimiter . '"  data-url="' . $url . '" data-value="' . $value . '" data-attr="' . $attr . '"';
+        $op = '';
+        foreach ($options as $key => $val) {
+            $op .= ' data-'.$key.'="'.$val.'" ';
+        }
+        $op .='" data-value="' . $value . '" data-attr="' . $attr . '"';
         if (is_array($select)) {
             $op .= " data-data='" . json_encode($select, JSON_UNESCAPED_UNICODE) . "'";
         }
@@ -353,15 +365,19 @@ class FormHelper
      */
     public static function selectplus($name = '', $select= [], $options=[], $attr=[], $value='')
     {
-        $url = $options['url'] ?? '';
+        $options['url']  = $options['url'] ?? '';
         $label = $options['label'] ?? $name;
-        $delimiter =   $options['delimiter'] ?? '';
-        $fielddelimiter =   $options['fielddelimiter'] ?? '';
-        $multiple = isset($options['multiple']) ? 'multiple="multiple"' : '';
+        $options['delimiter'] =   $options['delimiter'] ?? '';
+        $options['fielddelimiter'] =   $options['fielddelimiter'] ?? '';
+        $options['multiple'] = isset($options['multiple']) ? 'multiple="multiple"' : '';
         if ($attr) {
             $attr = is_array($attr) ? implode(',', $attr) : $attr;
         }
-        $op = 'data-fielddelimiter="' . $fielddelimiter . '"  data-delimiter="' . $delimiter . '"  data-url="' . $url . '" data-value="' . $value . '" data-attr="' . $attr . '"';
+        $op = '';
+        foreach ($options as $key => $val) {
+            $op .= ' data-'.$key.'="'.$val.'" ';
+        }
+        $op =  '" data-value="' . $value . '" data-attr="' . $attr . '" ';
         if (is_array($select)) {
             $op .= " data-data='" . json_encode($select, JSON_UNESCAPED_UNICODE) . "'";
         }
@@ -371,7 +387,7 @@ class FormHelper
         $str = '<div class="layui-form-item">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
                 <div class="layui-input-block">
-                  <div ' . self::addextend($options) . '  id="' . $name . '"' . $op . '" lay-filter="selectPlus" ' . self::addClass($options) . '" name="' . $name . '" ' . $multiple . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
+                  <div ' . self::addextend($options) . '  id="' . $name . '" ' . $op . '" lay-filter="selectPlus" ' . self::addClass($options) . '" name="' . $name . '" ' . $multiple . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
                   
                   </div>
                   ' . self::tips($options) . '
@@ -450,36 +466,39 @@ class FormHelper
         $attr ? $op .= ' data-attr="' . $attr . '"' : "";
         $value = is_array($value) ? implode($value) : $value;
         $value ? $op .= ' data-value="' . $value . '"' : "";
-        isset($options['lang']) ? $op .= ' data-lang="' . $options['lang'] . '"' : '';
-        isset($options['tips']) ? $op .= ' data-tips="' . $options['tips'] . '"' : '';
-        isset($options['empty']) ? $op .= ' data-empty="' . $options['empty'] . '"' : '';
-        isset($options['repeat']) ? $op .= ' data-repeat="' . $options['repeat'] . '"' : '';
-        isset($options['content']) ? $op .= ' data-content="' . $options['content'] . '"' : '';
-        isset($options['searchTips']) ? $op .= ' data-searchtips="' . $options['searchTips'] . '"' : '';
-        isset($options['style']) ? $op .= ' data-style="' . $options['style'] . '"' : '';
-        isset($options['filterable']) ? $op .= ' data-filterable="' . $options['filterable'] . '"' : '';
-        isset($options['remoteSearch']) ? $op .= " data-remotesearch='" . $options['remoteSearch'] . "'" : '';
-        isset($options['remoteMethod']) ? $op .= " data-remotemethod='" . $options['remoteMethod'] . "'" : '';
-        isset($options['height']) ? $op .= " data-height='" . $options['height'] . "'" : '';
-        isset($options['paging']) ? $op .= " data-paging='" . $options['paging'] . "'" : '';
-        isset($options['size']) ? $op .= " data-size='" . $options['size'] . "'" : '';
-        isset($options['pageSize']) ? $op .= " data-pagesize='" . $options['pageSize'] . "'" : '';
-        isset($options['pageRemote']) ? $op .= " data-pageremote='" . $options['pageRemote'] . "'" : '';
-        isset($options['clickClose']) ? $op .= " data-clickclose='" . $options['clickClose'] . "'" : '';
-        isset($options['reqext']) ? $op .= " data-reqtext='" . $options['reqtext'] . "'" : '';
-        isset($options['radio']) ? $op .= " data-radio='true'" : '';
-        isset($options['url']) ? $op .= " data-url='" . $options['url'] . "'" : '';
-        isset($options['tree']) ? $op .= " data-tree='" . $options['tree'] . "'" : '';
-        isset($options['prop']) ? $op .= " data-prop='" . $options['prop'] . "'" : '';
-        isset($options['parentField']) ? $op .= " data-parentField='" . $options['parentField'] . "'" : 'pid';
-        isset($options['max']) ? $op .= " data-max='" . $options['max'] . "'" : '';
-        isset($options['verify']) ? $op .= " data-verify='" . $options['verify'] . "'" : '';
-        isset($options['disabled']) ? $op .= " data-disabled='" . $options['disabled'] . "'" : '';
-        isset($options['create']) ? $op .= " data-create='" . $options['create'] . "'" : '';
-        isset($options['theme']) ? $op .= " data-theme='" . $options['theme'] . "'" : '';
-        isset($options['value']) ? $op .= " data-value='" . $options['value'] . "'" : '';
-        isset($options['autorow']) ? $op .= " data-autorow='" . $options['autorow'] . "'" : '';
-        isset($options['toolbar']) ? $op .= " data-toolbar='" . json_encode($options['toolbar'],JSON_UNESCAPED_UNICODE) . "'" : '';
+        $options['lang'] = $options['lang'] ?? '';
+        $options['tips'] = $options['tips']?? '';
+        $options['empty'] =  $options['empty'] ?? '';
+        $options['repeat'] = $options['repeat'] ??'';
+        $options['content'] =  $options['content'] ?? '';
+        $options['searchTips'] = $options['searchTips'] ?? '';
+        $options['style'] = $options['style'] ?? '';
+        $options['filterable'] = $options['filterable'] ?? '';
+        $options['remoteSearch'] = $options['remoteSearch']  ??  '';
+        $options['remoteMethod'] =  $options['remoteMethod']  ??  '';
+        $options['height'] = $options['height'] ??'';
+        $options['paging'] =  $options['paging'] ??'';
+        $options['size'] =   $options['size'] ??'';
+        $options['pageSize'] = $options['pageSize'] ??'';
+        $options['pageRemote'] = $options['pageRemote'] ??'';
+        $options['clickClose'] =  $options['clickClose'] ??'';
+        $options['reqext'] =  $options['reqtext'] ??'';
+        $options['radio'] =  $options['radio'] ?? '';
+        $options['url'] =  $options['url'] ??'';
+        $options['tree'] =  $options['tree'] ??'';
+        $options['prop'] = $options['prop'] ??'';
+        $options['parentField'] =  $options['parentField'] ??'pid';
+        $options['max'] =  $options['max'] ??'';
+        $options['verify'] = $options['verify'] ??'';
+        $options['disabled'] =  $options['disabled'] ??'';
+        $options['create'] =  $options['create'] ??'';
+        $options['theme'] =  $options['theme'] ??'';
+        $options['value'] = $options['value'] ??'';
+        $options['autorow'] =  $options['autorow'] ??'';
+        $options['toolbar'] = isset($options['toolbar'])?json_encode($options['toolbar'],JSON_UNESCAPED_UNICODE)  : '';
+        foreach($options as $key=>$val){
+            $op .= ' data-'.$key.'="'.$val.'" ';
+        }
         $label = $options['label'] ?? $name;
         $str = '<div class="layui-form-item">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
@@ -685,8 +704,11 @@ class FormHelper
             $area = $options['area'] ?? '900px';
             $cops = ['path' => $options['path'], 'width' => $width, 'height' => $height, 'mark' => $mark, 'area' => $area];
             $crpperops = 'data-value="' . json_encode($cops, true) . '"';
-            $croper_container = '<button type="button" 
-               ' . $crpperops . '
+            $data_value = '';
+            foreach ($cops as $key => $val) {
+                $data_value .= ' data-'.$key.'="'.$val.'" ';
+            }
+            $croper_container = '<button type="button" '. $data_value  . $crpperops . '
                 class="layui-btn layui-btn-warm"  lay-filter="cropper" id="' .$id .'">'
                 . lang('Cropper') .
                 '</button>';
@@ -754,11 +776,15 @@ class FormHelper
             'selecturl' =>  $options['selecturl'] ?? '',
             'tableurl' =>  $options['tableurl'] ?? '',
         ];
+        $data_value = '';
+        foreach ($op as $key => $val) {
+            $data_value .= ' data-'.$key.'="'.$val.'" ';
+        }
         $op = "data-value='" . json_encode($op, true) . "'";
         $select_container = '';
         if ((isset($options['select']) and $options['select']) || !isset($options['select'])) {
             $options['select'] = $options['select'] ?? 'upload-select'; //可选upload-choose
-            $select_container =  '<button id="' . $name . '" type="button" class="layui-btn layui-btn-danger ' . $options['select'] . '" ' . $op . '  lay-filter="' . $options['select'] . '"><i class="layui-icon layui-icon-align-center"></i>' . lang('Choose') . '</button>';
+            $select_container =  '<button id="' . $name . '" type="button" class="layui-btn layui-btn-danger ' . $options['select'] . '" ' .$data_value . $op . '  lay-filter="' . $options['select'] . '"><i class="layui-icon layui-icon-align-center"></i>' . lang('Choose') . '</button>';
         }
         $str = ' <div class="layui-form-item">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
@@ -766,7 +792,7 @@ class FormHelper
                     <div class="layui-upload">
                         <input ' . self::addextend($options) . ' ' . self::addstyle($options) . '  value="' . $value . '" style="' . $css . ' ;width:65% " type="text" name="' . $name . '" class="layui-input attach ' . self::addClass($options) . '"' . self::verify($options) . '/>
                        ' . $croper_container . '
-                        <button type="button"  style="margin-left:0px" class="layui-btn layui-btn-normal"  ' . $op . ' lay-filter="upload"><i class="layui-icon layui-icon-upload-circle"></i>' . lang('Uploads') . '</button>
+                        <button type="button" ' .$data_value .' style="margin-left:0px" class="layui-btn layui-btn-normal"  ' . $op . ' lay-filter="upload"><i class="layui-icon layui-icon-upload-circle"></i>' . lang('Uploads') . '</button>
                         ' . $select_container . '
                         <div class="layui-upload-list">'
             . $li . '
