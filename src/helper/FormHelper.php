@@ -324,8 +324,8 @@ class FormHelper
      */
     public static function selectn($name = '', $select= [], $options=[], $attr=[], $value='')
     {
-        $url =  $options['url'] ?? '';
         $label = $options['label'] ?? $name;
+        $options['url'] =  $options['url'] ?? '';
         $options['delimiter'] =   $options['delimiter'] ?? '';
         $options['search']=   isset($options['search']) ? true : '';
         $options['search'] =   $options['num'] ?? 3;
@@ -348,7 +348,6 @@ class FormHelper
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
                 <div class="layui-input-block">
                   <div ' . self::addextend($options) . '  id="' . $name . '"' . $op . '" lay-filter="selectN" ' . self::addClass($options) . '" name="' . $name . '" '   . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
-                  
                   </div>
                   ' . self::tips($options) . '
                 </div>
@@ -463,6 +462,7 @@ class FormHelper
         if (is_object($select)) {
             $op .= " data-data='" . json_encode((array)$select, JSON_UNESCAPED_UNICODE) . "'";
         }
+        $attr = is_array($attr) ? implode(',', $attr):$attr;
         $attr ? $op .= ' data-attr="' . $attr . '"' : "";
         $value = is_array($value) ? implode($value) : $value;
         $value ? $op .= ' data-value="' . $value . '"' : "";
