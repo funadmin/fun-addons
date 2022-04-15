@@ -234,7 +234,7 @@ class FormHelper
         <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
         <div class="layui-input-block">
          ' . $input . self::tips($options) . '
-        </div>';
+        </div></div>';
         return $str;
     }
 
@@ -328,8 +328,8 @@ class FormHelper
         $options['url'] =  $options['url'] ?? '';
         $options['delimiter'] =   $options['delimiter'] ?? '';
         $options['search']=   isset($options['search']) ? true : '';
-        $options['search'] =   $options['num'] ?? 3;
-        $options['search'] =   $options['last'] ?? '';
+        $options['num'] =   $options['num'] ?? 3;
+        $options['last'] =   $options['last'] ?? '';
         if ($attr) {
             $attr = is_array($attr) ? implode(',', $attr) : $attr;
         }
@@ -337,17 +337,17 @@ class FormHelper
         foreach ($options as $key => $val) {
             $op .= ' data-'.$key.'="'.$val.'" ';
         }
-        $op .='" data-value="' . $value . '" data-attr="' . $attr . '"';
+        $op .='data-value="' . $value . '" data-attr="' . $attr . '"';
         if (is_array($select)) {
-            $op .= " data-data='" . json_encode($select, JSON_UNESCAPED_UNICODE) . "'";
+            $op .= ' data-data="' . json_encode($select, JSON_UNESCAPED_UNICODE) . '"';
         }
         if (is_object($select)) {
-            $op .= " data-data='" . json_encode((array)$select, JSON_UNESCAPED_UNICODE) . "'";
+            $op .= ' data-data="' . json_encode((array)$select, JSON_UNESCAPED_UNICODE) .'"';
         }
         $str = '<div class="layui-form-item layui-form" lay-filter="' . $name . '">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
                 <div class="layui-input-block">
-                  <div ' . self::addextend($options) . '  id="' . $name . '"' . $op . '" lay-filter="selectN" ' . self::addClass($options) . '" name="' . $name . '" '   . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
+                  <div ' . self::addextend($options) . '  id="' . $name . '"' . $op . ' lay-filter="selectN" ' . self::addClass($options) . '" name="' . $name . '" '   . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
                   </div>
                   ' . self::tips($options) . '
                 </div>
