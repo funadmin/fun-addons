@@ -347,7 +347,7 @@ class FormHelper
         $str = '<div class="layui-form-item layui-form" lay-filter="' . $name . '">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
                 <div class="layui-input-block">
-                  <div ' . self::addextend($options) . '  id="' . $name . '"' . $op . ' lay-filter="selectN" ' . self::addClass($options) . '" name="' . $name . '" '   . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
+                  <div ' . self::addextend($options) . '  id="' . $name . '"' . $op . ' lay-filter="selectN" ' . self::addClass($options) . ' name="' . $name . '" '   . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
                   </div>
                   ' . self::tips($options) . '
                 </div>
@@ -365,10 +365,12 @@ class FormHelper
     public static function selectplus($name = '', $select= [], $options=[], $attr=[], $value='')
     {
         $options['url']  = $options['url'] ?? '';
+        $id = $options['id'] ?? $name;
         $label = $options['label'] ?? $name;
         $options['delimiter'] =   $options['delimiter'] ?? '';
         $options['fielddelimiter'] =   $options['fielddelimiter'] ?? '';
-        $options['multiple'] = isset($options['multiple']) ? 'multiple="multiple"' : '';
+        $multiple = isset($options['multiple']) ? 'multiple="multiple"' : '';
+        $options['multiple'] = $multiple?1:'';
         if ($attr) {
             $attr = is_array($attr) ? implode(',', $attr) : $attr;
         }
@@ -376,17 +378,17 @@ class FormHelper
         foreach ($options as $key => $val) {
             $op .= ' data-'.$key.'="'.$val.'" ';
         }
-        $op =  '" data-value="' . $value . '" data-attr="' . $attr . '" ';
+        $op .=  ' data-value="' . $value . '" data-attr="' . $attr . '" ';
         if (is_array($select)) {
             $op .= " data-data='" . json_encode($select, JSON_UNESCAPED_UNICODE) . "'";
         }
         if (is_object($select)) {
-            $op .= " data-data='" . json_encode((array)$select, JSON_UNESCAPED_UNICODE) . "'";
+            $op .= ' data-data="' . json_encode((array)$select, JSON_UNESCAPED_UNICODE) . '"';
         }
         $str = '<div class="layui-form-item">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
                 <div class="layui-input-block">
-                  <div ' . self::addextend($options) . '  id="' . $name . '" ' . $op . '" lay-filter="selectPlus" ' . self::addClass($options) . '" name="' . $name . '" ' . $multiple . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
+                  <div id="' . $id . '"  ' . self::addextend($options) .  $op . ' lay-filter="selectPlus" ' . self::addClass($options) . ' name="' . $name . '" ' . $multiple . ' ' . self::search($options) . ' ' . self::readonlyOrdisabled($options) . ' >
                   
                   </div>
                   ' . self::tips($options) . '
@@ -780,7 +782,7 @@ class FormHelper
         foreach ($op as $key => $val) {
             $data_value .= ' data-'.$key.'="'.$val.'" ';
         }
-        $op = "data-value='" . json_encode($op, true) . "'";
+        $op = " data-value='" . json_encode($op, true) . "'";
         $select_container = '';
         if ((isset($options['select']) and $options['select']) || !isset($options['select'])) {
             $options['select'] = $options['select'] ?? 'upload-select'; //可选upload-choose
@@ -934,7 +936,7 @@ class FormHelper
         return '';
     }
     //自定义class属性
-    protected static function addClass($options=[])
+    protected static function addClass(array $options=[])
     {
         if (isset($options['class']) and $options['class']) {
             $classArr = is_array($options['class']) ? $options['class'] : explode(',', $options['class']);
@@ -942,14 +944,14 @@ class FormHelper
         }
         return '';
     }
-    protected static function addstyle($options=[])
+    protected static function addstyle(array $options=[])
     {
         if (isset($options['style']) and $options['style']) {
             return ' style="' . $options['style'] . '" ';
         }
         return ' ';
     }
-    protected static function addextend($options=[])
+    protected static function addextend(array $options=[])
     {
         if (isset($options['extend']) and $options['extend']) {
             return ' ' . $options['extend'].' ';
