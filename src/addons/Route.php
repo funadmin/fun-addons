@@ -35,7 +35,6 @@ class Route
         if (is_file($app->addons->getAddonsPath() . 'provider.php')) {
             $app->bind(include $app->addons->getAddonsPath() . 'provider.php');
         }
-        $module =  $module == Config::get('app.default_app')?$module:Config::get('app.default_app');
         $module_path  = $app->addons->getAddonsPath() . $addon . DS .$module.DS;
         //注册路由配置
         $addonsRouteConfig = [];
