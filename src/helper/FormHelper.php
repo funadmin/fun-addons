@@ -936,7 +936,7 @@ class FormHelper
         return '';
     }
     //自定义class属性
-    protected static function addClass(array $options=[])
+    protected static function addClass($options=[])
     {
         if (isset($options['class']) and $options['class']) {
             $classArr = is_array($options['class']) ? $options['class'] : explode(',', $options['class']);
@@ -944,14 +944,14 @@ class FormHelper
         }
         return '';
     }
-    protected static function addstyle(array $options=[])
+    protected static function addstyle( $options=[])
     {
         if (isset($options['style']) and $options['style']) {
             return ' style="' . $options['style'] . '" ';
         }
         return ' ';
     }
-    protected static function addextend(array $options=[])
+    protected static function addextend($options=[])
     {
         if (isset($options['extend']) and $options['extend']) {
             return ' ' . $options['extend'].' ';
