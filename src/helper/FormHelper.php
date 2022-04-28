@@ -768,12 +768,12 @@ class FormHelper
         }
         $op = [
             'path' => $options['path'] ?? 'upload',
-            'mime' => $options['mime'] ?? '',
+            'mime' => $options['mime'] ?? '*',
             'num' => $options['num'] ?? '',
             'type' => $options['type'] ?? '',
             'size' => $options['size'] ?? '',
-            'exts' =>  $options['exts'] ?? '',
-            'accept' =>  $options['accept'] ?? '',
+            'exts' =>  $options['exts'] ?? '*',
+            'accept' =>  $options['accept'] ?? 'file',
             'multiple' =>  $options['multiple'] ?? '',
             'selecturl' =>  $options['selecturl'] ?? '',
             'tableurl' =>  $options['tableurl'] ?? '',
