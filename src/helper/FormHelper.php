@@ -704,7 +704,7 @@ class FormHelper
             $height = $options['height'] ?? '300';
             $mark =  $options['mark'] ?? '1';
             $area = $options['area'] ?? '900px';
-            $cops = ['path' => $options['path'], 'width' => $width, 'height' => $height, 'mark' => $mark, 'area' => $area];
+            $cops = ['name'=>$name,'path' => $options['path'], 'width' => $width, 'height' => $height, 'mark' => $mark, 'area' => $area];
             $crpperops = 'data-value="' . json_encode($cops, true) . '"';
             $data_value = '';
             foreach ($cops as $key => $val) {
@@ -767,6 +767,7 @@ class FormHelper
             $value = implode(',', $values);
         }
         $op = [
+            'name' => $name,
             'path' => $options['path'] ?? 'upload',
             'mime' => $options['mime'] ?? '*',
             'num' => $options['num'] ?? '',
