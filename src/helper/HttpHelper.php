@@ -25,7 +25,7 @@ class HttpHelper
      */
     public static function post($url, $params = [], $header = [], $options = [], $cookies = [])
     {
-        $req = self::sendRequest($url, $params, 'POST', $header = [], $options, $cookies);
+        $req = self::sendRequest($url, $params, 'POST', $header, $options, $cookies);
         return $req['ret'] ? $req['msg'] : '';
     }
 
@@ -38,7 +38,7 @@ class HttpHelper
      */
     public static function get($url, $params = [], $header = [], $options = [], $cookies = [])
     {
-        $req = self::sendRequest($url, $params, 'GET', $header = [], $options, $cookies);
+        $req = self::sendRequest($url, $params, 'GET', $header, $options, $cookies);
         return $req['ret'] ? $req['msg'] : '';
     }
 
