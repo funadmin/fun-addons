@@ -5,16 +5,50 @@ namespace fun\helper;
 class TreeHelper
 {
     /**
+     * @param $list
+     * @param $title
+     * @param $pid
+     * @param $parentField
+     * @param $child
+     * @param $pk
+     * @return array
+     */
+    public static function getTree($list,$title = 'title',$pid=0, $parentField = 'pid',  $child = 'children',$pk = 'id') {
+        $tree = array();// 创建Tree
+        if(is_array($list)) {
+            // 创建基于主键的数组引用
+            $refer = array();
+            foreach ($list as $key => $data) {
+                $refer[$data[$pk]] =& $list[$key];
+            }
+            foreach ($list as $key => $data) {
+                $list[$key][$title] = lang($list[$key][$title]);
+                // 判断是否存在parent
+                $parentId = $data[$parentField];
+                if ($pid == $parentId) {
+                    $tree[$data[$pk]] =& $list[$key];
+                }else{
+                    if (isset($refer[$parentId])) {
+                        $parent =& $refer[$parentId];
+                        $parent[$child][] =& $list[$key];
+                    }
+                }
+            }
+        }
+        return $tree;
+    }
+
+    /**
      * @param array $arr
      * @param int $pid
      * @return array
      */
-    public static function getTree($arr,$title='title',$pid=0,$parentField='pid'){
+    public static function listTotree($arr,$title='title',$pid=0,$parentField='pid',$children= "children"){
         $list =array();
         foreach ($arr as $k=>$v){
             if ($v[$parentField] == $pid){
                 $v[$title] = lang($v[$title]);
-                $v['children'] = self::getTree($arr,$title,$v['id'],$parentField);
+                $v[$children] = self::getTree($arr,$title,$v['id'],$parentField);
                 $list[] = $v;
             }
         }
@@ -41,5 +75,4 @@ class TreeHelper
         }
         return $arr;
     }
-
 }
