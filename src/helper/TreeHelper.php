@@ -39,8 +39,11 @@ class TreeHelper
     }
 
     /**
-     * @param array $arr
-     * @param int $pid
+     * @param $arr
+     * @param $title
+     * @param $pid
+     * @param $parentField
+     * @param $children
      * @return array
      */
     public static function listTotree($arr,$title='title',$pid=0,$parentField='pid',$children= "children"){
