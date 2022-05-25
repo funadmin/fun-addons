@@ -787,7 +787,7 @@ class FormHelper
         $select_container = '';
         if ((isset($options['select']) and $options['select']) || !isset($options['select'])) {
             $options['select'] = $options['select'] ?? 'upload-select'; //可选upload-choose
-            $select_container =  '<button id="' . $name . '" type="button" class="layui-btn layui-btn-danger ' . $options['select'] . '" ' .$data_value . $op . '  lay-filter="' . $options['select'] . '"><i class="layui-icon layui-icon-align-center"></i>' . lang('Choose') . '</button>';
+            $select_container =  '<button id="' . $name . '" type="button" class="layui-btn layui-btn-danger ' . $options['select'] . '" ' .$data_value . $op . '  lay-filter="' . $options['select'] . '"><i class="layui-icon layui-icon-radio"></i>' . lang('Choose') . '</button>';
         }
         $str = ' <div class="layui-form-item">
                 <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang(Str::title($label)) . '</label>
