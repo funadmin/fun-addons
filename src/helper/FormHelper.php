@@ -795,7 +795,7 @@ class FormHelper
                     <div class="layui-upload">
                         <input ' . self::addextend($options) . ' ' . self::addstyle($options) . '  value="' . $value . '" style="' . $css . ' ;width:65% " type="text" name="' . $name . '" class="layui-input attach ' . self::addClass($options) . '"' . self::verify($options) . '/>
                        ' . $croper_container . '
-                        <button type="button" ' .$data_value .' style="margin-left:0px" class="layui-btn layui-btn-normal"  ' . $op . ' lay-filter="upload"><i class="layui-icon layui-icon-upload-circle"></i>' . lang('Uploads') . '</button>
+                        <button type="button" ' .$data_value .' style="margin-left:0px" class="layui-btn layui-btn-normal"  ' . $op . ' lay-filter="upload"><i class="layui-icon layui-icon-upload-drag"></i>' . lang('Uploads') . '</button>
                         ' . $select_container . '
                         <div class="layui-upload-list">'
             . $li . '
