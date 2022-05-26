@@ -35,7 +35,7 @@ class Oauth
      * @throws UnauthorizedException
      */
     final function authenticate()
-    {
+    {      
         return $this->certification($this->getClient());
     }
 
@@ -49,7 +49,7 @@ class Oauth
         if(config('api.driver')=='redis'){
             $this->redis = PredisService::instance();
             $AccessToken = $this->redis->get(config('api.redisTokenKey'). $this->appid . $this->tableName.$data['access_token']);
-            $AccessToken = $AccessToken?json_decode($AccessToken,true):[];
+            $AccessToken = unserialize($AccessToken);
         }else{
             $AccessToken = Db::name('oauth2_access_token')
                 ->where('member_id',$data['member_id'])
@@ -57,7 +57,7 @@ class Oauth
                 ->where('group',$this->group)
                 ->where('access_token',$data['access_token'])->order('id desc')->find();
         }
-        if(empty($AccessToken)){
+        if(!$AccessToken){
             $this->error('access_token不存在或过期','',401);
         }
         $client = Db::name('oauth2_client')->find($AccessToken['client_id']);
@@ -75,7 +75,7 @@ class Oauth
      * @throws UnauthorizedException
      */
     public  function getClient()
-    {
+    {   
         //获取头部信息
         $authorization = config('api.authentication')?config('api.authentication'):'authentication';
         $authorizationHeader = Request::header($authorization);
