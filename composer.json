@@ -4,8 +4,8 @@
   "description": "fun-addons是一个基于TP6的插件扩展,适用于FunAmin框架",
   "authors": [
     {
-      "name": "fun",
-      "email": "fun@qq.com"
+      "name": "fun-addons",
+      "email": "994927909@qq.com"
     }
   ],
   "require": {
