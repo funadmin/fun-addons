@@ -160,8 +160,8 @@ class Token
             $accessTokenInfo['access_token'] = $this->buildAccessToken();
             $accessTokenInfo['refresh_token'] = $this->buildAccessToken();
             $this->redis = PredisService::instance();
-            $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],json_encode($accessTokenInfo,JSON_UNESCAPED_UNICODE),$this->expires);
-            $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],json_encode($accessTokenInfo,JSON_UNESCAPED_UNICODE),$this->refreshExpires);
+            $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],serialize($accessTokenInfo),$this->expires);
+            $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],serialize($accessTokenInfo),$this->refreshExpires);
         }else{
             $token =  Db::name('oauth2_access_token')->where('member_id',$memberInfo['member_id'])
                 ->where('tablename',$this->tableName)
