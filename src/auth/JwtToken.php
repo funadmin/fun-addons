@@ -95,8 +95,8 @@ class JwtToken
             $accessTokenInfo['refresh_token'] = $this->buildAccessToken($memberInfo,$this->refreshExpires);
             //可以保存到数据库 也可以去掉下面两句,本身jwt不需要存储
             $this->redis = PredisService::instance();
-            $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],serialize($accessTokenInfo),$this->expires);
-            $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],serialize($accessTokenInfo),$this->refreshExpires);
+            $this->redis->set(Config::get('api.redisTokenKey').$this->appid. $this->tableName .  $accessTokenInfo['access_token'],json_encode($accessTokenInfo,JSON_UNESCAPED_UNICODE),$this->expires);
+            $this->redis->set(Config::get('api.redisRefreshTokenKey') . $this->appid . $this->tableName . $accessTokenInfo['refresh_token'],json_encode($accessTokenInfo,JSON_UNESCAPED_UNICODE),$this->refreshExpires);
         }else{
             $token =  Db::name('oauth2_access_token')->where('member_id',$memberInfo['member_id'])
                 ->where('tablename',$this->tableName)
@@ -126,7 +126,7 @@ class JwtToken
         if(Config::get('api.driver')=='redis'){
             $this->redis = PredisService::instance();
             $refresh_token_info = $this->redis->get(Config::get('api.redisRefreshTokenKey').$this->appid.$this->tableName.$refresh_token);
-            $refresh_token_info = unserialize($refresh_token_info);
+            $refresh_token_info = $refresh_token_info?json_decode($refresh_token_info,true):[];
         }else{
             $refresh_token_info = Db::name('oauth2_access_token')
                 ->where('refresh_token',$refresh_token)
@@ -134,7 +134,7 @@ class JwtToken
                 ->where('group',$this->group)
                 ->order('id desc')->find();
         }
-        if (!$refresh_token_info) {
+        if (empty($refresh_token_info)) {
             $this->error('refresh_token is error or expired', '', 401);
         }
         if ($refresh_token_info['refresh_expires_time'] <time()) {
