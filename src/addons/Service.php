@@ -239,6 +239,7 @@ class Service extends \think\Service
                 if (in_array($childname, ['.', '..', 'public', 'view'])) {
                     continue;
                 }
+
                 if (in_array($childname, ['vendor'])) {
                     $autoload_file = $this->addons_path . $name . DS . $childname.DS.'autoload.php';
                     if (file_exists($autoload_file)){
@@ -251,11 +252,26 @@ class Service extends \think\Service
                             if (in_array($mdir, ['.', '..'])) {
                                 continue;
                             }
+                            //加载配置
                             $commands = [];
                             //配置文件
-                            $addons_config_dir = $this->addons_path . $name . DS . $childname . DS . 'config' . DS;
-                            if (is_dir($addons_config_dir)) {
-                                $files = glob($addons_config_dir . '*.php');
+                            $addon_config_dir = $this->addons_path . $name  . DS . 'config' . DS;
+                            if (is_dir($addon_config_dir)) {
+                                $files = glob($addon_config_dir . '*.php');
+                                foreach ($files as $file) {
+                                    if (file_exists($file)) {
+                                        if (substr($file, -11) == 'console.php') {
+                                            $commands_config = include_once $file;
+                                            isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
+                                            !empty($commands) && $this->commands($commands);
+                                        }
+                                    }
+                                }
+                            }
+                            //配置文件
+                            $module_config_dir = $this->addons_path . $name . DS . $childname . DS . 'config' . DS;
+                            if (is_dir($module_config_dir)) {
+                                $files = glob($module_config_dir . '*.php');
                                 foreach ($files as $file) {
                                     if (file_exists($file)) {
                                         if (substr($file, -11) == 'console.php') {
