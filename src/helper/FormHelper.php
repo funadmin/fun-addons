@@ -671,11 +671,11 @@ class FormHelper
             }
             //百度。quill wangeditor ckeditor
             $str .= '<div ' . self::addextend($options) . '  data-value="' . htmlentities($value) . '" id="' . $id . '" name="' . $name . '" 
-            data-editor="' . $type . '" lay-filter="editor" data-path="' . $path . '" data-height="' . $height . '" type="text/plain" >
+            data-editor="' . $type . '" lay-filter="editor"  lay-editor data-path="' . $path . '" data-height="' . $height . '" type="text/plain" >
           ' .    $textarea   . '  </div>';
         } else {
             //LAYEDIT  Ckeditor
-            $str .= '<textarea ' . self::addextend($options) . '  id="' . $id . '" name="' . $name . '" data-path="' . $path . '" data-editor="' . $type . '" lay-verify="layedit" lay-filter="editor" type="text/plain">' . $value . '</textarea>';
+            $str .= '<textarea ' . self::addextend($options) . '  id="' . $id . '" name="' . $name . '" data-path="' . $path . '" data-editor="' . $type . '" lay-verify="layedit" lay-filter="editor" lay-editor type="text/plain">' . $value . '</textarea>';
         }
         $str .= '</div></div>';
         return $str;
