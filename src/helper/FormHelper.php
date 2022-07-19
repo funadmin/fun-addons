@@ -187,9 +187,7 @@ class FormHelper
      */
     public static function checkbox($name = '', $list = [], $options = [], $value = '')
     {
-        if (empty($value)) {
-            $value = $name;
-        }
+        if (empty($value)) $value = $name;
         if (is_string($value) && strpos($value, "\n") !== false) $value = explode("\n", $value);
         if (is_string($value) && strpos($value, ",") !== false) $value = explode(",", $value);
         if (is_string($value) && strpos($value, "|") !== false) $value = explode("|", $value);
@@ -202,11 +200,8 @@ class FormHelper
             && strpos($value, ",") === false
             && strpos($value, "|") === false
         ) $value = explode(",", $value);
-        $input = '';
-        $skin = '';
-        if (isset($options['skin'])) {
-            $skin = 'lay-skin="' . $options['skin'] . '"';
-        }
+        $input = '';$skin = '';
+        if (isset($options['skin'])) $skin = 'lay-skin="' . $options['skin'] . '"';
         if (is_array($list) and $list) {
             foreach ($list as $k => $v) {
                 if (is_string($v) && strpos($v, ':') !== false) {
