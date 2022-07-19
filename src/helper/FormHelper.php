@@ -548,8 +548,8 @@ class FormHelper
         $str = '<div class="layui-form-item">
                     <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang($label) . '</label>
                     <div class="layui-input-block">
-                        <input ' . self::addstyle($options) . '  class="' . self::addClass($options) . '" type="hidden" name="' . $name . '"  value="' . $value . '"' . self::filter($options) . self::readonlyOrdisabled($options) . '/>
-                        <div ' . self::addextend($options) . '  id="' . $id . '" lay-filter="colorPicker"></div>
+                        <input ' . self::addstyle($options) . '  class="layui-input layui-input-inline' . self::addClass($options) . '" type="text" name="' . $name . '"  value="' . $value . '"' . self::filter($options) . self::readonlyOrdisabled($options) . '/>
+                        <div ' . self::addextend($options) . '  id="' . $id . '" lay-filter="colorPicker" data-name="' . $name . '"></div>
                     </div>
                 </div>';
         return $str;
