@@ -543,13 +543,12 @@ class FormHelper
     public static function color($name = '', $options = [], $value = '')
     {
 
-        $id = $options['id'] ?? $name;
-        $label = $options['label'] ?? $name;
+        $id = $options['id'] ?? $name;$label = $options['label'] ?? $name;$format = $options['format'] ?? 'hex';
         $str = '<div class="layui-form-item">
                     <label class="layui-form-label ' . self::labelRequire($options) . '">' . lang($label) . '</label>
                     <div class="layui-input-block">
                         <input ' . self::addstyle($options) . '  class="layui-input layui-input-inline' . self::addClass($options) . '" type="text" name="' . $name . '"  value="' . $value . '"' . self::filter($options) . self::readonlyOrdisabled($options) . '/>
-                        <div ' . self::addextend($options) . '  id="' . $id . '" lay-filter="colorPicker" data-name="' . $name . '"></div>
+                        <div ' . self::addextend($options) . '  id="' . $id . '" lay-filter="colorPicker" data-name="' . $name . '" data-format = "' . $format . '"   ></div>
                     </div>
                 </div>';
         return $str;
