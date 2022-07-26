@@ -698,7 +698,7 @@ class FormHelper
             $width = $options['width'] ?? '300';
             $height = $options['height'] ?? '300';
             $mark =  $options['mark'] ?? '1';
-            $area = $options['area'] ?? '900px';
+            $area = $options['area'] ?? '800px';
             $cops = ['name'=>$name,'path' => $options['path'], 'width' => $width, 'height' => $height, 'mark' => $mark, 'area' => $area];
             $crpperops = 'data-value="' . json_encode($cops, true) . '"';
             $data_value = '';
