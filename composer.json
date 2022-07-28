@@ -22,7 +22,6 @@
     },
     "files": [
       "src/helper.php",
-      "src/form.php"
     ]
   },
   "extra": {
