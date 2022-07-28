@@ -56,6 +56,114 @@ class FormHelper
     }
 
     /**
+     * @param string $name
+     * @param array $options
+     * @param mixed|null $value
+     * @return string
+     */
+    public function text(string $name,array $options = [], mixed $value = null)
+    {
+        return $this->input( $name,'text',$options, $value);
+    }
+
+    /**
+     * 创建一个密码输入字段
+     *
+     * @param  string  $name
+     * @param  array   $options
+     *
+     * @return string
+     */
+    public function password(string $name, array $options = [])
+    {
+        return $this->input($name, 'password', $options);
+    }
+
+    /**
+     * 创建一个范围输入选择器
+     *
+     * @param  string  $name
+     * @param  null    $value
+     * @param  array   $options
+     *
+     * @return string
+     */
+    public function range($name, $options = [], $value = null)
+    {
+        return $this->input($name,'range', $options,$value);
+    }
+
+    /**
+     * 创建一个隐藏的输入字段
+     *
+     * @param  string  $name
+     * @param  null    $value
+     * @param  array   $options
+     *
+     * @return string
+     */
+    public function hidden($name,  $options = [],$value = null)
+    {
+        return $this->input( $name,'hidden', $options, $value);
+    }
+
+    /**
+     * 创建一个电子邮件输入字段
+     *
+     * @param  string  $name
+     * @param  null    $value
+     * @param  array   $options
+     *
+     * @return string
+     */
+    public function email($name,  $options = [],$value = null)
+    {
+        return $this->input( $name,'email', $options, $value);
+    }
+
+    /**
+     * 创建一个tel输入字段
+     *
+     * @param  string  $name
+     * @param  null    $value
+     * @param  array   $options
+     *
+     * @return string
+     */
+    public function tel($name,  $options = [],$value = null)
+    {
+        return $this->input( $name,'tel', $options, $value);
+    }
+
+    /**
+     * 创建一个数字输入字段
+     *
+     * @param  string  $name
+     * @param  null    $value
+     * @param  array   $options
+     *
+     * @return string
+     */
+    public function number($name,  $options = [],$value = null)
+    {
+        return $this->input( $name,'number', $options, $value);
+    }
+
+    /**
+     * 创建一个url输入字段
+     *
+     * @param  string  $name
+     * @param  null    $value
+     * @param  array   $options
+     *
+     * @return string
+     */
+    public function url($name,  $options = [],$value = null)
+    {
+        return $this->input( $name,'url', $options, $value);
+    }
+
+    /**
      * 评分
      * @param $name
      * @param $options
