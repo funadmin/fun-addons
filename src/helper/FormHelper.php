@@ -61,9 +61,9 @@ class FormHelper
      * @param mixed|null $value
      * @return string
      */
-    public function text(string $name,array $options = [], mixed $value = null)
+    public static function text(string $name,array $options = [], mixed $value = null)
     {
-        return $this->input( $name,'text',$options, $value);
+        return self::input( $name,'text',$options, $value);
     }
 
     /**
@@ -74,9 +74,9 @@ class FormHelper
      *
      * @return string
      */
-    public function password(string $name, array $options = [])
+    public static function password(string $name, array $options = [])
     {
-        return $this->input($name, 'password', $options);
+        return self::input($name, 'password', $options);
     }
 
     /**
@@ -88,9 +88,9 @@ class FormHelper
      *
      * @return string
      */
-    public function range($name, $options = [], $value = null)
+    public static function range($name, $options = [], $value = null)
     {
-        return $this->input($name,'range', $options,$value);
+        return self::input($name,'range', $options,$value);
     }
 
     /**
@@ -102,9 +102,9 @@ class FormHelper
      *
      * @return string
      */
-    public function hidden($name,  $options = [],$value = null)
+    public static function hidden($name,  $options = [],$value = null)
     {
-        return $this->input( $name,'hidden', $options, $value);
+        return self::input( $name,'hidden', $options, $value);
     }
 
     /**
@@ -116,9 +116,9 @@ class FormHelper
      *
      * @return string
      */
-    public function email($name,  $options = [],$value = null)
+    public static function email($name,  $options = [],$value = null)
     {
-        return $this->input( $name,'email', $options, $value);
+        return self::input( $name,'email', $options, $value);
     }
 
     /**
@@ -130,9 +130,9 @@ class FormHelper
      *
      * @return string
      */
-    public function tel($name,  $options = [],$value = null)
+    public static function tel($name,  $options = [],$value = null)
     {
-        return $this->input( $name,'tel', $options, $value);
+        return self::input( $name,'tel', $options, $value);
     }
 
     /**
@@ -144,9 +144,9 @@ class FormHelper
      *
      * @return string
      */
-    public function number($name,  $options = [],$value = null)
+    public static function number($name,  $options = [],$value = null)
     {
-        return $this->input( $name,'number', $options, $value);
+        return self::input( $name,'number', $options, $value);
     }
 
     /**
@@ -158,9 +158,9 @@ class FormHelper
      *
      * @return string
      */
-    public function url($name,  $options = [],$value = null)
+    public static function url($name,  $options = [],$value = null)
     {
-        return $this->input( $name,'url', $options, $value);
+        return self::input( $name,'url', $options, $value);
     }
 
     /**
@@ -603,12 +603,46 @@ class FormHelper
                 </div>';
         return $str;
     }
+
+    /**
+     * 创建动态下拉列表字段
+     * @param $name
+     * @param $options
+     * @param $value
+     * @return string
+     */
+    public static function selectpage($name, $options = [], $value)
+    {
+        $url = $options['url'];
+        $field = $options['field']??'title';
+        $primaryKey = $options['primarykey']??'id';
+        $options = array_merge($options, ['data-source' => $url, 'data-field' => $field, 'data-primarykey' => $primaryKey]);
+        if (isset($options['class'])) {
+            $options['class'][] = 'selectpage';
+        } else {
+            $options['class'] = 'selectpage';
+        }
+        return self::input($name,$options, $value);
+    }
+    public static function selectpages($name, $options = [], $value)
+    {
+        $url = $options['url'];
+        $field = $options['field']??'title';
+        $primaryKey = $options['primarykey']??'id';
+        $options = array_merge($options, ['data-source' => $url, 'data-field' => $field, 'data-primarykey' => $primaryKey]);
+        if (isset($options['class'])) {
+            $options['class'][] = 'selectpage';
+        } else {
+            $options['class'] = 'selectpage';
+        }
+        return self::input($name,$options, $value);
+    }
     /**
      * @param $name
      * @param $value
      * @param array $options
      * @return string
-     * 颜色选择
+     * tag
      */
     public static function tags($name = '', $options = [], $value = '')
     {
