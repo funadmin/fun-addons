@@ -992,6 +992,6 @@ if (!function_exists('form_selectpage')) {
      */
     function form_selectpage($name = 'selectpage', $list = [], $options = [], $value=null)
     {
-        return (new FormHelper())->selectpage($name, $type, $options, $value);
+        return (new FormHelper())->selectpage($name, $list, $options, $value);
     }
 }
