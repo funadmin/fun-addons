@@ -613,7 +613,7 @@ class FormHelper
     {
         $url = $options['url']??'';
         foreach ($options as $key => $value) {
-            $op['extend']['data-'.$key] = $value;
+            $op['extend']['data-'.$key] = is_array($value) ? json_encode($value):$value;
         }
         $op['extend']['lay-filter'] = 'selectPage';
         $op['extend']['data-data'] = empty($lists)?'':json_encode($lists);
@@ -1052,7 +1052,7 @@ class FormHelper
             return '';
         }
     }
-   
+
     protected  function labelRequire($options=[])
     {
 
