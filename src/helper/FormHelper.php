@@ -131,7 +131,7 @@ class FormHelper
      */
     public  function tel($name,  $options = [],$value = null)
     {
-        return $this->input( $name,'tel', $options, $value);
+        return $this->input( $name,'phone', $options, $value);
     }
 
     /**
