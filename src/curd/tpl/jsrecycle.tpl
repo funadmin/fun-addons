@@ -21,6 +21,5 @@ recycle: function () {
                 done: function (res, curr, count) {
                 }
             });
-            let table = $('#'+Table.init.table_elem);
-            Table.api.bindEvent(table);
+            Table.api.bindEvent(Tabe.init);
         },
