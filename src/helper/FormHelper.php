@@ -611,9 +611,10 @@ class FormHelper
      */
     public  function selectpage(string $name,array $lists= [],array $options = [],mixed $value=null)
     {
+
         $url = $options['url']??'';
-        foreach ($options as $key => $value) {
-            $op['extend']['data-'.$key] = is_array($value) ? json_encode($value):$value;
+        foreach ($options as $k => $v) {
+            $op['extend']['data-'.$k] = $v;
         }
         $op['extend']['lay-filter'] = 'selectPage';
         $op['extend']['data-data'] = empty($lists)?'':json_encode($lists);
@@ -1052,7 +1053,7 @@ class FormHelper
             return '';
         }
     }
-
+   
     protected  function labelRequire($options=[])
     {
 
