@@ -677,6 +677,7 @@ class FormHelper
     public  function icon($name = '', $options = [], $value = '')
     {
         $name = $name ? $name : 'icon';
+        $label = $options['label'] ?? $name;
         $value = $value ? $value : 'layui-icon-rate';
         $id = $options['id'] ?? $name;
         $str = '<div class="layui-form-item">' .$this->label($label,$options) . '
