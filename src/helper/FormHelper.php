@@ -75,7 +75,7 @@ class FormHelper
      */
     public  function password(string $name, array $options = [])
     {
-        $options  = array_merge($options,['verify'=>'password']);
+        $options  = array_merge($options,['verify'=>'pass']);
         return $this->input($name, 'password', $options);
     }
 
