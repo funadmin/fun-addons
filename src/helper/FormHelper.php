@@ -842,7 +842,7 @@ class FormHelper
                 $data_value .= ' data-'.$key.'="'.$val.'" ';
             }
             $croper_container = '<button type="button" '. $data_value  . $crpperops . '
-                class="layui-btn"  lay-filter="cropper" id="' .$id .'">'
+                class="layui-btn"  lay-filter="cropper" id="' .$id .'"><i class="layui-icon layui-icon-upload"></i>'
                 . lang('Cropper') .
                 '</button>';
             $options['num'] = 1;
