@@ -77,7 +77,7 @@ class Oauth
     public  function getClient()
     {   
         //获取头部信息
-        $authorization = config('api.authentication')?config('api.authentication'):'authentication';
+        $authorization = config('api.Authorization')?config('api.Authorization'):'Authorization';
         $authorizationHeader = Request::header($authorization);
         if(!$authorizationHeader){
             $this->error('Invalid authorization credentials','',401,'',$authorizationHeader?$authorizationHeader:[]);
