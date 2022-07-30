@@ -90,7 +90,23 @@ class FormHelper
      */
     public  function range($name, $options = [], $value = null)
     {
-        return $this->input($name,'range', $options,$value);
+        $label = $options['label'] ?? $name;
+        $tips = $options['tips'] ?? $label;
+        $placeholder = $options['placeholder'] ?? $tips;
+        $value = !is_null($value) ? 'value="' . $value . '"' : '';
+        $disorread = $this->readonlyOrdisabled($options) ? $this->readonlyOrdisabled($options) : $this->readonlyOrdisabled($options);
+        $disorread  = $disorread ? 'layui-disabled' : '';
+        return ' <div class="layui-form-item">              '.$this->label($label, $options).'
+            <div class="layui-input-block">
+              <div class="layui-input-inline" style="width: 100px;">
+                <input '. $this->verify($options) . $this->filter($options) . $this->readonlyOrdisabled($options) .' type="text" name="'.$name.'_min" placeholder="'.lang($placeholder).'" autocomplete="off"  class="layui-input ' . $this->addClass($options) . ' ' . $disorread . '" ' . $value . '/>
+              </div>
+              <div class="layui-form-mid">-</div>
+              <div class="layui-input-inline" style="width: 100px;">
+                <input '. $this->verify($options) . $this->filter($options) . $this->readonlyOrdisabled($options) .'  type="text" name="'.$name.'_max" placeholder="'.lang($placeholder).'" autocomplete="off"  class="layui-input ' . $this->addClass($options) . ' ' . $disorread . '" ' . $value . '/>
+              </div>
+            </div>
+          </div>';
     }
 
     /**
