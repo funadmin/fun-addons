@@ -75,7 +75,7 @@ class FormHelper
      */
     public  function password(string $name, array $options = [])
     {
-        $options  = array_merge($options,['verify'=>'pass']);
+        $options['verify'] = isset($options['verify'])?$options['verify']:'pass';
         return $this->input($name, 'password', $options);
     }
 
@@ -118,7 +118,7 @@ class FormHelper
      */
     public  function email($name,  $options = [],$value = null)
     {
-        $options  = array_merge($options,['verify'=>'email']);
+        $options['verify'] = isset($options['verify'])?$options['verify']:'email';
         return $this->input( $name,'email', $options, $value);
     }
 
@@ -133,7 +133,7 @@ class FormHelper
      */
     public  function tel($name,  $options = [],$value = null)
     {
-        $options  = array_merge($options,['verify'=>'phone']);
+        $options['verify'] = isset($options['verify'])?$options['verify']:'phone';
         return $this->input( $name,'tel', $options, $value);
     }
 
@@ -148,7 +148,7 @@ class FormHelper
      */
     public  function number($name,  $options = [],$value = null)
     {
-        $options  = array_merge($options,['verify'=>'number']);
+        $options['verify'] = isset($options['verify'])?$options['verify']:'number';
         return $this->input( $name,'number', $options, $value);
     }
 
@@ -163,7 +163,7 @@ class FormHelper
      */
     public  function url($name,  $options = [],$value = null)
     {
-        $options  = array_merge($options,['verify'=>'url']);
+        $options['verify'] = isset($options['verify'])?$options['verify']:'url';
         return $this->input( $name,'url', $options, $value);
     }
 
