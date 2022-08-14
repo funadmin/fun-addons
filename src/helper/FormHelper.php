@@ -845,7 +845,6 @@ class FormHelper
                 class="layui-btn"  lay-filter="cropper" id="' .$id .'"><i class="layui-icon layui-icon-upload"></i>'
                 . lang('Cropper') .
                 '</button>';
-            $options['num'] = 1;
             $options['type'] = 'radio';
             $css .= 'width:53%!important;';
         }
