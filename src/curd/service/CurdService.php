@@ -193,20 +193,6 @@ class CurdService
         if (isset($this->config['method']) and $this->config['method']) {
             $this->method = $this->config['method'];
         }
-        $methodArr = explode(',', $this->method);
-        foreach ($methodArr as $k => $v) {
-            if ($v != 'refresh') {
-                $space = $k==0?'':'                    ';
-                if(!in_array($v,['restore'])) {
-                    $controllerPrefix  = $this->addon?"addons/$this->addon/". ($this->module=='common'?'backend':$this->module) ."/":"";
-                    $space = $k==0?'':'                    ';
-                    $this->requests .=  $space. $v . '_url:' ."'{$controllerPrefix}{$this->controllerUrl}/{$v}'" . ','.PHP_EOL;
-                }
-                if(in_array($v,['recycle','restore','delete'])){
-                    $this->requestsRecycle .= $v . '_url:' ."'{$controllerPrefix}{$this->controllerUrl}/{$v}'" . ','.PHP_EOL.$space;
-                }
-            }
-        }
         $nameSpace = $controllerArr ? '\\' . Str::lower($controllerArr[0]) : "";
         //普通模式
         if (!$this->addon) {
@@ -555,7 +541,9 @@ class CurdService
         $this->getCols();
         $jsTpl = $this->tplPath . 'js.tpl';
         $jsrecycleTpl = '';
+        $toolbar = "'refresh','add','delete','export'";
         if($this->softDelete){
+            $toolbar = "'refresh','add','delete','export','recycle'";
             $jsrecycleTpl = $this->tplPath . 'jsrecycle.tpl';
             $jsrecycleTpl = str_replace(['{{$requestsRecycle}}','{{$jsColsRecycle}}',
                 '{{$limit}}', '{{$page}}'
@@ -564,12 +552,8 @@ class CurdService
                 ],
                 file_get_contents($jsrecycleTpl));
         }
-        $jsTpl = str_replace(['{{$requests}}', '{{$jsCols}}',
-            '{{$limit}}', '{{$page}}','{{$jsrecycleTpl}}'
-        ],
-            [$this->requests, $this->jsCols, $this->limit, $this->page,
-            $jsrecycleTpl,
-        ],
+        $jsTpl = str_replace(['{{$requests}}', '{{$jsCols}}','{{$toolbar}}', '{{$limit}}', '{{$page}}','{{$jsrecycleTpl}}'],
+                            [$this->requests, $this->jsCols,$toolbar, $this->limit, $this->page, $jsrecycleTpl],
             file_get_contents($jsTpl));
         $this->makeFile($this->fileList['jsFileName'], $jsTpl);
     }
@@ -1112,6 +1096,21 @@ class CurdService
         $this->assign = $assign;
         $this->lang = $lang;
         $this->softDelete = $softDelete;
+        $methodArr = explode(',', $this->method);
+        foreach ($methodArr as $k => $v) {
+            if(!$this->softDelete && $v=='recycle') continue;
+            if ($v != 'refresh') {
+                $space = $k==0?'':'                    ';
+                if(!in_array($v,['restore'])) {
+                    $controllerPrefix  = $this->addon?"addons/$this->addon/". ($this->module=='common'?'backend':$this->module) ."/":"";
+                    $space = $k==0?'':'                    ';
+                    $this->requests .=  $space. $v . '_url:' ."'{$controllerPrefix}{$this->controllerUrl}/{$v}'" . ','.PHP_EOL;
+                }
+                if(in_array($v,['recycle','restore','delete'])){
+                    $this->requestsRecycle .= $v . '_url:' ."'{$controllerPrefix}{$this->controllerUrl}/{$v}'" . ','.PHP_EOL.$space;
+                }
+            }
+        }
         return $this;
     }
 
