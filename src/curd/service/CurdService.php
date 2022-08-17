@@ -836,74 +836,76 @@ class CurdService
      */
     protected function getCols()
     {
-        $this->jsCols = "{checkbox: true,},".PHP_EOL."                    {field: 'id', title: __('ID'), sort:true,},".PHP_EOL;
+        $space =  '                    ';
+        $this->jsCols = "{checkbox: true,},".PHP_EOL.$space." {field: 'id', title: __('ID'), sort:true,},".PHP_EOL;
+        $fields =$this->config['fields']? explode(",",$this->config['fields'][0]):[];
         foreach ($this->fieldsList as $k => $v) {
-            if (($this->config['fields'] && in_array($v['name'], $this->config['fields'])) || !$this->config['fields']) {
+            if (($fields && in_array($v['name'], $fields)) || !$fields) {
                 if ($v['COLUMN_KEY'] != "PRI") {
                     $name = Str::studly($v['name']);
                     $listName = lcfirst(Str::studly($v['name']));
                     switch ($v['type']) {
                         case '_id':
                             if($this->joinTable and in_array($v['name'],$this->joinForeignKey)){ //
-                                $this->jsCols .= "                    {field:'{$v['name']}',search: true,title: __('{$name}'),selectList:{$listName}List,sort:true,templet: Table.templet.tags},".PHP_EOL;;
+                                $this->jsCols .= $space."{field:'{$v['name']}',search: true,title: __('{$name}'),selectList:{$listName}List,sort:true,templet: Table.templet.tags},".PHP_EOL;;
                             }else{
-                                $this->jsCols .= "                    {field:'{$v['name']}', title: __('{$name}'),align: 'center',sort:true},".PHP_EOL;
+                                $this->jsCols .= $space."{field:'{$v['name']}', title: __('{$name}'),align: 'center',sort:true},".PHP_EOL;
                             }
                             break;
                         case 'image':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
                             break;
                         case 'images':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.image},".PHP_EOL;;
                             break;
                         case 'file':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.url},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.url},".PHP_EOL;;
                             break;
                         case 'files':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.url},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),templet: Table.templet.url},".PHP_EOL;;
                             break;
                         case 'checkbox':
-                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,templet: Table.templet.tags},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,templet: Table.templet.tags},".PHP_EOL;;
                             break;
                         case 'select':
                         case 'radio':
-                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,templet: Table.templet.select},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',search: 'select',title: __('{$name}'),filter: '{$v['name']}',selectList:{$listName}List,templet: Table.templet.select},".PHP_EOL;;
                             break;
                         case 'switch':
-                            $this->jsCols .= "                    {field:'{$v['name']}',search: 'select',title: __('{$name}'), filter: '{$v['name']}', selectList:{$listName}List,templet: Table.templet.switch},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',search: 'select',title: __('{$name}'), filter: '{$v['name']}', selectList:{$listName}List,templet: Table.templet.switch},".PHP_EOL;;
                             break;
                         case 'number':
                             if ($this->hasSuffix($v['name'], ['sort'])) {
-                                $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',edit:'text'},".PHP_EOL;;
+                                $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),align: 'center',edit:'text'},".PHP_EOL;;
                                 break;
                             }else{
-                                $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center'},".PHP_EOL;;
+                                $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),align: 'center'},".PHP_EOL;;
                                 break;
                             }
                         case 'date':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'yyyy-MM-dd',searchdateformat:'yyyy-MM-dd',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'yyyy-MM-dd',searchdateformat:'yyyy-MM-dd',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
                             break;
                         case 'timestamp':
                         case 'datetime':
                                 if(in_array($v['name'],['update_time','delete_time'])){
                                     break;
                                 }
-                                $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',timeType:'datetime',dateformat:'yyyy-MM-dd HH:mm:ss',searchdateformat:'yyyy-MM-dd HH:mm:ss',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
+                                $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),align: 'center',timeType:'datetime',dateformat:'yyyy-MM-dd HH:mm:ss',searchdateformat:'yyyy-MM-dd HH:mm:ss',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
                             break;
                         case 'year':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'yyyy',searchdateformat:'yyyy',timeType:'year',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'yyyy',searchdateformat:'yyyy',timeType:'year',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
                             break;
                         case 'time':
-                            $this->jsCols .= "                    {field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'HH:mm:ss',searchdateformat:'HH:mm:ss',timeType:'time',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
+                            $this->jsCols .= $space."{field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'HH:mm:ss',searchdateformat:'HH:mm:ss',timeType:'time',search:'time',templet: Table.templet.time,sort:true},".PHP_EOL;;
                             break;
                         default :
-                            $this->jsCols .= "                    {field:'{$v['name']}', title: __('{$name}'),align: 'center'},".PHP_EOL;
+                            $this->jsCols .= $space."{field:'{$v['name']}', title: __('{$name}'),align: 'center'},".PHP_EOL;
                             break;
                     }
                 }
             }
         }
-        $this->jsColsRecycle =$this->jsCols . '                    {
+        $this->jsColsRecycle =$this->jsCols . $space.'{
                         minWidth: 250,
                         align: "center",
                         title: __("Operat"),
@@ -916,7 +918,7 @@ class CurdService
             $this->jsColsRecycle = '';
             $operat = '["edit","delete"]';
         }
-        $this->jsCols .= '                    {
+        $this->jsCols .= $space.'{
                         minWidth: 250,
                         align: "center",
                         title: __("Operat"),
