@@ -68,6 +68,9 @@ class JwtToken
         //数据库已经有一个用户,这里需要根据input('mobile')去数据库查找有没有这个用户
         $memberInfo = $this->getMember(Request::post('username'), Request::post('password'));
         $client = $this->getClient($this->appid,$this->appsecret,'id,group');
+        if(!$client){
+            $this->error('client is not right',[] , 401);
+        }
         //虚拟一个member_id返回给调用方
         try {
             $accessToken = $this->setAccessToken(array_merge($memberInfo, ['client_id' => $client['id'],'appid'=>$this->appid]));
