@@ -6,7 +6,6 @@ namespace fun\addons;
 use fun\helper\FileHelper;
 use think\App;
 use think\Console;
-use think\Db;
 use think\Exception;
 use think\facade\View;
 use think\facade\Request;
@@ -50,15 +49,20 @@ class Service extends \think\Service
         $this->loadApp();
 
     }
-
     public function boot()
     {
+        //注册HttpRun事件监听,触发后注册全局中间件到开始位置
+        $this->app->event->listen('HttpRun', function () {
+            $this->app->middleware->add(MultiAddons::class);
+        });
         $this->registerRoutes(function (Route $route) {
+
             // 路由脚本
             $execute = '\\fun\\addons\\Route::execute';
             // 注册控制器路由
             $route->rule("addons/:addon/[:module]/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
+
             // 自定义路由
             $routes = (array)Config::get('addons.route', []);
             if (Config::get('addons.autoload', true)) {
@@ -120,7 +124,9 @@ class Service extends \think\Service
                     }
                 }
             }
+
         });
+
     }
 
     private function loadLang()
@@ -232,6 +238,13 @@ class Service extends \think\Service
     private function loadApp()
     {
         $results = scandir($this->addons_path);
+        // 注册插件公共中间件
+        if (is_file($this->app->addons->getAddonsPath() . 'middleware.php')) {
+            $this->app->middleware->import(include $this->app->addons->getAddonsPath() . 'middleware.php', 'route');
+        }
+        if (is_file($this->app->addons->getAddonsPath() . 'provider.php')) {
+            $this->app->bind(include $this->app->addons->getAddonsPath() . 'provider.php');
+        }
         foreach ($results as $name) {
             if (in_array($name, ['.', '..'])) continue;
             if (!is_dir($this->addons_path . $name)) continue;
@@ -239,7 +252,6 @@ class Service extends \think\Service
                 if (in_array($childname, ['.', '..', 'public', 'view'])) {
                     continue;
                 }
-
                 if (in_array($childname, ['vendor'])) {
                     $autoload_file = $this->addons_path . $name . DS . $childname.DS.'autoload.php';
                     if (file_exists($autoload_file)){
