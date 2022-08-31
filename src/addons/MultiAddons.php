@@ -132,83 +132,74 @@ class MultiAddons
     protected function loadApp()
     {
         if($this->appName){
-            $results = scandir($this->addonsPath.$this->moduleName);
+            if (is_file($this->addonsPath . 'middleware.php')) {
+                $this->app->middleware->import(include $this->addonsPath . 'middleware.php', 'route');
+            }
+            if (is_file($this->addonsPath . 'common.php')) {
+                include_once  $this->addonsPath . 'common.php';
+            }
+            if (is_file($this->addonsPath . 'provider.php')) {
+                $this->app->bind(include $this->addonsPath . 'provider.php');
+            }
+            //事件
+            if (is_file($this->addonsPath. 'event.php')) {
+                $this->app->loadEvent(include $this->addonsPath . 'event.php');
+            }
+            $modulePath = $this->addonsPath.$this->moduleName.DS;
+            $results = scandir($modulePath);
             foreach ($results as $childname){
                 if (in_array($childname, ['.', '..','public','view'])) {
                     continue;
                 }
-                if (is_file($this->addonsPath . 'middleware.php')) {
-                    $this->app->middleware->import(include $this->addonsPath . 'middleware.php', 'route');
+                if (is_file($modulePath . 'middleware.php')) {
+                    $this->app->middleware->import(include $modulePath . 'middleware.php', 'app');
                 }
-                if (is_file($this->addonsPath . 'common.php')) {
-                    include_once  $this->addonsPath . 'common.php';
+                if (is_file($modulePath . 'common.php')) {
+                    include_once  $modulePath . 'common.php';
                 }
-                if (is_file($this->addonsPath . 'provider.php')) {
-                    $this->app->bind(include $this->addonsPath . 'provider.php');
+                if (is_file($modulePath . 'provider.php')) {
+                    $this->app->bind(include $modulePath. 'provider.php');
                 }
                 //事件
-                if (is_file($this->addonsPath. 'event.php')) {
-                    $this->app->loadEvent(include $this->addonsPath . 'event.php');
+                if (is_file($modulePath. 'event.php')) {
+                    $this->app->loadEvent(include $modulePath . 'event.php');
                 }
-                $this->moduleName_dir = $this->addonsPath.$this->moduleName.DS.$childname;
-                if(is_dir($this->moduleName_dir)){
-                    foreach (scandir($this->moduleName_dir) as $mdir) {
-                        if (in_array($mdir, ['.', '..'])) {
-                            continue;
-                        }
-                        if (is_file($this->addonsPath .$this->moduleName .DS. 'middleware.php')) {
-                            $this->app->middleware->import(include $this->addonsPath .$this->moduleName .DS . 'middleware.php', 'app');
-                        }
-                        if (is_file( $this->addonsPath .$this->moduleName . DS . 'common.php')) {
-                            include_once  $this->addonsPath .$this->moduleName . DS. 'common.php';
-                        }
-                        if (is_file($this->addonsPath .$this->moduleName . DS. 'provider.php')) {
-                            $this->app->bind(include $this->addonsPath .$this->moduleName . DS. 'provider.php');
-                        }
-                        //事件
-                        if (is_file($this->addonsPath .$this->moduleName . DS. 'event.php')) {
-                            $this->app->loadEvent(include $this->addonsPath .$this->moduleName . DS. 'event.php');
-                        }
-                        $commands = [];
-                        //配置文件
-                        $addons_config_dir = $this->addonsPath .$this->moduleName . DS . 'config' . DS;
-                        if (is_dir($addons_config_dir)) {
-                            $files = [];
-                            $files = array_merge($files, glob($addons_config_dir . '*' .$this->app->getConfigExt()));
-                            if($files){
-                                foreach ($files as $file) {
-                                    if (file_exists($file)) {
-                                        if(substr($file,-11) =='console.php'){
-                                            $commands_config = include_once $file;
-                                            isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
-                                            !empty($commands) &&
-                                            \think\Console::starting(function (\think\Console $console) {$console->addCommands($commands);});
-                                        }else{
-                                            $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        //语言文件
-                        $addons_lang_dir = $this->addonsPath .$childname  .DS . 'lang' . DS;
-                        if (is_dir($addons_lang_dir)) {
-                            $files = glob($addons_lang_dir .$this->app->lang->defaultLangSet() . '.php');
-                            foreach ($files as $file) {
-                                if (file_exists($file)) {
-                                    Lang::load([$file]);
+
+                $commands = [];
+                //配置文件
+                $addons_config_dir = $modulePath . 'config' . DS;
+                if (is_dir($addons_config_dir)) {
+                    $files = [];
+                    $files = array_merge($files, glob($addons_config_dir . '*' .$this->app->getConfigExt()));
+                    if($files){
+                        foreach ($files as $file) {
+                            if (file_exists($file)) {
+                                if(substr($file,-11) =='console.php'){
+                                    $commands_config = include_once $file;
+                                    isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
+                                    !empty($commands) &&
+                                    \think\Console::starting(function (\think\Console $console) {$console->addCommands($commands);});
+                                }else{
+                                    $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
                                 }
                             }
                         }
                     }
-
+                }
+                //语言文件
+                $addons_lang_dir = $modulePath  . 'lang' . DS;
+                if (is_dir($addons_lang_dir)) {
+                    $files = glob($addons_lang_dir .$this->app->lang->defaultLangSet() . '.php');
+                    foreach ($files as $file) {
+                        if (file_exists($file)) {
+                            Lang::load([$file]);
+                        }
+                    }
                 }
             }
         }
         return true;
 
     }
-
-
 
 }
