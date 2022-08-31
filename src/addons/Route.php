@@ -111,18 +111,19 @@ class Route
                 continue;
             }
 //            if (is_file(self::$addons_path . 'middleware.php')) {
+//
 //                self::$app->middleware->import(include self::$addons_path . 'middleware.php', 'route');
 //            }
             if (is_file(self::$addons_path . 'common.php')) {
                 include_once  self::$addons_path . 'common.php';
             }
-            if (is_file(self::$addons_path . 'provider.php')) {
-                self::$app->bind(include self::$addons_path . 'provider.php');
-            }
-            //事件
-            if (is_file(self::$addons_path. 'event.php')) {
-                self::$app->loadEvent(include self::$addons_path . 'event.php');
-            }
+//            if (is_file(self::$addons_path . 'provider.php')) {
+//                self::$app->bind(include self::$addons_path . 'provider.php');
+//            }
+//            //事件
+//            if (is_file(self::$addons_path. 'event.php')) {
+//                self::$app->loadEvent(include self::$addons_path . 'event.php');
+//            }
             $module_dir = self::$addons_path.$module.DS.$childname;
             if(is_dir($module_dir)){
                 foreach (scandir($module_dir) as $mdir) {
@@ -135,13 +136,13 @@ class Route
                     if (is_file( self::$addons_path .$module . DS . 'common.php')) {
                         include_once  self::$addons_path .$module . DS. 'common.php';
                     }
-                    if (is_file(self::$addons_path .$module . DS. 'provider.php')) {
-                        self::$app->bind(include self::$addons_path .$module . DS. 'provider.php');
-                    }
-                    //事件
-                    if (is_file(self::$addons_path .$module . DS. 'event.php')) {
-                        self::$app->loadEvent(include self::$addons_path .$module . DS. 'event.php');
-                    }
+//                    if (is_file(self::$addons_path .$module . DS. 'provider.php')) {
+//                        self::$app->bind(include self::$addons_path .$module . DS. 'provider.php');
+//                    }
+//                    //事件
+//                    if (is_file(self::$addons_path .$module . DS. 'event.php')) {
+//                        self::$app->loadEvent(include self::$addons_path .$module . DS. 'event.php');
+//                    }
                     $commands = [];
                     //配置文件
                     $addons_config_dir = self::$addons_path .$module . DS . 'config' . DS;
