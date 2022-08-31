@@ -52,42 +52,71 @@ class Service extends \think\Service
     public function boot()
     {
         //注册HttpRun事件监听,触发后注册全局中间件到开始位置
-        $this->app->event->listen('HttpRun', function () {
-            $this->app->middleware->add(MultiAddons::class);
-        });
+//        $this->app->event->listen('HttpRun', function () {
+//            $this->app->middleware->add(MultiAddons::class);
+//        });
         $this->registerRoutes(function (Route $route) {
-
             // 路由脚本
             $execute = '\\fun\\addons\\Route::execute';
             // 注册控制器路由
             $route->rule("addons/:addon/[:module]/[:controller]/[:action]", $execute)
                 ->middleware(Addons::class);
-
             // 自定义路由
+
             $routes = (array)Config::get('addons.route', []);
+
             if (Config::get('addons.autoload', true)) {
                 foreach ($routes as $key => $val) {
                     if (!$val) continue;
                     if (is_array($val)) {
                         if (isset($val['rule']) && isset($val['domain'])) {
                             $domain = $val['domain'];
+                            $addoninfo = get_addons_info($val['addons']);
                             $rules = [];
-                            foreach ($val['rule'] as $k => $rule) {
-                                $rule = rtrim($rule, '/');
-                                list($addon, $module, $controller, $action) = explode('/', $rule);
-                                $rules[$k] = [
-                                    'module' => $module,
-                                    'addon' => $addon,
-                                    'controller' => $controller,
-                                    'action' => $action,
-                                    'indomain' => 1,
-                                ];
+                            $is_app = 0;
+                            if(isset($addoninfo['app']) && $addoninfo['app']==1){
+                                $is_app = 1;
                             }
+                            if($is_app){
+                                foreach ($val['rule'] as $k => $rule) {
+                                    $rule = rtrim($rule, '/');
+                                    list($addon, $controller, $action) = explode('/', $rule);
+                                    $rules[$k] = [
+                                        'module' => '',
+                                        'addon' => $addon,
+                                        'controller' => $controller,
+                                        'action' => $action,
+                                        'indomain' => 1,
+                                    ];
+                                }
+                            }else{
+                                $rules = [];
+                                foreach ($val['rule'] as $k => $rule) {
+                                    $rule = rtrim($rule, '/');
+                                    list($addon, $module, $controller, $action) = explode('/', $rule);
+                                    $rules[$k] = [
+                                        'module' => $module,
+                                        'addon' => $addon,
+                                        'controller' => $controller,
+                                        'action' => $action,
+                                        'indomain' => 1,
+                                    ];
+                                }
+                            }
+                            $execute = $is_app ? "\\fun\\addons\\Route::execute":"";
                             if($domain){
-                                if (!$rules) $rules = [
-                                    '/' => ['module' => 'frontend','addon' => $val['addons'],'controller' => 'index', 'action' => 'index',
-                                    ],
-                                ];
+                                if (!$rules && !$is_app){
+                                    $rules = [
+                                        '/' => ['module' => 'frontend','addon' => $val['addons'],'controller' => 'index', 'action' => 'index',
+                                        ],
+                                    ];
+                                }
+                                if (!$rules && $is_app){
+                                    $rules = [
+                                        '/' => ['module' => '','addon' => $val['addons'],'controller' => 'index', 'action' => 'index',
+                                        ],
+                                    ];
+                                }
                                 //多个域名
                                 foreach (explode(',',$domain) as $item) {
                                     $route->domain($item, function () use ($rules, $route, $execute) {
