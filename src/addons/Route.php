@@ -29,12 +29,6 @@ class Route
         $request = $app->request;
         self::$app = $app;
         // 注册插件公共中间件
-        if (is_file($app->addons->getAddonsPath() . 'middleware.php')) {
-            $app->middleware->import(include $app->addons->getAddonsPath() . 'middleware.php', 'route');
-        }
-        if (is_file($app->addons->getAddonsPath() . 'provider.php')) {
-            $app->bind(include $app->addons->getAddonsPath() . 'provider.php');
-        }
         $module_path  = $app->addons->getAddonsPath() . $addon . DS .$module.DS;
         //注册路由配置
         $addonsRouteConfig = [];
@@ -116,9 +110,9 @@ class Route
             if (in_array($childname, ['.', '..','public','view'])) {
                 continue;
             }
-            if (is_file(self::$addons_path . 'middleware.php')) {
-                self::$app->middleware->import(include self::$addons_path . 'middleware.php', 'app');
-            }
+//            if (is_file(self::$addons_path . 'middleware.php')) {
+//                self::$app->middleware->import(include self::$addons_path . 'middleware.php', 'route');
+//            }
             if (is_file(self::$addons_path . 'common.php')) {
                 include_once  self::$addons_path . 'common.php';
             }
@@ -135,9 +129,9 @@ class Route
                     if (in_array($mdir, ['.', '..'])) {
                         continue;
                     }
-                    if (is_file(self::$addons_path .$module .DS. 'middleware.php')) {
-                        self::$app->middleware->import(include self::$addons_path .$module .DS . 'middleware.php', 'app');
-                    }
+//                    if (is_file(self::$addons_path .$module .DS. 'middleware.php')) {
+//                        self::$app->middleware->import(include self::$addons_path .$module .DS . 'middleware.php', 'route');
+//                    }
                     if (is_file( self::$addons_path .$module . DS . 'common.php')) {
                         include_once  self::$addons_path .$module . DS. 'common.php';
                     }
