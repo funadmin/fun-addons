@@ -8,6 +8,7 @@ use Closure;
 use think\App;
 use think\exception\HttpException;
 use think\facade\Cache;
+use think\facade\Config;
 use think\facade\Lang;
 use think\Request;
 use think\Response;
@@ -20,7 +21,11 @@ class MultiAddons
 
     /** @var App */
     protected $app;
-    
+
+    protected $domain;
+
+    protected $subdomain;
+
     protected $addonsPath;
 
     /**
@@ -56,6 +61,8 @@ class MultiAddons
         $this->app  = $app;
 //        //网址路径(不包含域名，包含后缀名)
         $this->uri = $this->app->request->pathinfo();
+        $this->subDomain = $this->app->request->subDomain();
+        $this->domain    = $this->app->request->host(true);
 //      //根据路径获取模块和插件名称
         $uri = explode('/',$this->uri);
         if(count($uri)==4 && $uri[0] =='addons'){
@@ -64,6 +71,39 @@ class MultiAddons
             $this->moduleName  = $uri[2];
             $this->controller = $uri[3];
             $this->action = $uri[4]??'index';
+        }else{
+            $route = Config::get('addons.route');
+            $this->uri =  $this->uri?:"/";
+            if($route){
+                foreach ($route as $key => $value){
+                    $domain =array_filter( explode(',',$value['domain']));
+                    if($domain && in_array($this->subDomain,$domain) &&  $value['rule']){
+                        $rewrite  = $value['rule'];
+                        $rewrite_val = array_values($rewrite);
+                        $rewrite_key = array_keys($rewrite);
+                        $key = false;
+                        foreach ($rewrite_key as $i=>$v) {
+                            if($v==$this->uri){
+                                $key = $i;
+                                break;
+                            }
+                            $v= explode('/',$v);
+                            if($this->uri == $v[0]){
+                                $key = $i;
+                                break;
+                            }
+                        }
+                        if($key!==false){
+                            $uri = explode('/',$rewrite_val[$key]);
+                            $this->appName = $value['addons'];
+                            $this->addonsPath = $this->app->getRootPath().'addons'.DS.$this->appName.DS;
+                            $this->moduleName  = $uri[1];
+                            $this->controller = $uri[2];
+                            $this->action = $uri[3]??'index';
+                        }
+                    }
+                }
+            }
         }
     }
 
