@@ -14,7 +14,7 @@ use think\Request;
 use think\Response;
 
 /**
- * 多应用模式支持
+ * 插件模式中间件支持
  */
 class MultiAddons
 {
