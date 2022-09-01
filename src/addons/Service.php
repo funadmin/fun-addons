@@ -353,6 +353,7 @@ class Service extends \think\Service
             // 找到插件入口文件
             if (strtolower($info['filename']) === 'plugin') {
                 // 读取出所有公共方法
+                if(!class_exists("\\addons\\" . $name . "\\" . $info['filename'])) continue;
                 $methods = (array)get_class_methods("\\addons\\" . $name . "\\" . $info['filename']);
                 $ini= $info['dirname'] .DS. 'Plugin.ini';
                 if (!is_file($ini)) {
