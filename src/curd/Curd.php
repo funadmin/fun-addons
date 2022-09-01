@@ -68,6 +68,7 @@ class Curd extends Command
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, '强制覆盖或删除', 0)
             ->addOption('delete', 'd', Option::VALUE_OPTIONAL, '删除', 0)
             ->addOption('jump', '', Option::VALUE_OPTIONAL, '跳过重复文件', 1)
+            ->addOption('isapp', '', Option::VALUE_OPTIONAL, '是否是APP插件', 1)
             ->setDescription('Curd Command');
     }
 
@@ -107,6 +108,7 @@ class Curd extends Command
         $param['delete'] = $input->getOption('delete');
         $param['menu'] = $input->getOption('menu');
         $param['jump'] = $input->getOption('jump');
+        $param['isapp'] = $input->getOption('isapp');
         if (empty($param['table'])) {
             $output->info("主表不能为空");
             return false;
