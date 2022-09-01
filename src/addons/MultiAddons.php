@@ -108,7 +108,7 @@ class MultiAddons
     }
 
     /**
-     * 多应用解析
+     * 多应用配置加载
      * @access public
      * @param Request $request
      * @param Closure $next
@@ -132,6 +132,11 @@ class MultiAddons
     protected function loadApp()
     {
         if($this->appName){
+            //是app应用则不需要加载这些配置
+            $addoninfo = get_addons_info($this->appName);
+            if(isset($addoninfo['app']) && $addoninfo['app']==1){
+                return true;
+            }
             if (is_file($this->addonsPath . 'middleware.php')) {
                 $this->app->middleware->import(include $this->addonsPath . 'middleware.php', 'route');
             }
