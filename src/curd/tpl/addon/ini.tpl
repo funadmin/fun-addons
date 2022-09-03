@@ -10,4 +10,4 @@ website =
 thumb =
 url = {{$url}}
 publish_time = {{$time}}
-is_app  = {{$isapp}}
+app  = {{$isapp}}
