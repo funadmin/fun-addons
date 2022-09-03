@@ -443,6 +443,46 @@ class Service extends \think\Service
     }
 
     /**
+     * 获取忽略的目录
+     * @return string[]
+     */
+    public static function getAppIgnoreDir(){
+        return [
+            'Plugin.php',
+            'Plugin.ini',
+            'plugin.js',
+            'Plugin.js',
+            'config.php',
+            'install.sql',
+            'uninstall.sql',
+            'public',
+            'vendor',
+            'frontend',
+            'backend',
+        ];
+    }
+
+    /**
+     * @param $name
+     * @return array
+     */
+    public static function getAppDir($name){
+
+        $addonDir = self::getAddonsNamePath($name);
+        $list = [];
+        $addons_dir = scandir($addonDir);
+        foreach ($addons_dir as $name) {
+            if (in_array($name, ['.', '..'])) {
+                continue;
+            }
+            if(!in_array($name,self::getAppIgnoreDir())){
+                $list[] = $name;
+            }
+        }
+        return $list;
+    }
+
+    /**
      * 获取检测的全局文件夹目录
      * @return  array
      */
