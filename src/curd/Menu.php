@@ -47,6 +47,7 @@ class Menu extends Command
         $this->setName('menu')
             ->addOption('controller', 'c', Option::VALUE_OPTIONAL, '控制器名', null)
             ->addOption('addon', 'a', Option::VALUE_OPTIONAL, '插件名', null)
+            ->addOption('app', '', Option::VALUE_OPTIONAL, 'app', null)
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, '强制覆盖或删除', 0)
             ->addOption('delete', 'd', Option::VALUE_OPTIONAL, '删除', 0)
             ->setDescription('Menu Command');
@@ -57,6 +58,7 @@ class Menu extends Command
         $param = [];
         $param['controller'] = $input->getOption('controller');
         $param['addon'] = $input->getOption('addon');
+        $param['app'] = $input->getOption('app');
         $param['force'] = $input->getOption('force');//强制覆盖或删除
         $param['delete'] = $input->getOption('delete');
         $this->config = $param;
@@ -77,7 +79,9 @@ class Menu extends Command
         $nameSpace = $controllerArr ? '\\' . Str::lower($controllerArr[0]) : "";
         if (!$param['addon']) {
             $class = 'app\\backend\\controller' . $nameSpace . '\\' . $this->controllerName;
-        } else {
+        } elseif($param['app']) {
+            $class = 'app\\' . $this->addon . '\\controller' . $nameSpace . '\\' . $this->controllerName;
+        }else{
             $class = 'addons\\' . $this->addon . '\\backend\\controller' . $nameSpace . '\\' . $this->controllerName;
         }
         try {
