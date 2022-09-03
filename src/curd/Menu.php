@@ -47,7 +47,7 @@ class Menu extends Command
         $this->setName('menu')
             ->addOption('controller', 'c', Option::VALUE_OPTIONAL, '控制器名', null)
             ->addOption('addon', 'a', Option::VALUE_OPTIONAL, '插件名', null)
-            ->addOption('app', '', Option::VALUE_OPTIONAL, 'app', null)
+            ->addOption('app', '', Option::VALUE_OPTIONAL, 'app', 0)
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, '强制覆盖或删除', 0)
             ->addOption('delete', 'd', Option::VALUE_OPTIONAL, '删除', 0)
             ->setDescription('Menu Command');
