@@ -68,7 +68,7 @@ class Curd extends Command
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, '强制覆盖或删除', 0)
             ->addOption('delete', 'd', Option::VALUE_OPTIONAL, '删除', 0)
             ->addOption('jump', '', Option::VALUE_OPTIONAL, '跳过重复文件', 1)
-            ->addOption('app', '', Option::VALUE_OPTIONAL, '是否是APP插件', 1)
+            ->addOption('app', '', Option::VALUE_OPTIONAL, '是否是APP插件', 0)
             ->setDescription('Curd Command');
     }
 
