@@ -54,6 +54,7 @@ class CurdService
      */
     protected $database = 'funadmin';
     protected $driver = 'mysql';
+    protected $isapp = false;
     protected $force = false;
     protected $jump = true;//跳过文件
     protected $rootPath;
@@ -151,6 +152,7 @@ class CurdService
         $this->nodeType = $this->addon?'addons_url':'__u';
         $this->module = $this->config['module'] ?: 'backend';
         $this->force = $this->config['force'];
+        $this->isapp = $this->config['app'];
         $this->jump = $this->config['jump'];
         $this->limit = $this->config['limit'] ?:15;
         $this->page = (empty($this->config['page']) || $this->config['page']=='true')? "true" : 'false';
