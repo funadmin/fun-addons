@@ -106,9 +106,9 @@ class Route
     private static function loadApp($addon = null,$module=null)
     {
         //无效
-        if (is_file(self::$addons_path . 'middleware.php')) {
-            self::$app->middleware->import(include self::$addons_path . 'middleware.php');
-        }
+//        if (is_file(self::$addons_path . 'middleware.php')) {
+//            self::$app->middleware->import(include self::$addons_path . 'middleware.php');
+//        }
         if (is_file(self::$addons_path . 'common.php')) {
             include_once  self::$addons_path . 'common.php';
         }
@@ -126,9 +126,9 @@ class Route
                 continue;
             }
             //无效
-            if (is_file($modulePath. 'middleware.php')) {
-                self::$app->middleware->import(include $modulePath. 'middleware.php', 'route');
-            }
+//            if (is_file($modulePath. 'middleware.php')) {
+//                self::$app->middleware->import(include $modulePath. 'middleware.php', 'route');
+//            }
             if (is_file( $modulePath . 'common.php')) {
                 include_once  $modulePath . 'common.php';
             }
