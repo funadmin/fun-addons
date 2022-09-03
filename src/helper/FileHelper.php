@@ -53,7 +53,7 @@ class FileHelper
      * @param $dest
      * 复制文件到指定文件
      */
-    public static function copyDir($source, $dest)
+    public static function copyDir($source, $dest,$delete=false)
     {
         if (!is_dir($dest)) {
             self::mkdirs($dest, 0755, true);
@@ -71,6 +71,7 @@ class FileHelper
                 }
             } else {
                 @copy($item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName());
+                if($delete) unlink($item);
             }
         }
         return true;
