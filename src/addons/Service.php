@@ -483,6 +483,41 @@ class Service extends \think\Service
     }
 
     /**
+     * @param $name
+     * @return void
+     */
+    public static function copyApp($name){
+        foreach (Service::getAppDir($name) as $k => $dir) {
+            $sourcedir =  Service::getAddonsNamePath($name) .$dir;
+            if (is_dir($sourcedir)) {
+                FileHelper::copyDir($sourcedir, app()->getBasePath().$name.DIRECTORY_SEPARATOR.$dir);
+            }elseif(is_file($sourcedir)){
+                @copy($sourcedir,app()->getBasePath().$name.DIRECTORY_SEPARATOR.$dir);
+
+            }
+        }
+    }
+    /**
+     * @param $name
+     * @return void
+     */
+    public static function removeApp($name){
+        $appDir = app()->getBasePath().$name;
+        if(is_dir($appDir)){
+            $addonPath =  Service::getAddonsNamePath($name);
+            foreach (scandir($appDir) as $dir){
+                $sourcedir = $appDir.DIRECTORY_SEPARATOR.$dir;
+                if(in_array($dir,['.','..'])) continue;
+                if (is_dir($sourcedir)) {
+                    FileHelper::copyDir($sourcedir, $addonPath.$dir,true);
+                }elseif(is_file($sourcedir)){
+                    @copy($sourcedir,$addonPath.$dir);
+                    @unlink($sourcedir);
+                }
+            }
+        }
+    }
+    /**
      * 获取检测的全局文件夹目录
      * @return  array
      */
