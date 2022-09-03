@@ -13,114 +13,250 @@
 
 namespace fun\curd;
 
-use fun\curd\service\CurdService;
+use app\backend\model\AuthRule;
+use app\common\annotation\ControllerAnnotation;
+use app\common\annotation\NodeAnnotation;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
-use think\facade\Cache;
-use think\facade\Db;
+use think\helper\Str;
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationRegistry;
+use Doctrine\Common\Annotations\FileCacheReader;
 
 /**
- * Class Curd
+ * Class Menu
  * @package app\backend\command
  * 功能待完善
  */
-class Curd extends Command
+class Menu extends Command
 {
+    protected $addon;
+    protected $config;
+    protected $method;
+    protected $force;
+    protected $delete;
+    protected $childMethod;
+    protected $controllerName;
+    protected $controllerArr;
+    protected $tableComment;
+
     protected function configure()
     {
-        $this->setName('curd')
-            ->addOption('driver', '', Option::VALUE_OPTIONAL, '数据库', 'mysql')
-            ->addOption('table', 't', Option::VALUE_REQUIRED, '表名', null)
+        $this->setName('menu')
             ->addOption('controller', 'c', Option::VALUE_OPTIONAL, '控制器名', null)
-            ->addOption('model', 'm', Option::VALUE_OPTIONAL, '模型名', null)
-            ->addOption('fields', 'i', Option::VALUE_OPTIONAL|Option::VALUE_IS_ARRAY, '显示字段', null)
-            ->addOption('validate', 'l', Option::VALUE_OPTIONAL, '验证器', null)
-            ->addOption('joinTable', 'j', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '关联表名', null)
-            ->addOption('joinModel', 'o', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '关联模型', null)
-            ->addOption('joinName', 'e', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '关联模型名字', null)
-            ->addOption('joinMethod', 'w', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '关系表方式 hasone or belongsto等', null)
-            ->addOption('joinPrimaryKey', 'p', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '关联主键', null)
-            ->addOption('joinForeignKey', 'k', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '关联外键', null)
-            ->addOption('joinFields', 's', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '关联表显示字段', null)
-            ->addOption('selectFields', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '关联表下拉显示字段', null)
-            ->addOption('imageSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '图片后缀', null)
-            ->addOption('fileSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '文件后缀', null)
-            ->addOption('timeSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '时间后缀', null)
-            ->addOption('switchSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '开关后缀', null)
-            ->addOption('radioSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '单选后缀', null)
-            ->addOption('checkboxSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '多选后缀', null)
-            ->addOption('citySuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '城市后缀', null)
-            ->addOption('iconSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '图标后缀', null)
-            ->addOption('jsonSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, 'json后缀', null)
-            ->addOption('selectSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '下拉选择后缀', null)
-            ->addOption('selectsSuffix', '', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '下拉多选后缀', null)
-            ->addOption('sortField', '', Option::VALUE_OPTIONAL, '排序字段', null)
-            ->addOption('statusField', '', Option::VALUE_OPTIONAL, '状态字段', null)
-            ->addOption('ignoreFields', 'g', Option::VALUE_OPTIONAL | Option::VALUE_IS_ARRAY, '忽略的字段', null)
-            ->addOption('method', '', Option::VALUE_OPTIONAL, '方法', null)
-            ->addOption('page', '', Option::VALUE_OPTIONAL, '是否页', null)
-            ->addOption('limit', '', Option::VALUE_OPTIONAL , '分页大小', null)
-            ->addOption('module', 'b', Option::VALUE_OPTIONAL, '模块', 'backend')
-            ->addOption('addon', 'a', Option::VALUE_OPTIONAL, '插件名', '')
-            ->addOption('menu', 'u', Option::VALUE_OPTIONAL, '菜单', 0)
+            ->addOption('addon', 'a', Option::VALUE_OPTIONAL, '插件名', null)
+            ->addOption('isapp', 'p', Option::VALUE_OPTIONAL, 'app', null)
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, '强制覆盖或删除', 0)
             ->addOption('delete', 'd', Option::VALUE_OPTIONAL, '删除', 0)
-            ->addOption('jump', '', Option::VALUE_OPTIONAL, '跳过重复文件', 1)
-            ->addOption('isapp', '', Option::VALUE_OPTIONAL, '是否是APP插件', 1)
-            ->setDescription('Curd Command');
+            ->setDescription('Menu Command');
     }
 
     protected function execute(Input $input, Output $output)
     {
         $param = [];
-        $param['driver'] = $input->getOption('driver');
-        $param['table'] = $input->getOption('table');
         $param['controller'] = $input->getOption('controller');
-        $param['page'] = $input->getOption('page');
-        $param['limit'] = $input->getOption('limit');
-        $param['model'] = $input->getOption('model');
-        $param['validate']  = $input->getOption('validate');
-        $param['method']  = $input->getOption('method');
-        $param['module']  = $input->getOption('module');        //前后台模块
-        $param['addon'] = $input->getOption('addon');        //区块 。插件名字
-        $param['fields'] = $input->getOption('fields');//自定义显示字段
-        $param['checkboxSuffix'] = $input->getOption('checkboxSuffix');
-        $param['radioSuffix'] = $input->getOption('radioSuffix');
-        $param['imageSuffix'] = $input->getOption('imageSuffix');
-        $param['fileSuffix'] = $input->getOption('fileSuffix');
-        $param['timeSuffix'] = $input->getOption('timeSuffix');
-        $param['iconSuffix'] = $input->getOption('iconSuffix');
-        $param['switchSuffix'] = $input->getOption('switchSuffix');
         $param['addon'] = $input->getOption('addon');
-        $param['selectsSuffix'] = $input->getOption('selectsSuffix');
-        $param['sortField'] = $input->getOption('sortField');
-        $param['ignoreFields'] = $input->getOption('ignoreFields');
-        $param['joinTable'] = $input->getOption('joinTable');
-        $param['joinName'] = $input->getOption('joinName');
-        $param['joinModel'] = $input->getOption('joinModel');
-        $param['joinMethod'] = $input->getOption('joinMethod');
-        $param['joinForeignKey'] = $input->getOption('joinForeignKey');
-        $param['joinPrimaryKey'] = $input->getOption('joinPrimaryKey');
-        $param['selectFields'] = $input->getOption('selectFields');
+        $param['isapp'] = $input->getOption('isapp');
         $param['force'] = $input->getOption('force');//强制覆盖或删除
         $param['delete'] = $input->getOption('delete');
-        $param['menu'] = $input->getOption('menu');
-        $param['jump'] = $input->getOption('jump');
-        $param['isapp'] = $input->getOption('isapp');
-        if (empty($param['table'])) {
-            $output->info("主表不能为空");
+        $this->config = $param;
+        $this->addon = $param['addon'];
+        $this->force = $param['force'];
+        $this->delete = $param['delete'];
+        if (empty($param['controller'])) {
+            $output->info("控制器不能为空");
             return false;
         }
-        $curdService = new CurdService($param);
+        $controllerArr = explode('/', $param['controller']);
+        foreach ($controllerArr as $k => &$v) {
+            $v = ucfirst(Str::studly($v));
+        }
+        unset($v);
+        $this->controllerName = array_pop($controllerArr);
+        $this->controllerArr = $controllerArr;
+        $nameSpace = $controllerArr ? '\\' . Str::lower($controllerArr[0]) : "";
+        if (!$param['addon']) {
+            $class = 'app\\backend\\controller' . $nameSpace . '\\' . $this->controllerName;
+        } elseif($param['isapp']) {
+            $class = 'app\\' . $this->addon . '\\controller' . $nameSpace . '\\' . $this->controllerName;
+        }else{
+            $class = 'addons\\' . $this->addon . '\\backend\\controller' . $nameSpace . '\\' . $this->controllerName;
+        }
         try {
-            $curdService->maker();
-            $output->info('make success');
-        }catch (\Exception $e){
-            $output->writeln('----------------');
+            if (class_exists($class)) {
+                // 获取类和方法的注释信息
+                $commMethod = ['enlang', '__construct'];
+                AnnotationRegistry::registerLoader('class_exists');
+                $reflectionClass = new \ReflectionClass($class);
+                $reader = new FileCacheReader(new AnnotationReader(), runtime_path() . 'menu', true);
+                $controllerAnnotation = $reader->getClassAnnotation($reflectionClass, ControllerAnnotation::class);
+                $controllerTitle = !empty($controllerAnnotation) && !empty($controllerAnnotation->title) ? $controllerAnnotation->title : null;
+                $this->tableComment = $controllerTitle;
+                $menuList = [];
+                $methods = $reflectionClass->getMethods();
+                foreach ($methods as $m) {
+                    $doc = $m->getDocComment();
+                    $title = $this->getTitle($doc);
+                    if (in_array($m->getName(), $commMethod) || !$title) continue;
+                    if ($this->addon) {
+                        $menuList[] = [
+                            'href' => 'addons/' . $this->addon . '/backend/' . lcfirst($this->controllerName . '/' . $m->getName()),
+                            'title' => trim($title),
+                            'status' => 1,
+                            'menu_status' => 0,
+                            'icon' => 'layui-icon layui-icon-app'
+                        ];
+                    } else {
+                        $menuList[] = [
+                            'href' => ($this->controllerArr ? strtolower($this->controllerArr[0]) . '.' . lcfirst($this->controllerName) : lcfirst($this->controllerName)) . '/' . $m->getName(),
+                            'title' => trim($title),
+                            'status' => 1,
+                            'menu_status' => 0,
+                            'icon' => 'layui-icon layui-icon-app'
+                        ];
+                    }
+                }
+                $this->method = $menuList;
+                if (!$param['delete']) {
+                    $type = 1;
+                    $this->makeMenu($type);
+                } elseif ($param['force'] and $param['delete']) {
+                    $type = 2;
+                    $this->makeMenu($type);
+                }
+            } else {
+                $output->error('class is not exist');
+                return false;
+            }
+        } catch (\Exception $e) {
             $output->error($e->getMessage());
-            $output->writeln('----------------');
+        }
+        $output->info('make success');
+    }
+
+    /**
+     * 生成菜单
+     * @param int $type
+     */
+    protected function makeMenu(int $type = 1)
+    {
+        $title = $this->addon ? 'addons/' . $this->addon . ucfirst($this->controllerName) : ($this->controllerArr ? strtolower($this->controllerArr[0]) . ucfirst($this->controllerName) : lcfirst($this->controllerName));
+        $title = $this->tableComment ?? $title;
+        $childMenu = [
+            'href' => $this->addon ? 'addons/' . $this->addon . '/backend/' . lcfirst($this->controllerName) : ($this->controllerArr ? strtolower($this->controllerArr[0]) . '.' . lcfirst($this->controllerName) : lcfirst($this->controllerName)),
+            'title' => $title,
+            'status' => 1,
+            'menu_status' => 1,
+            'type' => 1,
+            'icon' => 'layui-icon layui-icon-app',
+            'menulist' => [
+            ]
+        ];
+        $menu = [
+            'is_nav' => 1,//1导航栏；0 非导航栏
+            'menu' => [ //菜单;
+                'href' => $this->addon ? $this->addon : $this->controllerName,
+                'title' => $this->addon ? $this->addon : $this->controllerName,
+                'status' => 1,
+                'auth_verify' => 1,
+                'type' => 1,
+                'menu_status' => 1,
+                'icon' => 'layui-icon layui-icon-app',
+                'menulist' => [
+                    $childMenu
+                ]
+            ]
+        ];
+        $plugins = $this->addon ? get_addons_instance($this->addon) : '';
+        if ($plugins) {
+            $menu = $plugins->menu;
+        }
+        foreach ($this->method as $k => $v) {
+            $menuList[] = [
+                'href' => $v['href'],
+                'title' => $v['title'],
+                'status' => 1,
+                'menu_status' => 0,
+                'icon' => 'layui-icon layui-icon-app'
+            ];
+            $childMethod[] = $v['href'];
+        }
+        $parentMethod = $this->addon ? 'addons/' . $this->addon . '/backend/' . lcfirst($this->controllerName) : ($this->controllerArr ? strtolower($this->controllerArr[0]) . '.' . lcfirst($this->controllerName) : lcfirst($this->controllerName));
+        $this->childMethod = array_merge($childMethod, [$parentMethod]);
+        if ($plugins) {
+            $childMenu['menulist'] = $menuList;
+            array_push($menu['menu']['menulist'], $childMenu);
+            $menu['menu']['menulist'] = array_unique($menu['menu']['menulist'], SORT_REGULAR);//去重
+        } else {
+            $menu['menu']['menulist'][0]['menulist'] = $menuList;
+        }
+        $menuListArr[] = $menu['menu'];
+        if (!$this->delete) {
+            $this->operateMenu($menuListArr, 1);
+        } elseif ($this->config['force'] and $this->config['delete']) {
+            $this->operateMenu($menuListArr, 2);
         }
     }
+
+    protected function operateMenu($menuListArr, $type = 1)
+    {
+        $module = $this->addon ? 'addon' : 'backend';
+        foreach ($menuListArr as $k => $v) {
+            $v['pid'] = 0;
+            $v['href'] = trim($v['href'], '/');
+            $v['module'] = $module;
+            $menu = AuthRule::withTrashed()->where('href', $v['href'])->where('module', $module)->find();
+            if ($type == 1) {
+                if (!$menu) {
+                    $menu = AuthRule::create($v);
+                } elseif ($menu->deletetime == 0) {
+                    $menu->restore();
+                }
+            } else {
+                $child = AuthRule::withTrashed()->where('href', 'not in', $this->childMethod)
+                    ->where('pid', $menu['id'])->where('module', $module)->find();
+                if (!$child) {
+                    $menu && $menu->delete();
+                }
+            }
+            foreach ($v['menulist'] as $kk => $vv) {
+                $menu2 = AuthRule::withTrashed()->where('href', $vv['href'])->where('module', $module)->find();
+                if ($type == 1) {
+                    if (!$menu2) {
+                        $vv['pid'] = $menu['id'];
+                        $vv['module'] = $module;
+                        $menu2 = AuthRule::create($vv);
+                    } elseif ($menu2->deletetime == 0) {
+                        $menu2->restore();
+                    }
+                } else {
+                    $menu2 && $menu2->delete();
+                }
+                foreach ($vv['menulist'] as $kkk => $vvv) {
+                    $menu3 = AuthRule::withTrashed()->where('href', $vvv['href'])->where('module', $module)->find();
+                    if ($type == 1) {
+                        if (!$menu3) {
+                            $vvv['pid'] = $menu2['id'];
+                            $vvv['module'] = $module;
+                            $menu3 = AuthRule::create($vvv);
+                        } elseif ($menu3->deletetime == 0) {
+                            $menu3->restore();
+                        }
+                    } else {
+                        $menu3 && $menu3->delete();
+                    }
+                }
+            }
+        }
+    }
+
+    function getTitle($doc)
+    {
+        $tmp = array();
+        preg_match_all('/@NodeAnnotation.*?title="(.*?)"\)[\r\n|\n]/', $doc, $tmp);
+        return trim($tmp[1][0] ?? "");
+    }
+
 }
