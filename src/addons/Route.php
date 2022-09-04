@@ -29,6 +29,7 @@ class Route
         $request = $app->request;
         self::$app = $app;
         // 注册插件公共中间件
+        $app->http->name('addon');
         $module_path  = $app->addons->getAddonsPath() . $addon . DS .$module.DS;
         //注册路由配置
         $addonsRouteConfig = [];
