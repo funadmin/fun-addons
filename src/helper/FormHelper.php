@@ -393,7 +393,7 @@ class FormHelper
                 </button>
             </div></div>';;
             } else {
-                $arr .= '<div class="layui-form-item">' .'<label class="layui-form-label ' . $this->labelRequire($options) . '"></label>' . '<div class="layui-input-inline">
+                $arr .= '<div class="layui-form-item"><label class="layui-form-label ' . $this->labelRequire($options) . '"></label><div class="layui-input-inline">
                 <input '. $this->verify($options) . ' type="text"  name="' . $name . '[key][]" value="' . $key . '"  placeholder="' . lang('key') . '" autocomplete="off" class="layui-input input-double-width">
                 </div><div class="layui-input-inline">
                 <input '. $this->verify($options) . ' type="text"  name="' . $name . '[value][]" value="' . $value . '" placeholder="' . lang('value') . '" autocomplete="off" class="layui-input input-double-width">
