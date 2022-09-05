@@ -52,9 +52,9 @@ class Service extends \think\Service
     public function boot()
     {
         //注册HttpRun事件监听,触发后注册全局中间件到开始位置
-//        $this->app->event->listen('HttpRun', function () {
-//            $this->app->middleware->add(MultiAddons::class);
-//        });
+        $this->app->event->listen('HttpRun', function () {
+            $this->app->middleware->add(MultiAddons::class);
+        });
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
             $execute = '\\fun\\addons\\Route::execute';
