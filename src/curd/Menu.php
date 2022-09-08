@@ -82,8 +82,12 @@ class Menu extends Command
         if (!$this->app) {
             $class = 'app\\backend\\controller' . $nameSpace . '\\' . $this->controllerName;
         }else{
-
             $class = 'app\\' . $this->app . '\\controller' . $nameSpace . '\\' . $this->controllerName;
+        }
+        if($this->addon){
+            $classFile = root_path().'addons'. DS.$this->addon.DS.$class.'.php';
+            $classFile = str_replace('\\',DS ,$classFile);
+            if(file_exists($classFile)) include_once $classFile;//插件类需要加载进来
         }
         try {
             if (class_exists($class)) {
