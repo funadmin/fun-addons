@@ -1,5 +1,7 @@
 
 ## 安装
+v5.0 及以上版本适用于funadmin3.0
+v5.0 以下适用于funadmin 2.x 
 > composer require funadmin/fun-addons
 
 ## 配置

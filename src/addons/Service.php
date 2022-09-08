@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace fun\addons;
 
 use fun\helper\FileHelper;
+use think\addons\Url;
 use think\App;
 use think\Console;
 use think\Exception;
@@ -28,132 +29,82 @@ class Service extends \think\Service
 {
     protected $addons_path;
     protected $appName;
-
+    //存放[插件名称]列表数据
+    protected $addons_data=[];
+    //存放[插件ini所有信息]列表数据
+    protected $addons_list_data=[];
+    //模块所有[config.php]里的信息存放
+    protected $addons_data_list_config=[];
     public function register()
     {
-        // 绑定插件容器
-        $this->app->bind('addons', Service::class);
-
+        error_reporting(0);
+        // 无则创建addons目录
         $this->addons_path = $this->getAddonsPath();
-        // 自动载入插件
+        
         $this->autoload();
-        //挂载插件的自定义路由
-        $this->loadRoutes();
-        //加载语言
+        // 加载系统语言包
         $this->loadLang();
-        // 加载插件事件
+        // 2.注册插件事件hook
         $this->loadEvent();
-        // 加载插件系统服务
-        $this->loadService();
-        //加载配置
-        $this->loadApp();
+        // 3.绑定插件容器
+        $this->app->bind('addons', Service::class);
+        // 4.自动加载全局的插件内部第三方类库
+        addons_vendor_autoload($this->addons_list_data?$this->addons_list_data:Cache::get('addons_list_data',[]));
 
     }
     public function boot()
     {
         //注册HttpRun事件监听,触发后注册全局中间件到开始位置
-//        $this->app->event->listen('HttpRun', function () {
-//            $this->app->middleware->add(MultiAddons::class);
-//        });
         $this->registerRoutes(function (Route $route) {
             // 路由脚本
             $execute = '\\fun\\addons\\Route::execute';
-            // 注册控制器路由
-            $route->rule("addons/:addon/[:module]/[:controller]/[:action]", $execute)
-                ->middleware(Addons::class);
-            // 自定义路由
 
-            $routes = (array)Config::get('addons.route', []);
-
-            if (Config::get('addons.autoload', true)) {
-                foreach ($routes as $key => $val) {
-                    if (!$val) continue;
-                    if (is_array($val)) {
-                        if (isset($val['rule']) && isset($val['domain'])) {
-                            $domain = $val['domain'];
-                            $addoninfo = get_addons_info($val['addons']);
-                            $rules = [];
-                            $is_app = 0;
-                            if(isset($addoninfo['app']) && $addoninfo['app']==1){
-                                $is_app = 1;
-                            }
-                            if($is_app){
-                                foreach ($val['rule'] as $k => $rule) {
-                                    $rule = rtrim($rule, '/');
-                                    list($addon, $controller, $action) = explode('/', $rule);
-                                    $rules[$k] = [
-                                        'module' => '',
-                                        'addon' => $addon,
-                                        'controller' => $controller,
-                                        'action' => $action,
-                                        'indomain' => 1,
-                                    ];
-                                }
-                            }else{
-                                $rules = [];
-                                foreach ($val['rule'] as $k => $rule) {
-                                    $rule = rtrim($rule, '/');
-                                    list($addon, $module, $controller, $action) = explode('/', $rule);
-                                    $rules[$k] = [
-                                        'module' => $module,
-                                        'addon' => $addon,
-                                        'controller' => $controller,
-                                        'action' => $action,
-                                        'indomain' => 1,
-                                    ];
-                                }
-                            }
-                            $execute = $is_app ? "\\fun\\addons\\Route::execute":"";
-                            if($domain){
-                                if (!$rules && !$is_app){
-                                    $rules = [
-                                        '/' => ['module' => 'frontend','addon' => $val['addons'],'controller' => 'index', 'action' => 'index',
-                                        ],
-                                    ];
-                                }
-                                if (!$rules && $is_app){
-                                    $rules = [
-                                        '/' => ['module' => '','addon' => $val['addons'],'controller' => 'index', 'action' => 'index',
-                                        ],
-                                    ];
-                                }
-                                //多个域名
-                                foreach (explode(',',$domain) as $item) {
-                                    $route->domain($item, function () use ($rules, $route, $execute) {
-                                        // 动态注册域名的路由规则
-                                        foreach ($rules as $k => $rule) {
-                                            $k = explode('/',trim($k,'/'));
-                                            $k = implode('/',$k);
-                                            $route->rule($k, $execute)
-                                                ->completeMatch(true)
-                                                ->append($rule);
-                                        }
-                                    });
-                                }
-                            }else{
-                                foreach ($rules as $k => $rule) {
-                                    $k = '/'.trim($k,'/');
-                                    $route->rule($k, $execute)
-                                        ->completeMatch(true)
-                                        ->append($rule);
-                                }
-                            }
-                        }
-                    } else {
-                        $val = rtrim($val, '/');
-                        list($addon, $module, $controller, $action) = explode('/', $val);
-                        $route->rule($key, $execute)
-                            ->completeMatch(true)
-                            ->append([
-                                'module' => $module,
-                                'addon' => $addon,
-                                'controller' => $controller,
-                                'action' => $action
-                            ]);
-                    }
-                }
+            // 注册插件公共中间件
+            if (is_file($this->app->addons->getAddonsPath() . 'middleware.php')) {
+                $this->app->middleware->import(include $this->app->addons->getAddonsPath() . 'middleware.php', 'route');
             }
 
+            // 注册控制器路由
+            $route->rule("addons/:addon/[:controller]/[:action]", $execute)->middleware(Addons::class);
+            // 自定义路由
+            $routes = (array) Config::get('addons.route', []);
+            foreach ($routes as $key => $val) {
+                if (!$val) {
+                    continue;
+                }
+                if (is_array($val)) {
+                    $domain = $val['domain'];
+                    $rules = [];
+                    foreach ($val['rule'] as $k => $rule) {
+                        [$addon, $controller, $action] = explode('/', $rule);
+                        $rules[$k] = [
+                            'addons'        => $addon,
+                            'controller'    => $controller,
+                            'action'        => $action,
+                            'indomain'      => 1,
+                        ];
+                    }
+                    $route->domain($domain, function () use ($rules, $route, $execute) {
+                        // 动态注册域名的路由规则
+                        foreach ($rules as $k => $rule) {
+                            $route->rule($k, $execute)
+                                ->name($k)
+                                ->completeMatch(true)
+                                ->append($rule);
+                        }
+                    });
+                } else {
+                    list($addon, $controller, $action) = explode('/', $val);
+                    $route->rule($key, $execute)
+                        ->name($key)
+                        ->completeMatch(true)
+                        ->append([
+                            'addons' => $addon,
+                            'controller' => $controller,
+                            'action' => $action
+                        ]);
+                }
+            }
         });
 
     }
@@ -168,37 +119,6 @@ class Service extends \think\Service
         $this->app->loadLangPack($this->app->lang->defaultLangSet());
     }
 
-    /**
-     *  加载插件自定义路由文件
-     */
-    private function loadRoutes()
-    {
-        //配置
-        $addons_dir = scandir($this->addons_path);
-        foreach ($addons_dir as $name) {
-            if (in_array($name, ['.', '..'])) {
-                continue;
-            }
-            if(!is_dir($this->addons_path . $name)) continue;
-            $module_dir = $this->addons_path . $name . DS;
-            foreach (scandir($module_dir) as $mdir) {
-                if (in_array($mdir, ['.', '..'])) {
-                    continue;
-                }
-                //路由配置文件
-                if(is_file($this->addons_path . $name . DS . $mdir)) continue;
-                $addons_route_dir = $this->addons_path . $name . DS . $mdir . DS . 'route' . DS;
-                if (file_exists($addons_route_dir) && is_dir($addons_route_dir)) {
-                    $files = glob($addons_route_dir . '*.php');
-                    foreach ($files as $file) {
-                        if (file_exists($file)) {
-                            $this->loadRoutesFrom($file);;
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * 插件事件
@@ -229,106 +149,7 @@ class Service extends \think\Service
             }
         }
     }
-
-    /**
-     * 挂载插件服务
-     */
-    private function loadService()
-    {
-        $results = scandir($this->addons_path);
-        $bind = [];
-        foreach ($results as $name) {
-            if (in_array($name, ['.', '..'])) {
-                continue;
-            }
-            if (is_file($this->addons_path . $name)) {
-                continue;
-            }
-            $addonDir = $this->addons_path . $name . DS;
-            if (!is_dir($addonDir)) {
-                continue;
-            }
-            if (!is_file($addonDir . 'Plugin.php')) {
-                continue;
-            }
-            $ini = $addonDir . 'Plugin.ini';
-            if (!is_file($ini)) {
-                continue;
-            }
-            $info = parse_ini_file($ini, true, INI_SCANNER_TYPED) ?: [];
-            $bind = array_merge($bind, $info);
-        }
-        $this->app->bind($bind);
-    }
-
-    /**
-     * 加载配置，路由，语言，中间件等
-     */
-    private function loadApp()
-    {
-        $results = scandir($this->addons_path);
-        // 注册插件公共中间件
-        if (is_file($this->app->addons->getAddonsPath() . 'middleware.php')) {
-            $this->app->middleware->import(include $this->app->addons->getAddonsPath() . 'middleware.php', 'route');
-        }
-        if (is_file($this->app->addons->getAddonsPath() . 'provider.php')) {
-            $this->app->bind(include $this->app->addons->getAddonsPath() . 'provider.php');
-        }
-        foreach ($results as $name) {
-            if (in_array($name, ['.', '..'])) continue;
-            if (!is_dir($this->addons_path . $name)) continue;
-            foreach (scandir($this->addons_path . $name) as $childname) {
-                if (in_array($childname, ['.', '..', 'public', 'view'])) {
-                    continue;
-                }
-                if (in_array($childname, ['vendor'])) {
-                    $autoload_file = $this->addons_path . $name . DS . $childname.DS.'autoload.php';
-                    if (file_exists($autoload_file)){
-                        require_once $autoload_file;
-                    }
-                }else{
-                    $module_dir = $this->addons_path . $name . DS . $childname;
-                    if (is_dir($module_dir)) {
-                        foreach (scandir($module_dir) as $mdir) {
-                            if (in_array($mdir, ['.', '..'])) {
-                                continue;
-                            }
-                            //加载配置
-                            $commands = [];
-                            //配置文件
-                            $addon_config_dir = $this->addons_path . $name  . DS . 'config' . DS;
-                            if (is_dir($addon_config_dir)) {
-                                $files = glob($addon_config_dir . '*.php');
-                                foreach ($files as $file) {
-                                    if (file_exists($file)) {
-                                        if (substr($file, -11) == 'console.php') {
-                                            $commands_config = include_once $file;
-                                            isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
-                                            !empty($commands) && $this->commands($commands);
-                                        }
-                                    }
-                                }
-                            }
-                            //配置文件
-                            $module_config_dir = $this->addons_path . $name . DS . $childname . DS . 'config' . DS;
-                            if (is_dir($module_config_dir)) {
-                                $files = glob($module_config_dir . '*.php');
-                                foreach ($files as $file) {
-                                    if (file_exists($file)) {
-                                        if (substr($file, -11) == 'console.php') {
-                                            $commands_config = include_once $file;
-                                            isset($commands_config['commands']) && $commands = array_merge($commands, $commands_config['commands']);
-                                            !empty($commands) && $this->commands($commands);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    
 
     /**
      * 自动载入钩子插件
@@ -355,13 +176,18 @@ class Service extends \think\Service
                 // 读取出所有公共方法
                 if(!class_exists("\\addons\\" . $name . "\\" . $info['filename'])) continue;
                 $methods = (array)get_class_methods("\\addons\\" . $name . "\\" . $info['filename']);
-                $ini= $info['dirname'] .DS. 'Plugin.ini';
+                $ini= $info['dirname'] .DS. 'plugin.ini';
                 if (!is_file($ini)) {
                     continue;
                 }
                 $addon_config = parse_ini_file($ini, true, INI_SCANNER_TYPED) ?: [];
+
                 if(!$addon_config['status']) continue;
                 if(!$addon_config['install']) continue;
+
+                $this->addons_data[] = $addon_config['name'];
+                $this->addons_data_list[$addon_config['name']] = $addon_config;
+                $this->addons_data_list_config[$addon_config['name']] = include ($this->getAddonsPath().$addon_config['name'].'/config.php');
                 // 跟插件基类方法做比对，得到差异结果
                 $hooks = array_diff($methods, $base);
                 // 循环将钩子方法写入配置中
@@ -379,6 +205,16 @@ class Service extends \think\Service
                 }
             }
         }
+        //缓存
+        //插件配置信息保存到缓存
+        Cache::set('addons_config',$config);
+        //插件列表
+        Cache::set('addons_data', $this->addons_data);
+        //插件ini列表
+        Cache::set('addons_data_list', $this->addons_data_list);
+        //插件config列表
+        Cache::set('addons_data_list_config', $this->addons_data_list_config);
+        
         Config::set($config, 'addons');
     }
 
@@ -419,7 +255,7 @@ class Service extends \think\Service
      */
     public static function getSourceAssetsDir($name)
     {
-        return app()->getRootPath() . 'addons/' . $name . DS . 'public' . DS;
+        return Service::getAddonsNamePath($name) . 'public' . DS;
     }
 
     /**
@@ -429,7 +265,7 @@ class Service extends \think\Service
      */
     public static function getDestAssetsDir($name)
     {
-        $assetsDir = app()->getRootPath() . str_replace("/", DS, "public/static/addons/{$name}");
+        $assetsDir = app()->getRootPath() . str_replace("/", DS, "public/static/{$name}");
         if (!is_dir($assetsDir)) {
             mkdir($assetsDir, 0755, true);
         }
@@ -446,75 +282,65 @@ class Service extends \think\Service
      * 获取忽略的目录
      * @return string[]
      */
-    public static function getAppIgnoreDir(){
+    public static function getAppDir(){
         return [
-            'Plugin.php',
-            'Plugin.ini',
-            'plugin.js',
-            'Plugin.js',
-            'config.php',
-            'install.sql',
-            'uninstall.sql',
-            'public',
-            'vendor',
-            'frontend',
-            'backend',
+            "app"
         ];
     }
-
-    /**
-     * @param $name
-     * @return array
-     */
-    public static function getAppDir($name){
-
-        $addonDir = self::getAddonsNamePath($name);
-        $list = [];
-        $addons_dir = scandir($addonDir);
-        foreach ($addons_dir as $name) {
-            if (in_array($name, ['.', '..'])) {
-                continue;
-            }
-            if(!in_array($name,self::getAppIgnoreDir())){
-                $list[] = $name;
-            }
-        }
-        return $list;
-    }
-
     /**
      * @param $name
      * @return void
      */
-    public static function copyApp($name){
+    public static function copyApp($name,$delete = false){
         foreach (Service::getAppDir($name) as $k => $dir) {
-            $sourcedir =  Service::getAddonsNamePath($name) .$dir;
+            $sourcedir =  Service::getAddonsNamePath($name) .$dir. DS . $name;
             if (is_dir($sourcedir)) {
-                FileHelper::copyDir($sourcedir, app()->getBasePath().$name.DIRECTORY_SEPARATOR.$dir);
-            }elseif(is_file($sourcedir)){
-                @copy($sourcedir,app()->getBasePath().$name.DIRECTORY_SEPARATOR.$dir);
-
+                FileHelper::copyDir($sourcedir, app()->getBasePath().DS.$name,$delete);
+                if($delete) FileHelper::delDir(Service::getAddonsNamePath($name).$dir);
+            }else{
+                @copy($sourcedir, app()->getBasePath() .DS.$dir);
+                if($delete) unlink($sourcedir);
             }
+        }
+        $sourceAssetsDir = Service::getSourceAssetsDir($name);
+        $destAssetsDir = Service::getDestAssetsDir($name);
+        if (is_dir($sourceAssetsDir)) {
+            FileHelper::copyDir($sourceAssetsDir, $destAssetsDir,$delete);
+            if($delete) FileHelper::delDir($sourceAssetsDir);
         }
     }
     /**
      * @param $name
      * @return void
      */
-    public static function removeApp($name){
+    public static function removeApp($name,$delete =false){
         $appDir = app()->getBasePath().$name;
+        $addonPath =  Service::getAddonsNamePath($name);
         if(is_dir($appDir)){
-            $addonPath =  Service::getAddonsNamePath($name);
             foreach (scandir($appDir) as $dir){
                 $sourcedir = $appDir.DIRECTORY_SEPARATOR.$dir;
                 if(in_array($dir,['.','..'])) continue;
                 if (is_dir($sourcedir)) {
-                    FileHelper::copyDir($sourcedir, $addonPath.$dir,true);
-                }elseif(is_file($sourcedir)){
-                    @copy($sourcedir,$addonPath.$dir);
-                    @unlink($sourcedir);
+                    FileHelper::copyDir($sourcedir, $addonPath .'app'. DS. $name . DS .$dir. DS,$delete);
+                    if($delete) FileHelper::delDir($sourcedir);
+                }else{
+                    @copy($sourcedir,$addonPath .'app'.DS .$name . DS .$dir);
+                    if($delete) unlink($sourcedir);
                 }
             }
+            @rmdir($appDir);
+        }
+
+        // 移除插件基础静态资源目录
+        $destAssetsDir = Service::getDestAssetsDir($name);
+        if (is_dir($destAssetsDir)) {
+            FileHelper::copyDir($destAssetsDir,$addonPath.'public'.DS,$delete);
+            if($delete) FileHelper::delDir($destAssetsDir);
+        }
+        //删除文件
+        $list = Service::getGlobalAddonsFiles($name);
+        foreach ($list as $k => $v) {
+            @unlink(app()->getRootPath() . $v);
         }
     }
     /**

@@ -62,13 +62,12 @@ class Curd extends Command
             ->addOption('method', '', Option::VALUE_OPTIONAL, '方法', null)
             ->addOption('page', '', Option::VALUE_OPTIONAL, '是否页', null)
             ->addOption('limit', '', Option::VALUE_OPTIONAL , '分页大小', null)
-            ->addOption('module', 'b', Option::VALUE_OPTIONAL, '模块', 'backend')
             ->addOption('addon', 'a', Option::VALUE_OPTIONAL, '插件名', '')
             ->addOption('menu', 'u', Option::VALUE_OPTIONAL, '菜单', 0)
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, '强制覆盖或删除', 0)
             ->addOption('delete', 'd', Option::VALUE_OPTIONAL, '删除', 0)
             ->addOption('jump', '', Option::VALUE_OPTIONAL, '跳过重复文件', 1)
-            ->addOption('app', '', Option::VALUE_OPTIONAL, '是否是APP插件', 0)
+            ->addOption('app', '', Option::VALUE_OPTIONAL, '是否是APP', 'backend') //暂时无效
             ->setDescription('Curd Command');
     }
 
@@ -83,7 +82,6 @@ class Curd extends Command
         $param['model'] = $input->getOption('model');
         $param['validate']  = $input->getOption('validate');
         $param['method']  = $input->getOption('method');
-        $param['module']  = $input->getOption('module');        //前后台模块
         $param['addon'] = $input->getOption('addon');        //区块 。插件名字
         $param['fields'] = $input->getOption('fields');//自定义显示字段
         $param['checkboxSuffix'] = $input->getOption('checkboxSuffix');

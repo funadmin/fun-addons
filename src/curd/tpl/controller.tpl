@@ -16,6 +16,7 @@ use app\common\annotation\ControllerAnnotation;
 class {{$controllerName}} extends {{$baseController}}
 {
     protected $pageSize = {{$limit}};
+    protected $layout = '{{$layout}}';
     public function __construct(App $app)
     {
         parent::__construct($app);

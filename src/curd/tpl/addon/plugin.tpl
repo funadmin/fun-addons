@@ -12,11 +12,6 @@ class Plugin extends Addons
 
 
     /**
-     * 插件菜单
-     */
-    public $menu={{$menu}};
-
-    /**
      * 插件安装方法
      * @return bool
      */

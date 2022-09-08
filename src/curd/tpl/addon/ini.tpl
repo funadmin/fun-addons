@@ -10,4 +10,5 @@ website =
 thumb =
 url = {{$url}}
 publish_time = {{$time}}
-app  = {{$isapp}}
+app  = {{$app}}
+autoload = 1

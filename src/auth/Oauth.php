@@ -27,6 +27,32 @@ use think\facade\Request;
 class Oauth
 {
     use Send;
+    
+    protected  $options = [];
+
+    protected static $instance = null;
+
+    public function __construct($options = [])
+    {
+        if ($config = Config::get('api')) {
+            $this->config = array_merge($this->config, $config);
+        }
+        $this->options = array_merge($this->config, $options);
+    }
+
+    /**
+     *
+     * @param array $options 参数
+     * @return Auth
+     */
+    public static function instance($options = [])
+    {
+        if (is_null(self::$instance)) {
+            self::$instance = new static($options);
+        }
+
+        return self::$instance;
+    }
 
     /**
      * 认证授权 通过用户信息和路由
@@ -38,8 +64,7 @@ class Oauth
     {      
         return $this->certification($this->getClient());
     }
-
-
+    
     /**
      * 获取用户信息后 验证权限
      * @return mixed
@@ -58,11 +83,11 @@ class Oauth
                 ->where('access_token',$data['access_token'])->order('id desc')->find();
         }
         if(!$AccessToken){
-            $this->error('access_token不存在或过期','',401);
+            $this->error('access_token不存在或过期',[],401);
         }
         $client = Db::name('oauth2_client')->find($AccessToken['client_id']);
         if(!$client || $client['appid'] !== $data['appid']){
-            $this->error('appid错误','',401);//appid与缓存中的appid不匹配
+            $this->error('appid错误',[],401);//appid与缓存中的appid不匹配
         }
         return $data;
     }
@@ -80,22 +105,14 @@ class Oauth
         $authorization = config('api.authentication')?config('api.authentication'):'Authorization';
         $authorizationHeader = Request::header($authorization);
         if(!$authorizationHeader){
-            $this->error('Invalid authorization credentials','',401,'',$authorizationHeader?$authorizationHeader:[]);
+            $this->error('Invalid authorization credentials',[],401,'',$authorizationHeader?$authorizationHeader:[]);
         }
         try {
             //jwt
-            if(config('api.is_jwt')) {
-                $clientInfo = $this->jwtcheck($authorizationHeader);
-                return $clientInfo;
-            }
-            $authorizationArr = explode(" ", $authorizationHeader);//explode分割，获取后面一窜base64加密数据
-            $authorizationInfo  = explode(":", base64_decode($authorizationArr[1]));  //对base_64解密，获取到用:拼接的自字符串，然后分割，可获取appid、accesstoken、member_id这三个参数
-            $clientInfo['appid'] = $authorizationInfo[0];
-            $clientInfo['access_token'] = $authorizationInfo[1];
-            $clientInfo['member_id'] = $authorizationInfo[2];
+            $clientInfo = $this->jwtcheck($authorizationHeader);
             return $clientInfo;
         } catch (\Exception $e) {
-            $this->error($e->getMessage(),$authorizationHeader,401,'',[]);
+            $this->error($e->getMessage(),[],401,'',[]);
         }
     }
 
@@ -149,29 +166,8 @@ class Oauth
         {
             return true;
         }
-
         // 没找到匹配
         return false;
-    }
-
-    /**
-     * 生成签名
-     * _字符开头的变量不参与签名
-     */
-    public  function makeSign ($data = [],$app_secret = '')
-    {
-        unset($data['version']);
-        unset($data['sign']);
-        return $this->buildSign($data,$app_secret);
-    }
-
-    /**
-     * 计算ORDER的MD5签名
-     */
-    private  function buildSign($params = [] , $app_secret = '') {
-        ksort($params);
-        $params['key'] = $app_secret;
-        return strtolower(md5(urldecode(http_build_query($params))));
     }
 
 }

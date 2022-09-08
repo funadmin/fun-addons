@@ -97,6 +97,36 @@ if (!function_exists('get_addons_info')) {
     }
 }
 
+
+if (!function_exists('addons_vendor_autoload')) {
+    /**
+     * 加载插件内部第三方类库
+     * @params mixed $addonsName 插件名称或插件数组
+     */
+    function addons_vendor_autoload($addonsName) {
+        //插件全局类库
+        if (is_array($addonsName)){
+            foreach ($addonsName as $item) {
+                if ((isset($item['autoload']) && $item['autoload']==1) || isset($item['autoload'])){
+                    $autoload_file = root_path() . '/addons/' . $item['name'] . '/vendor/autoload.php';
+                    if (file_exists($autoload_file)){
+                        require_once $autoload_file;
+                    }
+                }
+            }
+        }else{
+            //插件私有类库
+            $Config = get_addons_info($addonsName);
+            if (isset($Config['autoload']) && $Config['autoload']==2){
+                $autoload_file = root_path() . '/addons/' . $addonsName . '/vendor/autoload.php';
+                if (file_exists($autoload_file)){
+                    require_once $autoload_file;
+                }
+            }
+        }
+        return true;
+    }
+}
 /**
  * 设置基础配置信息
  * @param string $name 插件名
@@ -186,7 +216,11 @@ if (!function_exists('get_addons_class')) {
         }
         switch ($type) {
             case 'controller':
-                $namespace = '\\addons\\' . $name . '\\' . $module . '\\controller\\' . $class;
+                if($module){
+                    $namespace = '\\addons\\' . $name . '\\' . $module . '\\controller\\' . $class;
+                }else{
+                    $namespace = '\\addons\\' . $name .  '\\controller\\' . $class;
+                }
                 break;
             default:
                 $namespace = '\\addons\\' . $name . '\\Plugin';
@@ -238,7 +272,7 @@ if (!function_exists('set_addons_config')) {
 if (!function_exists('addons_url')) {
     /**
      * 插件显示内容里生成访问插件的url
-     * @param string $url 地址 格式：插件名/模块/控制器/方法 或者只有方法
+     * @param $url
      * @param array $param
      * @param bool|string $suffix 生成的URL后缀
      * @param bool|string $domain 域名
@@ -247,80 +281,35 @@ if (!function_exists('addons_url')) {
     function addons_url($url = '', $param = [], $suffix = true, $domain = false)
     {
         $request = app('request');
-        if (!is_array($param)) {
-            parse_str($param, $params);
-            $param = $params;}
-        $path = $url;
-        $url = parse_url(Str::studly($url));
-        if (empty($url['path'])) {
+        if (empty($url)) {
             // 生成 url 模板变量
             $addons = $request->addon;
             $controller = $request->controller();
-            $module = explode('.',$controller)[0];
-            $controller = explode('.',$controller)[1];
+            $controller = str_replace('/', '.', $controller);
             $action = $request->action();
         } else {
-          $route = explode('/', trim($url['path'],'/'));
-            $action = array_pop($route);
-            $addons = isset($url['scheme'])? strtolower($url['scheme']) : (count($route) == 3 ? strtolower($route[0]) : $request->addon);
-            $controller = isset($url['host'])?$url['host'] : (array_pop($route) ?: $request->param('controller'));
-            $module = (array_pop($route)) ?: $request->param('module', 'frontend');
-            $module = lcfirst($module);
-            $controller = lcfirst(Str::studly((string)$controller));
+            $url = Str::studly($url);
+            $url = parse_url($url);
+            if (isset($url['scheme'])) {
+                $addons = strtolower($url['scheme']);
+                $controller = $url['host'];
+                $action = trim($url['path'], '/');
+            } else {
+                $route = explode('/', $url['path']);
+                $addons = $request->addon;
+                $action = array_pop($route);
+                $controller = array_pop($route) ?: $request->controller();
+            }
+            $controller = Str::snake((string)$controller);
+
             /* 解析URL带的参数 */
             if (isset($url['query'])) {
                 parse_str($url['query'], $query);
                 $param = array_merge($query, $param);
             }
         }
-        $url['path'] = $addons.'/'.$module.'/'.$controller.'/'.$action;
-        $config = get_addons_config($addons);
-        $domainprefix = $config && isset($config['domain']) && $config['domain']['value'] ? $config['domain']['value'] : '';
-        $domainprefix = $domainprefix?explode(',',$domainprefix)[0]:'';
-        $domain = $domainprefix  && $domain==false && Config::get('route.url_domain_deploy') ? $domainprefix : $domain;
-        $domain = is_bool($domain)?$domain :str_replace(httpType(),'',$domain);
-        $suffix = $config && isset($config['suffix']) && $config['suffix']['value'] ? $config['suffix']['value']:$suffix;
-        $rewrite = $config && isset($config['rewrite']) && $config['rewrite']['value'] ? $config['rewrite']['value'] : [];
-        if($module==='backend'){
-            //后台注册控制器路由
-            return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix);
-        }
-        if ($rewrite) {
-            $rewrite_val = array_values($rewrite);
-            $rewrite_key = array_keys($rewrite);
-            $key = array_search(strtolower($url['path']), array_map('strtolower', $rewrite_val));
-            if ($key!==false) {
-                $path = $rewrite_key[$key];
-                $path = trim($path,'/');
-                array_walk($param, function ($value, $key) use (&$path) {
-                    $path = str_replace("[:$key]", "$value", $path);
-                });
-                $path=  preg_replace("/(\/\[:.*)/",'',$path);
-                if($domain){
-//                     $path=  str_replace($domainprefix,$domain,$path);
-//                     $array = explode("/", $path);
-//                     $path = implode("/", array_slice($array, 1));
-                    //手否完整域名
-                    if (!is_bool($domain) &&  strpos($domain,'.')!==false) {
-                        return httpType() . $domain .'/' . $path;
-                    }
-                    $index = strpos($_SERVER['HTTP_HOST'],'.');
-                    $domain_suffix = substr_count($_SERVER['HTTP_HOST'],'.')>1?substr($_SERVER['HTTP_HOST'],$index+1):$_SERVER['HTTP_HOST'];
-                    if(is_bool($domain)){
-                        $domain = $domainprefix?$domainprefix . '.' . $domain_suffix:$_SERVER['HTTP_HOST'];
-                        return httpType() . $domain . '/' . $path;
-                    }
-                    return httpType() . $domain . '.' . $domain_suffix . '/' . $path;
-                }
-                return Route::buildUrl($path)->suffix($suffix)->domain($domain);
-            }else{
-                return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
-            }
-        } else {
-            // 注册控制器路由
-            return Route::buildUrl("@addons/{$addons}/$module/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
 
-        }
+        return Route::buildUrl("@addons/{$addons}/{$controller}/{$action}", $param)->suffix($suffix)->domain($domain);
     }
 }
 
@@ -359,6 +348,20 @@ if (!function_exists('get_addons_list')) {
             $list = Cache::get('addonslist');
         }
         return $list;
+    }
+}
+/**
+ * 获取插件菜单
+ */
+if (!function_exists('get_addons_menu')) {
+
+    function get_addons_menu($name)
+    {
+        $menu = app()->getRootPath() . 'addons' . DS . $name . DS . 'menu.php';
+        if(file_exists($menu)){
+            return include_once $menu;
+        }
+        return [];
     }
 }
 

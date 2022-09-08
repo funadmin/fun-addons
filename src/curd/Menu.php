@@ -33,6 +33,7 @@ use Doctrine\Common\Annotations\FileCacheReader;
 class Menu extends Command
 {
     protected $addon;
+    protected $app;
     protected $config;
     protected $method;
     protected $force;
@@ -47,7 +48,7 @@ class Menu extends Command
         $this->setName('menu')
             ->addOption('controller', 'c', Option::VALUE_OPTIONAL, '控制器名', null)
             ->addOption('addon', 'a', Option::VALUE_OPTIONAL, '插件名', null)
-            ->addOption('app', '', Option::VALUE_OPTIONAL, 'app', 0)
+            ->addOption('app', '', Option::VALUE_OPTIONAL, 'app', null)
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, '强制覆盖或删除', 0)
             ->addOption('delete', 'd', Option::VALUE_OPTIONAL, '删除', 0)
             ->setDescription('Menu Command');
@@ -63,13 +64,14 @@ class Menu extends Command
         $param['delete'] = $input->getOption('delete');
         $this->config = $param;
         $this->addon = $param['addon'];
+        $this->app = $param['app']?:$this->addon;
         $this->force = $param['force'];
         $this->delete = $param['delete'];
         if (empty($param['controller'])) {
             $output->info("控制器不能为空");
             return false;
         }
-        $controllerArr = explode('/', $param['controller']);
+        $controllerArr = explode('/', str_replace('.','/',$param['controller']));
         foreach ($controllerArr as $k => &$v) {
             $v = ucfirst(Str::studly($v));
         }
@@ -77,12 +79,11 @@ class Menu extends Command
         $this->controllerName = array_pop($controllerArr);
         $this->controllerArr = $controllerArr;
         $nameSpace = $controllerArr ? '\\' . Str::lower($controllerArr[0]) : "";
-        if (!$param['addon']) {
+        if (!$this->app) {
             $class = 'app\\backend\\controller' . $nameSpace . '\\' . $this->controllerName;
-        } elseif($param['app']) {
-            $class = 'app\\' . $this->addon . '\\controller' . $nameSpace . '\\' . $this->controllerName;
         }else{
-            $class = 'addons\\' . $this->addon . '\\backend\\controller' . $nameSpace . '\\' . $this->controllerName;
+
+            $class = 'app\\' . $this->app . '\\controller' . $nameSpace . '\\' . $this->controllerName;
         }
         try {
             if (class_exists($class)) {
@@ -100,9 +101,9 @@ class Menu extends Command
                     $doc = $m->getDocComment();
                     $title = $this->getTitle($doc);
                     if (in_array($m->getName(), $commMethod) || !$title) continue;
-                    if ($this->addon) {
+                    if ($this->app) {
                         $menuList[] = [
-                            'href' => 'addons/' . $this->addon . '/backend/' . lcfirst($this->controllerName . '/' . $m->getName()),
+                            'href' => $this->app . '/' . lcfirst($this->controllerName . '/' . $m->getName()),
                             'title' => trim($title),
                             'status' => 1,
                             'menu_status' => 0,
@@ -142,10 +143,11 @@ class Menu extends Command
      */
     protected function makeMenu(int $type = 1)
     {
-        $title = $this->addon ? 'addons/' . $this->addon . ucfirst($this->controllerName) : ($this->controllerArr ? strtolower($this->controllerArr[0]) . ucfirst($this->controllerName) : lcfirst($this->controllerName));
+        $title = ($this->app)? ucfirst($this->app) . ucfirst($this->controllerName) : ($this->controllerArr ? strtolower($this->controllerArr[0]) . ucfirst($this->controllerName) : lcfirst($this->controllerName));
         $title = $this->tableComment ?? $title;
+        $controller = $this->controllerArr ? strtolower($this->controllerArr[0]) . '.' . lcfirst($this->controllerName) : lcfirst($this->controllerName);
         $childMenu = [
-            'href' => $this->addon ? 'addons/' . $this->addon . '/backend/' . lcfirst($this->controllerName) : ($this->controllerArr ? strtolower($this->controllerArr[0]) . '.' . lcfirst($this->controllerName) : lcfirst($this->controllerName)),
+            'href' => $this->app ? $this->app . '/' . $controller : $controller,
             'title' => $title,
             'status' => 1,
             'menu_status' => 1,
@@ -157,8 +159,8 @@ class Menu extends Command
         $menu = [
             'is_nav' => 1,//1导航栏；0 非导航栏
             'menu' => [ //菜单;
-                'href' => $this->addon ? $this->addon : $this->controllerName,
-                'title' => $this->addon ? $this->addon : $this->controllerName,
+                'href' => $this->app ? $this->app : $this->controllerName,
+                'title' => $this->app ? $this->app : $this->controllerName,
                 'status' => 1,
                 'auth_verify' => 1,
                 'type' => 1,
@@ -169,9 +171,8 @@ class Menu extends Command
                 ]
             ]
         ];
-        $plugins = $this->addon ? get_addons_instance($this->addon) : '';
-        if ($plugins) {
-            $menu = $plugins->menu;
+        if ($this->addon) {
+            $menu = get_addons_menu($this->addon);
         }
         foreach ($this->method as $k => $v) {
             $menuList[] = [
@@ -183,9 +184,9 @@ class Menu extends Command
             ];
             $childMethod[] = $v['href'];
         }
-        $parentMethod = $this->addon ? 'addons/' . $this->addon . '/backend/' . lcfirst($this->controllerName) : ($this->controllerArr ? strtolower($this->controllerArr[0]) . '.' . lcfirst($this->controllerName) : lcfirst($this->controllerName));
+        $parentMethod = $this->app ? $this->app . '/' . $controller : $controller;
         $this->childMethod = array_merge($childMethod, [$parentMethod]);
-        if ($plugins) {
+        if ($this->addon) {
             $childMenu['menulist'] = $menuList;
             array_push($menu['menu']['menulist'], $childMenu);
             $menu['menu']['menulist'] = array_unique($menu['menu']['menulist'], SORT_REGULAR);//去重
@@ -194,15 +195,15 @@ class Menu extends Command
         }
         $menuListArr[] = $menu['menu'];
         if (!$this->delete) {
-            $this->operateMenu($menuListArr, 1);
-        } elseif ($this->config['force'] and $this->config['delete']) {
-            $this->operateMenu($menuListArr, 2);
+            $this->buildMenu($menuListArr, 1);
+        } elseif ($this->config['force'] && $this->config['delete']) {
+            $this->buildMenu($menuListArr, 2);
         }
     }
 
-    protected function operateMenu($menuListArr, $type = 1)
+    protected function buildMenu($menuListArr, $type = 1)
     {
-        $module = $this->addon ? 'addon' : 'backend';
+        $module = $this->app ? $this->app : 'backend';
         foreach ($menuListArr as $k => $v) {
             $v['pid'] = 0;
             $v['href'] = trim($v['href'], '/');

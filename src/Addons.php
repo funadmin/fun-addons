@@ -144,7 +144,7 @@ abstract class Addons
         // 文件属性
         $info = $this->info ?? [];
         // 文件配置
-        $info_file = $this->addon_path . 'Plugin.ini';
+        $info_file = $this->addon_path . 'plugin.ini';
         if (is_file($info_file)) {
             $_info = parse_ini_file($info_file, true, INI_SCANNER_TYPED) ?: [];
             $info = array_merge($info,$_info);

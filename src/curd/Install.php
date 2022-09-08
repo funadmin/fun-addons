@@ -23,12 +23,26 @@ use think\facade\Db;
 
 class Install extends Command
 {
+    //安装文件
     protected $lockFile;
+    //数据库
+    protected $databaseConfigFile;
+    //sql 文件
+    protected $sqlFile = '';
+    //mysql版本
+    protected $mysqlVersion = '5.6';
+    //后台入口文件
+    protected $funadminFile = '';
+    //入口模板
+    protected $backendTpl = '';
+    //database模板
+    protected $databaseTpl = '';
+
     protected function configure()
     {
-        $database = Config::get('database');
-        $default = $database['default'];
-        $config = $database['connections'][$default];
+        $db["database"] = Config::get('database');
+        $default = $db["database"]['default'];
+        $config = $db["database"]['connections'][$default];
         $this->setName('install')
             ->addOption('hostname', 'm', Option::VALUE_OPTIONAL, 'hostname', $config['hostname'])
             ->addOption('hostport', 'r', Option::VALUE_OPTIONAL, 'hostport', $config['hostport'])
@@ -50,6 +64,12 @@ class Install extends Command
     protected function execute(Input $input, Output $output)
     {
 
+        $this->databaseConfigFile = config_path() . "database.php";
+        $this->sqlFile = app()->getBasePath() . "install/funadmin.sql";
+        $this->funadminFile = config_path() . "funadmin.php";
+        $this->lockFile = public_path() . "install.lock";
+        $this->backendTpl = app()->getBasePath()  . "install/view/tpl/backend.tpl";
+        $this->databaseTpl = app()->getBasePath()  . "install/view/tpl/database.tpl";
         $force = $input->getOption('force');
         $this->lockFile = public_path() . "install.lock";
         if (is_file($this->lockFile) && !$force) {
@@ -83,12 +103,12 @@ class Install extends Command
             exit();
         }
         $this->output->info('curl extension is installed');
-
-        if (!extension_loaded('fileinfo')) {
-            $this->output->error('fileinfo extension not install');
-            exit();
-        }
-        $this->output->info('fileinfo extension is installed');
+//
+//        if (!extension_loaded('fileinfo')) {
+//            $this->output->error('fileinfo extension not install');
+//            exit();
+//        }
+//        $this->output->info('fileinfo extension is installed');
 
         if (!extension_loaded('openssl')) {
             $this->output->error('openssl extension not install');
@@ -106,11 +126,11 @@ class Install extends Command
             $this->output->error('runtime path is  not writeable');
             exit();
         }
-        $sql_file = public_path().'install'.DIRECTORY_SEPARATOR.'funadmin.sql';
+        $sql_file = app()->getBasePath().'install'.DIRECTORY_SEPARATOR.'funadmin.sql';
         //检测能否读取安装文件
         $sql = @file_get_contents($sql_file);
         if (!$sql) {
-            $this->output->error("Unable to read `/public/install/funadmin.sql`，Please check if you have read permission");
+            $this->output->error("Unable to read `{$sql_file}`，Please check if you have read permission");
             exit();
         }
         $this->output->info('runtime  is witeable');
@@ -123,43 +143,43 @@ class Install extends Command
      */
     protected function install($input): void{
         $env = root_path() . '.env';
-        $host = $input->getOption('hostname');
-        $port = $input->getOption('hostport');
-        $database = $input->getOption('database');
-        $charset = $input->getOption('charset');
-        $username =$input->getOption('username');
-        $password = $input->getOption('password');
-        $prefix = $input->getOption('prefix');
+        $db["host"] = $input->getOption('hostname');
+        $db["port"] = $input->getOption('hostport');
+        $db["database"] = $input->getOption('database');
+        $db["charset"] = $input->getOption('charset');
+        $db["username"] =$input->getOption('username');
+        $db["password"] = $input->getOption('password');
+        $db["prefix"] = $input->getOption('prefix');
         if(file_exists($env)){
             $env = \parse_ini_file($env, true);
-            $host =  $env['DATABASE']['HOSTNAME'] ;
-            $port = $env['DATABASE']['HOSTPORT']  ;
-            $database = $env['DATABASE']['DATABASE'] ;
-            $charset = $env['DATABASE']['CHARSET']  ;
-            $prefix = $env['DATABASE']['PREFIX']  ;
-            $username = $env['DATABASE']['USERNAME']  ;
-            $password = $env['DATABASE']['PASSWORD']  ;
+            $db["host"] =  $env['DATABASE']['HOSTNAME'] ;
+            $db["port"] = $env['DATABASE']['HOSTPORT']  ;
+            $db["database"] = $env['DATABASE']['DATABASE'] ;
+            $db["charset"] = $env['DATABASE']['CHARSET']  ;
+            $db["prefix"] = $env['DATABASE']['PREFIX']  ;
+            $db["username"] = $env['DATABASE']['USERNAME']  ;
+            $db["password"] = $env['DATABASE']['PASSWORD']  ;
         }
-        $host = strtolower($this->output->ask($this->input, '👉 Set mysql hostname default(127.0.01)'))?:$host;
-        $port = strtolower($this->output->ask($this->input, '👉 Set mysql hostport default (3306)'))?:$port ;
-        $mysqlDatabase = strtolower($this->output->ask($this->input, '👉 Set mysql database default (funadmin)'))?:$database;
-        $mysqlPreFix = strtolower($this->output->ask($this->input, '👉 Set mysql table prefix default (fun_)'))?:$prefix;
-        $charset = strtolower($this->output->ask($this->input, '👉 Set mysql table charset default (utf8mb4)'))?:$charset;
-        $mysqlUserName = strtolower($this->output->ask($this->input, '👉 Set mysql username default (root)'))?:$username;
-        $mysqlPassword = strtolower($this->output->ask($this->input, '👉 Set mysql password required'))?: $password;
-        $adminUserName = strtolower($this->output->ask($this->input, '👉 Set admin username required default (admin)'))?:'admin';
-        $adminPassword = strtolower($this->output->ask($this->input, '👉 Set admin password required default (123456)'))?:'123456';
-        $rePassword = strtolower($this->output->ask($this->input, '👉 Set admin repeat password default (123456)'))?:'123456';
-        $email = strtolower($this->output->ask($this->input, '👉 Set admin email'))?:'admin@admin.com';
-        if(!$adminUserName || !$adminPassword){
+        $db["host"] = strtolower($this->output->ask($this->input, '👉 Set mysql hostname default(127.0.01)'))?:$db["host"];
+        $db["port"] = strtolower($this->output->ask($this->input, '👉 Set mysql hostport default (3306)'))?:$db["port"] ;
+        $db['database'] = strtolower($this->output->ask($this->input, '👉 Set mysql database default (funadmin)'))?:$db["database"];
+        $db['prefix'] = strtolower($this->output->ask($this->input, '👉 Set mysql table prefix default (fun_)'))?:$db["prefix"];
+        $db["charset"] = strtolower($this->output->ask($this->input, '👉 Set mysql table charset default (utf8mb4)'))?:$db["charset"];
+        $db['username'] = strtolower($this->output->ask($this->input, '👉 Set mysql username default (root)'))?:$db["username"];
+        $db['password'] = strtolower($this->output->ask($this->input, '👉 Set mysql password required'))?: $db["password"];
+        $admin["username"] = strtolower($this->output->ask($this->input, '👉 Set admin username required default (admin)'))?:'admin';
+        $admin["password"] = strtolower($this->output->ask($this->input, '👉 Set admin password required default (123456)'))?:'123456';
+        $admin['rePassword'] = strtolower($this->output->ask($this->input, '👉 Set admin repeat password default (123456)'))?:'123456';
+        $admin['email'] = strtolower($this->output->ask($this->input, '👉 Set admin email'))?:'admin@admin.com';
+        if(!$admin["username"] || !$admin['rePassword'] ){
             $this->output->error('请输入管理员帐号和密码');
-            while (!$adminUserName) {
-                $adminUserName = $this->output->ask($this->input, '👉 请输入管理员账号: ');
-                if ($adminUserName) {
+            while (!$admin["username"]) {
+                $admin["username"] = $this->output->ask($this->input, '👉 请输入管理员账号: ');
+                if ($admin["username"]) {
                     break;
                 }
             }
-            while (!$rePassword) {
+            while (!$admin['rePassword']) {
                 $rePassword = $this->output->ask($this->input, '👉 请输入管理员密码重复: ');
                 if ($rePassword) {
                     break;
@@ -167,16 +187,16 @@ class Install extends Command
             }
             exit();
         }
-        if (!preg_match("/^\w+$/", $adminUserName) || strlen($adminUserName) < 3 || strlen($adminUserName) > 24) {
+        if (!preg_match("/^\w+$/", $admin["username"]) || strlen($admin["username"]) < 3 || strlen($admin["username"]) > 24) {
             $this->output->error('管理员用户名只能输入字母、数字、下划线！用户名请输入3~24位字符！');
-            while (!$adminUserName) {
-                $adminUserName = $this->output->ask($this->input, '👉 请输入管理员账号');
-                if ($adminUserName) {
+            while (!$admin["username"]) {
+                $admin["username"] = $this->output->ask($this->input, '👉 请输入管理员账号');
+                if ($admin["username"]) {
                     break;
                 }
             }
         }
-        if(!preg_match('/^[0-9a-z_$]{6,16}$/i', $adminPassword) || strlen($adminPassword) < 5 || strlen($adminPassword) > 16){
+        if(!preg_match('/^[0-9a-z_$]{6,16}$/i', $admin['password']) || strlen($admin['password']) < 5 || strlen($admin['password']) > 16){
             $this->output->error('管理员密码必须6-16位,且必须包含字母和数字,不能有中文和空格');
             while (!$adminPassword) {
                 $adminPassword = $this->output->ask($this->input, '👉 请输入管理员密码');
@@ -186,176 +206,114 @@ class Install extends Command
             }
         }
         //判断两次输入是否一致
-        if ($adminPassword != $rePassword) {
+        if ($admin['password'] != $admin['rePassword']) {
             $this->output->error('管理员登录密码两次输入不一致！');
-            while ($adminPassword != $rePassword) {
+            while ($admin['password'] != $admin['rePassword']) {
                 $adminPassword = $this->output->ask($this->input, '👉 请输入管理员密码');
                 $rePassword = $this->output->ask($this->input, '👉 请输入管理员重复密码');
-                if ($adminPassword == $rePassword) {
+                if ($admin['password'] == $admin['rePassword']) {
                     break;
                 }
             }
         }
-        $databaseConfigFile = root_path(). "config"  . DIRECTORY_SEPARATOR . "database.php";
-        $entranceConfigFile = root_path(). "config" . DIRECTORY_SEPARATOR . "backend.php";
         try {
-            $this->output->writeln('连接数据库...');
+            $this->output->highlight('连接数据库...');
             // 连接数据库
-            $link = @new \mysqli("{$host}:{$port}", $mysqlUserName, $mysqlPassword);
-            $error = $link->connect_error;
-            if (!is_null($error)) {// 转义防止和alert中的引号冲突
-                $error = addslashes($error);
-                $this->output->error("数据库链接失败:$error");
+            $link = @new \mysqli("{$db['host']}:{$db['port']}", $db['username'], $db['password']);
+            if (mysqli_connect_errno()) {
+                $this->output->error("数据库链接失败:".mysqli_connect_errno());
                 exit();
             }
-            $link->query('set global wait_timeout=2147480');
-            $link->query("set global interactive_timeout=2147480");
-            $link->query("set global max_allowed_packet=104857600");
             $link->query("SET NAMES 'utf8mb4'");
-            if ($link->server_info < 5.5) {
-                exit("MySQL数据库版本不能低于5.5,请将您的MySQL升级到5.5及以上");
+            if ($link->server_info < $this->mysqlVersion) {
+                exit("MySQL数据库版本不能低于{$this->mysqlVersion},请将您的MySQL升级到{$this->mysqlVersion}及以上");
             }
             // 创建数据库并选中
-            if (!$link->select_db($mysqlDatabase)) {
-                $create_sql = 'CREATE DATABASE IF NOT EXISTS ' . $mysqlDatabase . ' DEFAULT CHARACTER SET '. $charset.';';
+            if (!$link->select_db($db['database'])) {
+                $create_sql = 'CREATE DATABASE IF NOT EXISTS ' . $db['database'] . ' DEFAULT CHARACTER SET '. $db["charset"].';';
                 $link->query($create_sql) or exit('创建数据库失败');
-                $link->select_db($mysqlDatabase);
+                $link->select_db($db['database']);
             }
-            $link->query("USE `{$mysqlDatabase}`");//使用数据库
+//            $link->query('set global wait_timeout=2147480');
+//            $link->query("set global interactive_timeout=2147480");
+//            $link->query("set global max_allowed_packet=104857600");
+            $link->query("USE `{$db['database']}`");//使用数据库
             // 写入数据库
             $this->output->writeln('安装数据库中...');
-            $sqlArr = file(public_path() . "install" . DIRECTORY_SEPARATOR . 'funadmin.sql');
-            $sql = '';
-            foreach ($sqlArr as $k=>$value) {
-                if (substr($value, 0, 2) == '--' || $value == '' || substr($value, 0, 2) == '/*')
-                    continue;
-                $sql .= $value;
-                if (substr(trim($value), -1, 1) == ';' and $value != 'COMMIT;') {
-                    $sql = str_ireplace("`fun_", "`{$mysqlPreFix}", $sql);
-                    $sql = str_ireplace('INSERT INTO ', 'INSERT IGNORE INTO ', $sql);
-                    try {
-                        $link->query($sql);
-                    } catch (\PDOException $e) {
-                        exit($e->getMessage());
-                    }
-                    $sql = '';
-                }
+            $sql = file_get_contents($this->sqlFile);
+            $sql = str_replace(["`fun_",'CREATE TABLE'], ["`{$db['prefix']}",'CREATE TABLE IF NOT EXISTS'], $sql);
+            $config = Config::get('database');
+            $config['connections']['mysql'] = [
+                'type'      => 'mysql',
+                'hostname'  => $db['host'],
+                'database'  => $db['database'],
+                'username'  => $db['username'],
+                'password'  => $db['password'],
+                'hostport'  => $db['port'],
+                'params'    => [],
+                'charset'   => 'utf8mb4'
+            ];
+            Config::set($config, 'database');
+            try {
+                $instance = Db::connect();
+                $instance->execute("SELECT 1");     //如果是【数据】增删改查直接运行
+                $instance->getPdo()->exec($sql);
+                sleep(2);
+                $password = password_hash($admin['password'], PASSWORD_BCRYPT);
+                $instance->execute("UPDATE {$db['prefix']}admin SET `email`='{$admin['email']}',`username` = '{$admin['username']}',`password` = '{$password}' WHERE `username` = 'admin'");
+                $instance->execute("UPDATE {$db['prefix']}member SET `email`='{$admin['email']}',`username` = '{$admin['username']}',`password` = '{$password}' WHERE `username` = 'admin'");
+            } catch (\PDOException $e) {
+                $this->output->error($e->getMessage());exit();
+            }catch(\Exception $e){
+                $this->output->error($e->getMessage());exit();
             }
             $this->output->highlight('数据库安装完成...');
-            sleep(1);
-            $password = password_hash($adminPassword, PASSWORD_BCRYPT);
-            $result = $link->query("UPDATE {$mysqlPreFix}admin SET `email`='{$email}',`username` = '{$adminUserName}',`password` = '{$password}' WHERE `username` = 'admin'");
-            $result2 = $link->query("UPDATE {$mysqlPreFix}member SET `email`='{$email}',`username` = '{$adminUserName}',`password` = '{$password}' WHERE `username` = 'admin'");
-            $databaseConfig = @file_get_contents($databaseConfigFile);
+            $databaseTpl = @file_get_contents($this->databaseTpl);
             $this->output->highlight('修改数据配置中...');
             //替换数据库相关配置
-            $config = <<<Fun
-<?php
-use think\\facade\Env;
-return [
-    // 默认使用的数据库连接配置
-    'default'         => Env::get('database.driver', 'mysql'),
-    // 自定义时间查询规则
-    'time_query_rule' => [],
-    // 自动写入时间戳字段
-    // true为自动识别类型 false关闭
-    // 字符串则明确指定时间字段类型 支持 int timestamp datetime date
-    'auto_timestamp'  => true,
-    // 时间字段取出后的默认时间格式
-    'datetime_format' => 'Y-m-d H:i:s',
-    // 数据库连接配置信息
-    'connections'     => [
-        'mysql' => [
-            // 数据库类型
-            'type'              => Env::get('database.type', 'mysql'),
-            // 服务器地址
-            'hostname'          => Env::get('database.hostname', '{$host}'),
-            // 数据库名
-            'database'          => Env::get('database.database', '{$mysqlDatabase}'),
-            // 用户名
-            'username'          => Env::get('database.username', '{$mysqlUserName}'),
-            // 密码
-            'password'          => Env::get('database.password', '{$mysqlPassword}'),
-            // 端口
-            'hostport'          => Env::get('database.hostport', '{$port}'),
-            // 数据库连接参数
-            'params'            => [],
-            // 数据库编码默认采用utf8
-            'charset'           => Env::get('database.charset', 'utf8mb4'),
-            // 数据库表前缀
-            'prefix'            => Env::get('database.prefix', '{$mysqlPreFix}'),
-            // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
-            'deploy'            => 0,
-            // 数据库读写是否分离 主从式有效
-            'rw_separate'       => false,
-            // 读写分离后 主服务器数量
-            'master_num'        => 1,
-            // 指定从服务器序号
-            'slave_no'          => '',
-            // 是否严格检查字段是否存在
-            'fields_strict'     => true,
-            // 是否需要断线重连
-            'break_reconnect'   => false,
-            // 监听SQL
-            'trigger_sql'       => true,
-            // 开启字段缓存
-            'fields_cache'      => false,
-            // 字段缓存路径
-            'schema_cache_path' => app()->getRuntimePath() . 'schema' . DIRECTORY_SEPARATOR,
-        ],
-        // 更多的数据库配置信息
-    ],
-];
-Fun;
-            $putConfig = @file_put_contents($databaseConfigFile, $config);
+            $putDatabase = str_replace(
+                ['{{hostname}}', '{{database}}', '{{username}}', '{{password}}', '{{port}}', '{{prefix}}'],
+                [$db['host'],$db['database'], $db['username'], $db['password'], $db['port'], $db['prefix']],
+                file_get_contents($this->databaseTpl));
+            $putConfig = @file_put_contents($this->databaseConfigFile, $putDatabase);
             if (!$putConfig) {
                 $this->output->error('安装失败，请确认database.php有写权限！:' . $error);
                 exit();
             }
-            $adminStr = <<<Fun
-<?php
-// [ 应用入口文件 ]
-namespace think;
-if (version_compare(PHP_VERSION, '7.4.0', '<')) {
-    header("Content-type: text/html; charset=utf-8");
-    exit('PHP 7.4.0 及以上版本系统才可运行~ ');
-}
-if (!is_file(\$_SERVER['DOCUMENT_ROOT'].'/install.lock'))
-{
-    header("location:/install.php");exit;
-}
-require __DIR__ . '/../vendor/autoload.php';
-// 执行HTTP应用并响应
-\$http = (new  App())->http;
-\$response = \$http->name('backend')->run();
-\$response->send();
-\$http->end(\$response);
-?>
-Fun;
-
             $this->output->highlight('生成后台入口文件...');
-            $adminName = '';
-            $x = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            $adminName = substr(str_shuffle($x), 0, 10) . '.php';
-            $backendFile = public_path()  . $adminName;
+            //后台入口
+            $putAdmin = file_get_contents($this->backendTpl);
+            $number = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $adminName = substr(str_shuffle($number), 0, 10) . '.php';
+            $backendFile = public_path(). $adminName;
             if (!file_exists($backendFile)) {
                 @touch($backendFile);
             }
-            @file_put_contents($backendFile, $adminStr);
-            if (!file_exists($entranceConfigFile)) {
-                @touch($entranceConfigFile);
+            @file_put_contents($backendFile, $putAdmin);
+            //后台配置文件
+            if (!file_exists($this->funadminFile)) {
+                $result = @touch($this->funadminFile);
+                if (!$result) {
+                    $this->output->error("👉 安装失败，请确认 public 有写权限！");
+                    exit();
+                }
             }
-            $key = 'backendEntrance';
-            $config = file_get_contents($entranceConfigFile); //加载配置文件
-            $config = preg_replace("/'{$key}'.*?=>.*?'.*?'/", "'{$key}' => '/{$adminName}/'", $config);
-            @file_put_contents($entranceConfigFile, $config); // 写入配置文件
-            $result = @file_put_contents($this->lockFile, 'ok');
+            $this->output->highlight('入口文件中创建成功');
+            $key = 'entrance';
+            $config = file_get_contents($this->funadminFile); //加载配置文件
+            $config = preg_replace("/'{$key}'.*?=>.*?'.*?'/", "'{$key}' => '/{$adminName}'", $config);
+            @file_put_contents($this->funadminFile, $config); // 写入配置文件
+            $result = @touch($this->lockFile);
             if (!$result) {
-                $this->output->error("安装失败，请确认 install.lock 有写权限！:$error");
+                $this->output->error("👉 安装失败，请确认 install.lock 有写权限！");
                 exit();
             }
-            $this->output->highlight('恭喜您：系统已经安装完成... 通过域名+后台入口文件即可访问后台');
-            $this->output->highlight('管理员账号: '.$adminUserName.'，管理员密码:'.$adminPassword.',后台入口:'.$adminName);
+            $adminUser['username'] = $admin['username'];
+            $adminUser['password'] = $admin['password'];
+            $adminUser['backend'] = $adminName;
+            
+            $this->output->highlight('👉 恭喜您：系统已经安装完成... 通过域名+后台入口文件即可访问后台');
+            $this->output->highlight('👉 管理员账号: '.$adminUser["username"].'，管理员密码:'.$adminUser['password'].',后台入口:'.$adminName);
         } catch (\Exception $e) {
             $this->output->error($e->getMessage());
         }

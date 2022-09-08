@@ -57,11 +57,11 @@ trait Send
     /**
      * 测试appid，正式请数据库进行相关验证
      */
-    protected $appid = 'funadmin';
+    protected $appid = '';
     /**
      * appsecret
      */
-    protected $appsecret = '692ffa52429dd7e2b1df280be0f8c83f';
+    protected $appsecret = '';
     /**
      * JWT key
      * @var string 

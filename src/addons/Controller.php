@@ -19,7 +19,6 @@ class Controller extends BaseController
     protected $addon_path = null;
     protected $controller = null;
     protected $action = null;
-    protected $module = null;
     protected $param;
 
     /**
@@ -42,7 +41,7 @@ class Controller extends BaseController
      *
      * @var string
      */
-    protected $layout = 'layout/main';
+    protected $layout = false;
 
     /**
      * 架构函数.
@@ -54,29 +53,13 @@ class Controller extends BaseController
         $convert = Config::get('url_convert');
         $filter = $convert ? 'strtolower' : 'trim';
         // 处理路由参数
-        $this->param = $param = app()->request->param();
-        $route = app()->request->rule()->getName();
-        if(empty($param) || !isset($param['addon'])){
-            $route = explode('@',$route);
-            $param['action'] = $route[1];
-            [
-                $param['addons'],
-                $param['addon'],
-                $param['module'],
-                $param['controllers'],
-                $param['controller'],
-            ] = explode('\\',$route[0]);
-            $param['controller'] = $param['controller']. (isset(explode('\\',$route[0])[5])? DS.explode('\\',$route[0])[5]:'');
-        }
-        $addon = isset($param['addon']) ? $param['addon'] : '';
-        $module = isset($param['module']) ? $param['module'] : 'frontend';
-        $controller = isset($param['controller']) ? $param['controller'] : app()->request->controller();
-        $action = isset($param['action']) ? $param['action'] : app()->request->action();
-        $this->addon = $addon ? call_user_func($filter, $addon) : '';
-        $this->module = $module ? call_user_func($filter, $module) : '';
-        $this->addon_path = $app->addons->getAddonsPath() . $this->addon . DS;
+        $this->controller = $this->request->controller();
+        $this->addon = $this->request->addon;
+        $this->action = $this->request->action();
+        $this->addon =  $this->addon ? call_user_func($filter,  $this->addon) : app()->http->getName();
+        $this->addon_path = $app->addons->getAddonsPath() . $this->addon;
         $this->controller = $controller ? call_user_func($filter, $controller) : 'index';
-        $this->action = $action ? call_user_func($filter, $action) : 'index';
+        $this->action = $this->action ? call_user_func($filter, $this->action) : 'index';
         // 父类的调用必须放在设置模板路径之后
         $this->_initialize();
         parent::__construct($app);
@@ -86,16 +69,16 @@ class Controller extends BaseController
     {
         $view_config = Config::get('view');
          // 渲染配置到视图中
-        if(isset($this->param['addon'])){
-            $view_config = array_merge($view_config,['view_path' => $this->addon_path .'view' .DS],);
+        if($this->addon){
+            $view_config = array_merge($view_config,['view_path' => $this->addon_path . DS .'view' .DS],);
             View::engine('Think')->config($view_config);
         }else{
-            $view_config = array_merge($view_config,['view_path' => $this->addon_path .'view'.DS.$this->module.DS.str_replace('.','/',$this->controller) .DS]);
+            $view_config = array_merge($view_config,['view_path' => $this->addon_path . DS .'view'.DS.str_replace('.','/',$this->controller) .DS]);
             View::engine('Think')->config($view_config);
         }
         // 如果有使用模板布局 可以更换布局
         if($this->layout=='layout/main'){
-            $this->layout && app()->view->engine()->layout($this->module.DS.trim($this->layout,'/'));
+            $this->layout && app()->view->engine()->layout(trim($this->layout,'/'));
 
         }else{
             $this->layout && app()->view->engine()->layout(trim($this->layout,'/'));
