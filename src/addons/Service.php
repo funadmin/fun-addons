@@ -32,12 +32,15 @@ class Service extends \think\Service
     //存放[插件名称]列表数据
     protected $addons_data=[];
     //存放[插件ini所有信息]列表数据
-    protected $addons_list_data=[];
+    protected $addons_data_list=[];
     //模块所有[config.php]里的信息存放
     protected $addons_data_list_config=[];
     public function register()
     {
         error_reporting(0);
+
+        $this->app->bind('addons', Service::class);
+
         // 无则创建addons目录
         $this->addons_path = $this->getAddonsPath();
         
@@ -47,9 +50,8 @@ class Service extends \think\Service
         // 2.注册插件事件hook
         $this->loadEvent();
         // 3.绑定插件容器
-        $this->app->bind('addons', Service::class);
         // 4.自动加载全局的插件内部第三方类库
-        addons_vendor_autoload($this->addons_list_data?$this->addons_list_data:Cache::get('addons_list_data',[]));
+        addons_vendor_autoload($this->addons_data_list?$this->addons_data_list:Cache::get('addons_data_list',[]));
 
     }
     public function boot()
@@ -136,7 +138,7 @@ class Service extends \think\Service
                     $values = (array)$values;
                 }
                 $hooks[$key] = array_filter(array_map(function ($v) use ($key) {
-                    return [get_addons_class($v), $key];
+                    return [get_addons_class($v),$key];
                 }, $values));
             }
             Cache::set('hooks', $hooks);
@@ -145,7 +147,7 @@ class Service extends \think\Service
         //如果在插件中有定义 AddonsInit，则直接执行
         if (isset($hooks['AddonsInit'])) {
             foreach ($hooks['AddonsInit'] as $k => $v) {
-                Event::trigger('AddonsInit', $v);
+                Event::trigger( 'AddonsInit',$v);
             }
         }
     }
@@ -205,7 +207,6 @@ class Service extends \think\Service
                 }
             }
         }
-        //缓存
         //插件配置信息保存到缓存
         Cache::set('addons_config',$config);
         //插件列表
@@ -214,7 +215,6 @@ class Service extends \think\Service
         Cache::set('addons_data_list', $this->addons_data_list);
         //插件config列表
         Cache::set('addons_data_list_config', $this->addons_data_list_config);
-        
         Config::set($config, 'addons');
     }
 

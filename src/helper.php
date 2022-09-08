@@ -108,7 +108,7 @@ if (!function_exists('addons_vendor_autoload')) {
         if (is_array($addonsName)){
             foreach ($addonsName as $item) {
                 if ((isset($item['autoload']) && $item['autoload']==1) || isset($item['autoload'])){
-                    $autoload_file = root_path() . '/addons/' . $item['name'] . '/vendor/autoload.php';
+                    $autoload_file = root_path() . 'addons/' . $item['name'] . '/vendor/autoload.php';
                     if (file_exists($autoload_file)){
                         require_once $autoload_file;
                     }
@@ -118,7 +118,7 @@ if (!function_exists('addons_vendor_autoload')) {
             //插件私有类库
             $Config = get_addons_info($addonsName);
             if (isset($Config['autoload']) && $Config['autoload']==2){
-                $autoload_file = root_path() . '/addons/' . $addonsName . '/vendor/autoload.php';
+                $autoload_file = root_path() . 'addons/' . $addonsName . '/vendor/autoload.php';
                 if (file_exists($autoload_file)){
                     require_once $autoload_file;
                 }
@@ -141,7 +141,7 @@ if (!function_exists('set_addons_info')) {
         $service = new Service(App::instance()); // 获取service 服务
         $addons_path = $service->getAddonsPath();
         // 插件列表
-        $file = $addons_path . $name . DIRECTORY_SEPARATOR . 'Plugin.ini';
+        $file = $addons_path . $name . DIRECTORY_SEPARATOR . 'plugin.ini';
         $addon = get_addons_instance($name);
         $array = $addon->setInfo($name, $array);
         $array['status'] ? $addon->enabled() : $addon->disabled();
