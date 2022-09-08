@@ -1112,16 +1112,23 @@ class CurdService
         $this->lang = $lang;
         $this->softDelete = $softDelete;
         $methodArr = explode(',', $this->method);
+        if($this->addon){
+            $prefix_url = $this->addon.'/'.$this->controllerNamePrefix;
+        }elseif($this->app!='backend'){
+            $prefix_url = $this->app.'/'.$this->controllerNamePrefix;
+        }else{
+            $prefix_url = $this->controllerNamePrefix;
+        }
         foreach ($methodArr as $k => $v) {
             if(!$this->softDelete && $v=='recycle') continue;
             if ($v != 'refresh') {
                 $space = $k==0?'':'                    ';
                 if(!in_array($v,['restore'])) {
                     $space = $k==0?'':'                    ';
-                    $this->requests .=  $space. $v . '_url:' ."'{$this->controllerNamePrefix}/{$v}'" . ','.PHP_EOL;
+                    $this->requests .=  $space. $v . '_url:' ."'{$prefix_url}/{$v}'" . ','.PHP_EOL;
                 }
                 if(in_array($v,['recycle','restore','delete'])){
-                    $this->requestsRecycle .= $v . '_url:' ."'{$this->controllerNamePrefix}/{$v}'" . ','.PHP_EOL.$space;
+                    $this->requestsRecycle .= $v . '_url:' ."'{$prefix_url}/{$v}'" . ','.PHP_EOL.$space;
                 }
             }
         }
