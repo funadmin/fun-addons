@@ -75,9 +75,19 @@ if (!function_exists('hook')) {
      */
     function hook($event, $params = null, bool $once = false)
     {
-        $result = Event::trigger($event, $params, $once);
-        return join('', $result);
+        return Event::trigger($event, $params, $once);
     }
+}
+
+function hook_one($hook, $params = null)
+{
+    /**
+     * 添加钩子,只执行一个
+     * @param string $hook   钩子名称
+     * @param mixed  $params 传入参数
+     * @return mixed
+     */
+    return Event::trigger($hook, $params, true);
 }
 
 if (!function_exists('get_addons_info')) {
@@ -243,7 +253,6 @@ if (!function_exists('get_addons_config')) {
         if (!$addon) {
             return [];
         }
-
         return $addon->getConfig($name);
     }
 }
