@@ -79,15 +79,18 @@ if (!function_exists('hook')) {
     }
 }
 
-function hook_one($hook, $params = null)
-{
+if (!function_exists('hook_one')) {
     /**
      * 添加钩子,只执行一个
-     * @param string $hook   钩子名称
-     * @param mixed  $params 传入参数
+     * @param string $hook 钩子名称
+     * @param mixed $params 传入参数
      * @return mixed
      */
-    return Event::trigger($hook, $params, true);
+    function hook_one($hook, $params = null)
+    {
+
+        return Event::trigger($hook, $params, true);
+    }
 }
 
 if (!function_exists('get_addons_info')) {
