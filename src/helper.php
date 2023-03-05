@@ -159,6 +159,7 @@ if (!function_exists('set_addons_info')) {
         $addon = get_addons_instance($name);
         $array = $addon->setInfo($name, $array);
         $array['install']==1 && $array['status'] ? $addon->enabled() : $addon->disabled();
+        if($array['install']==0 && $array['status']) $addon->disabled();
         if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
             throw new Exception("Failed to write plugin config");
         }
