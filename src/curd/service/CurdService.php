@@ -167,7 +167,7 @@ class CurdService
         $this->description = $this->config['description']?:$this->addon;
         $this->requires = $this->config['requires']?:3.0;
         $this->author = $this->config['author']?:$this->addon;
-        $this->version = $this->config['ver']?:1.0;
+        $this->version = $this->config['version']?:1.0;
         $this->jump = $this->config['jump'];
         $this->limit = $this->config['limit'] ?: 15;
         $this->page = (empty($this->config['page']) || $this->config['page'] == 'true') ? "true" : 'false';
@@ -709,9 +709,7 @@ class CurdService
             }
             file_put_contents($filename, $content);
         }
-
     }
-
     protected function buildMenu($menuListArr, $type = 1)
     {
         $module = $this->addon ?: $this->app;
