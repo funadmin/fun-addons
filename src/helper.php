@@ -977,6 +977,18 @@ if (!function_exists('form_submitbtn')) {
         return Form::submitbtn($reset, $options);
     }
 }
+
+if (!function_exists('form_submit')) {
+    /**
+     * @param bool $reset
+     * @param array $options
+     * @return string
+     */
+    function form_submit($reset = true, $options = [])
+    {
+        return Form::submit($reset, $options);
+    }
+}
 if (!function_exists('form_closebtn')) {
     /**
      * @param bool $reset
@@ -994,9 +1006,9 @@ if (!function_exists('form_upload')) {
      * @param '' $formdata
      * @return string
      */
-    function form_upload($name = '', $formdata = [], $options = [], $value = '')
+    function form_upload($name = '',  $options = [], $value = '')
     {
-        return Form::upload($name, $formdata, $options, $value);
+        return Form::upload($name, $options, $value);
     }
 }
 if (!function_exists('form_editor')) {
@@ -1004,9 +1016,9 @@ if (!function_exists('form_editor')) {
      * @param $name
      * @return string
      */
-    function form_editor($name = 'content', $type = 1, $options = [], $value = '')
+    function form_editor($name = 'content', $options = [], $value = '')
     {
-        return Form::editor($name, $type, $options, $value);
+        return Form::editor($name, $options, $value);
     }
 }
 if (!function_exists('form_selectpage')) {
