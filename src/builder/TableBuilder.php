@@ -20,7 +20,6 @@ use think\facade\View;
 
 class TableBuilder
 {
-
     private static $instance;
     protected $modelClass = '';
     protected $driver = 'mysql';
@@ -56,7 +55,8 @@ class TableBuilder
             'defaultToolbar' => ['filter', 'print', 'exports'],
             'primaryKey' => 'id',
             'page' => true,
-            'pageSize' => [15, 30, 50, 100, 200, 500, 1000, 5000, 10000],
+            'limits'=>[15, 30, 50, 100, 200, 500, 1000, 5000, 10000],
+            'limit'=> 15,
             'searchInput' => true,
             'searchShow' => false,
             'searchTpl' => '',
@@ -76,7 +76,8 @@ class TableBuilder
             'toolbar' => ['refresh', 'delete', 'restore'],
             'primaryKey' => 'id',
             'page' => true,
-            'pageSize' => [15, 30, 50, 100, 200, 500, 1000, 5000, 10000],
+            'limits'=>[15, 30, 50, 100, 200, 500, 1000, 5000, 10000],
+            'limit'=> 15,
             'searchInput' => true,
             'searchShow' => false,
             'searchTpl' => '',
@@ -140,11 +141,11 @@ class TableBuilder
 
     public function url(string|array|object $url, $action = 'index')
     {
-        $this->options[$action]['url'] = $data;
+        $this->options[$action]['url'] = $url;
         return $this;
     }
 
-    public function data(array $data = [], string $action = 'index')
+    public function data(array $data=[], string $action = 'index')
     {
         $this->options[$action]['data'] = $data;
         return $this;
@@ -249,7 +250,7 @@ class TableBuilder
         return $this;
     }
 
-    public function page(mixed $page = true, string $action = 'index')
+    public function page(bool $page = true, string $action = 'index')
     {
         $this->options[$action]['page'] = $page;
         return $this;
@@ -318,7 +319,7 @@ class TableBuilder
 
     public function initSort(array $initSort, string $action = 'index')
     {
-        $this->options[$action]['initSort'] = $text;
+        $this->options[$action]['initSort'] = $initSort;
         return $this;
     }
 
@@ -510,7 +511,7 @@ class TableBuilder
     public function requests(array $request = [], string $action = 'index')
     {
         $this->options[$action]['requests'] = $request;
-        $this->requests = array_merge($this->requests, $index);
+        $this->requests = array_merge($this->requests, $request);
         return $this;
     }
 
@@ -526,13 +527,13 @@ class TableBuilder
         return $this;
     }
 
-    public function elem($elem)
+    public function elem(string $elem,$action='index')
     {
         $this->options[$action]['elem'] = $elem;
         return $this;
     }
 
-    public function id($id, string $action = 'index')
+    public function id(string $id, string $action = 'index')
     {
         $this->options[$action]['id'] = $id;
         return $this;
@@ -564,7 +565,7 @@ class TableBuilder
             'requests' => $this->requests,
             'html' => $this->html,
             'tableScript' => $this->script,
-            'extrascript' => $this->extrascript,
+            'extraScript' => $this->extraScript,
             'tableStyle' => $this->style,
             'extraStyle' => $this->extraStyle,
             'data' => $data,
