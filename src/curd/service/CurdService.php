@@ -31,7 +31,7 @@ class CurdService
         'fileSuffix' => ['file', 'files', 'path', 'paths'],//识别为文件字段
         'priSuffix' => ['_id', '_ids'],//识别为别的表的主键
         'sortSuffix' => ['sort','orderby','weight'],//排序
-        'imageSuffix' => ['image', 'images', 'thumb', 'thumbs', 'avatar', 'avatars','picture', 'pictures',''],//识别为图片字段
+        'imageSuffix' => ['image', 'images', 'thumb', 'thumbs', 'avatar', 'avatars','picture', 'pictures'],//识别为图片字段
         'editorSuffix' => ['editor', 'content', 'detail', 'details', 'description'],//识别为编辑器字段
         'iconSuffix' => ['icon'],//识别为图标字段
         'colorSuffix' => ['color'],//颜色
@@ -971,13 +971,13 @@ class CurdService
                             if (in_array($v['name'], ['update_time', 'delete_time'])) {
                                 break;
                             }
-                            $this->jsCols .= $space . "{field:'{$v['name']}',title: __('{$name}'),align: 'center',timeType:'datetime',dateformat:'yyyy-MM-dd HH:mm:ss',searchdateformat:'yyyy-MM-dd HH:mm:ss',search:'timerange',templet: Table.templet.time,sort:true}," . PHP_EOL;;
+                            $this->jsCols .= $space . "{field:'{$v['name']}',title: __('{$name}'),align: 'center',timeType:'datetime',dateformat:'yyyy-MM-dd HH:mm:ss',searchdateformat:'yyyy-MM-dd HH:mm:ss',search:'timerange',templet: Table.templet.time,sort:true,searchOp:'daterange'}," . PHP_EOL;;
                             break;
                         case 'year':
-                            $this->jsCols .= $space . "{field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'yyyy',searchdateformat:'yyyy',timeType:'year',search:'timerange',templet: Table.templet.time,sort:true}," . PHP_EOL;;
+                            $this->jsCols .= $space . "{field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'yyyy',searchdateformat:'yyyy',timeType:'year',search:'timerange',templet: Table.templet.time,sort:true,searchOp:'daterange'}," . PHP_EOL;;
                             break;
                         case 'time':
-                            $this->jsCols .= $space . "{field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'HH:mm:ss',searchdateformat:'HH:mm:ss',timeType:'time',search:'timerange',templet: Table.templet.time,sort:true}," . PHP_EOL;;
+                            $this->jsCols .= $space . "{field:'{$v['name']}',title: __('{$name}'),align: 'center',dateformat:'HH:mm:ss',searchdateformat:'HH:mm:ss',timeType:'time',search:'timerange',templet: Table.templet.time,sort:true,searchOp:'daterange'}," . PHP_EOL;;
                             break;
                         default :
                             $this->jsCols .= $space . "{field:'{$v['name']}', title: __('{$name}'),align: 'center'}," . PHP_EOL;
