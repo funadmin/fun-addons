@@ -21,7 +21,7 @@ use think\helper\Str;
 
 class FormBuilder
 {
-    use Builder;
+    protected $modelClass = '';
     /**
      * style
      * @var array
@@ -68,7 +68,8 @@ class FormBuilder
     public function __construct($options=[])
     {
         $this->template = $options['template']??'../../../vendor/funadmin/fun-addons/src/builder/layout/add';
-;
+        $this->modelClass = $this->modelClass?: ($config['model'] ?? ($config['modelClass'] ?? ''));
+
     }
 
     /**
@@ -576,15 +577,14 @@ class FormBuilder
      */
     public function assign($data=[]){
         $form = $this;
-        View::assign([
+        View::assign(array_merge([
             'formBuilder'=>$form,
             'formStyle'=>implode('',$this->style),
             'formLink'=>implode('',$this->link),
             'formScript'=>implode('',$this->script),
             'formJs'=>implode('',$this->js),
             'formHtml'=>implode('',$this->formHtml),
-            'formData'=>$data,
-        ]);
+        ],$data));
         return $this;
     }
 
