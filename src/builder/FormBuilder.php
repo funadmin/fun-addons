@@ -504,7 +504,16 @@ class FormBuilder
         return $this;
     }
 
-
+    /**
+     * @param bool $reset
+     * @param array $options
+     * @return string
+     */
+    public  function close($reset = true, $options = [])
+    {
+        $this->formHtml[] = Form::closebtn($reset,$options);
+        return $this;
+    }
     /**
      * @param bool $reset
      * @param array $options
@@ -559,8 +568,8 @@ class FormBuilder
      */
     public function extrajs($js,$options=[]){
         $reg = '/<script.*?>([\s\S]*?)<\/script>/im';
-        preg_match($reg, $script,$match);
-        $this->extraJs = empty($match)?$script:$match[1];
+        preg_match($reg, $js,$match);
+        $this->extraJs = empty($match)?$js:$match[1];
         return $this;
     }
     public function style(string $name,$options=[]){
